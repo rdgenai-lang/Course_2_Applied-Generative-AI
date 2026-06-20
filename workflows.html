@@ -1,0 +1,1201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>From Single Prompts to Small Workflows — Logistics Disruption Response</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --orange:#E87A2E;--orange-dark:#D06A20;--orange-light:#F5943E;--orange-glow:rgba(232,122,46,0.12);
+  --navy:#2B2D42;--navy-dark:#1A1B2E;
+  --bg:#F3EDE7;--bg-card:#FFFFFF;--bg-light:#F9F5F0;
+  --text-primary:#2B2D42;--text-secondary:#6B6D7B;--text-muted:#9597A6;
+  --border:#E5DDD4;
+  --green:#4CAF50;--green-light:#E8F5E9;--green-dark:#388E3C;
+  --red:#E04848;--red-light:#FCE8E8;
+  --blue:#4285F4;--blue-light:#E6EFFD;
+  --yellow:#F5A623;--yellow-light:#FFF4D6;
+  --purple:#8B5CF6;--purple-light:#F3EBFF;
+  --teal:#0CA678;--teal-light:#E6F7F0;
+  --shadow-sm:0 2px 8px rgba(43,45,66,0.06);
+  --shadow-md:0 8px 24px rgba(43,45,66,0.08);
+  --shadow-lg:0 16px 48px rgba(43,45,66,0.12);
+  --radius:14px;--radius-sm:8px;--radius-lg:20px;
+}
+html{scroll-behavior:smooth}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text-primary);overflow-x:hidden;-webkit-font-smoothing:antialiased;line-height:1.55}
+
+/* ─── NAV ─── */
+.nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:.7rem 2rem;display:flex;align-items:center;justify-content:space-between}
+.nav-title{font-family:'DM Serif Display',serif;font-size:1.05rem;color:var(--navy);letter-spacing:-.01em}
+.nav-title span{color:var(--orange)}
+.nav-logo{width:48px;height:48px;display:flex;align-items:center;justify-content:center}
+.nav-logo img{width:100%;height:100%;object-fit:contain}
+
+/* ─── HERO ─── */
+.hero{padding:5rem 2rem 3rem;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-100px;right:-100px;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(232,122,46,0.10),transparent 70%);z-index:0}
+.hero::after{content:'';position:absolute;bottom:-150px;left:-100px;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(76,175,80,0.06),transparent 70%);z-index:0}
+.hero-inner{max-width:1100px;margin:0 auto;position:relative;z-index:1}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:.5rem;padding:.45rem 1.1rem;border-radius:50px;background:var(--orange-glow);color:var(--orange);font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:1.4rem}
+.hero-eyebrow .dot{width:7px;height:7px;border-radius:50%;background:var(--orange);animation:pulse 2s infinite}
+.hero h1{font-family:'DM Serif Display',serif;font-size:clamp(2.2rem,5vw,3.6rem);line-height:1.08;color:var(--navy);margin-bottom:1rem;max-width:840px;letter-spacing:-.015em}
+.hero h1 em{font-style:normal;color:var(--orange);position:relative;display:inline-block}
+.hero h1 em::after{content:'';position:absolute;bottom:.05em;left:0;right:0;height:.18em;background:rgba(232,122,46,0.18);z-index:-1;border-radius:2px}
+.hero-lede{font-size:1.05rem;color:var(--text-secondary);line-height:1.7;max-width:720px;margin-bottom:2.2rem}
+.hero-split{display:grid;grid-template-columns:1fr 1fr;gap:.9rem;max-width:720px}
+.hero-split-card{padding:1rem 1.2rem;background:var(--bg-card);border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow-sm)}
+.hero-split-card .hsc-tag{font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.45rem;display:flex;align-items:center;gap:.35rem}
+.hero-split-card.ops .hsc-tag{color:var(--red)}
+.hero-split-card.cust .hsc-tag{color:var(--green-dark)}
+.hsc-tag::before{content:'';width:6px;height:6px;border-radius:50%}
+.hero-split-card.ops .hsc-tag::before{background:var(--red)}
+.hero-split-card.cust .hsc-tag::before{background:var(--green)}
+.hsc-body{font-size:.82rem;color:var(--text-secondary);line-height:1.55;font-style:italic}
+.hsc-body b{color:var(--navy);font-style:normal;font-weight:600}
+
+/* ─── SECTION COMMON ─── */
+section{padding:4rem 2rem}
+.container{max-width:1100px;margin:0 auto}
+.sec-label{display:inline-flex;align-items:center;gap:.45rem;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--orange);margin-bottom:.7rem}
+.sec-label .num{width:22px;height:22px;border-radius:50%;background:var(--orange);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:800;letter-spacing:0}
+.sec-title{font-family:'DM Serif Display',serif;font-size:clamp(1.8rem,3.4vw,2.4rem);color:var(--navy);line-height:1.18;margin-bottom:.6rem;letter-spacing:-.01em;max-width:820px}
+.sec-sub{font-size:1rem;color:var(--text-secondary);line-height:1.7;max-width:720px;margin-bottom:2.5rem}
+
+/* ─── SECTION 1: THE SINGLE-PROMPT TRAP ─── */
+.trap-wrap{background:var(--bg-card);border-radius:var(--radius-lg);padding:2rem;border:1px solid var(--border);box-shadow:var(--shadow-md)}
+.event-card{background:linear-gradient(135deg,#FBE9D6,#F5D9B8);border-radius:var(--radius);padding:1.3rem 1.5rem;border-left:4px solid var(--orange);margin-bottom:1.4rem;position:relative}
+.event-card-tag{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--orange-dark);display:flex;align-items:center;gap:.4rem;margin-bottom:.5rem}
+.event-card-tag::before{content:'';width:8px;height:8px;border-radius:50%;background:var(--orange);animation:pulse 2s infinite}
+.event-card-title{font-family:'DM Serif Display',serif;font-size:1.15rem;color:var(--navy);margin-bottom:.55rem}
+.event-card-body{font-size:.86rem;color:#5c3e1c;line-height:1.6}
+.event-card-meta{display:flex;flex-wrap:wrap;gap:1.1rem;margin-top:.7rem;padding-top:.7rem;border-top:1px dashed rgba(208,106,32,.3)}
+.event-meta-item{font-size:.72rem;color:#5c3e1c;font-weight:500}
+.event-meta-item b{font-family:'JetBrains Mono',monospace;color:var(--navy);font-weight:600}
+
+.trap-prompt-box{background:#1E2536;border-radius:var(--radius);padding:1.2rem 1.4rem;font-family:'JetBrains Mono',monospace;color:#E0E0E0;font-size:.82rem;line-height:1.65;position:relative;margin-bottom:1rem}
+.trap-prompt-box::before{content:'PROMPT';position:absolute;top:.6rem;right:.9rem;font-size:.6rem;color:rgba(255,255,255,.4);letter-spacing:.15em;font-weight:600}
+.trap-prompt-box .pr-user{color:#7BBA7A}
+
+.trap-output-box{background:var(--bg-light);border:1.5px solid var(--border);border-radius:var(--radius);padding:1.3rem 1.5rem;position:relative;min-height:120px;display:none}
+.trap-output-box.show{display:block;animation:fadeUp .4s ease}
+.trap-output-box::before{content:'AI OUTPUT';position:absolute;top:.6rem;right:.9rem;font-size:.6rem;color:var(--text-muted);letter-spacing:.15em;font-weight:600}
+.trap-output-body{font-size:.86rem;color:var(--text-primary);line-height:1.6;margin-top:.4rem}
+.trap-critique{margin-top:1.1rem;padding:.9rem 1.1rem;background:var(--red-light);border-left:3px solid var(--red);border-radius:6px;font-size:.82rem;color:var(--navy);line-height:1.6}
+.trap-critique b{color:var(--red)}
+
+.btn-run{padding:.7rem 1.4rem;background:var(--orange);color:#fff;border:none;border-radius:8px;font-family:inherit;font-size:.86rem;font-weight:600;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:.4rem;margin-top:.5rem}
+.btn-run:hover{background:var(--orange-dark);transform:translateY(-1px);box-shadow:0 4px 14px rgba(232,122,46,.25)}
+.btn-run:disabled{opacity:.5;cursor:not-allowed}
+
+/* ─── SECTION 2: WORKFLOW BUILDER ─── */
+.workflow-wrap{background:var(--bg-card);border-radius:var(--radius-lg);padding:2.2rem;border:1px solid var(--border);box-shadow:var(--shadow-md)}
+.flow-canvas{position:relative;padding:1.5rem 0;min-height:340px}
+.flow-svg{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1}
+.flow-grid{display:grid;grid-template-columns:1.2fr 1fr 1.4fr;gap:2rem;position:relative;z-index:2;align-items:center}
+.flow-col{display:flex;flex-direction:column;gap:1rem;align-items:center}
+
+.flow-node{background:#fff;border:2px solid var(--border);border-radius:var(--radius);padding:1.1rem;width:100%;max-width:280px;cursor:pointer;transition:all .25s;position:relative;text-align:center;box-shadow:var(--shadow-sm)}
+.flow-node:hover{transform:translateY(-3px);box-shadow:var(--shadow-md)}
+.flow-node.active{border-color:var(--orange);box-shadow:0 0 0 4px rgba(232,122,46,.12),var(--shadow-md);transform:translateY(-3px)}
+.flow-node.input-node{border-color:var(--blue);background:linear-gradient(135deg,#fff,#F0F6FE)}
+.flow-node.process-node{border-color:var(--navy)}
+.flow-node.output-node-ops{border-color:var(--red)}
+.flow-node.output-node-cust{border-color:var(--green)}
+.flow-node-icon{width:36px;height:36px;border-radius:10px;display:inline-flex;align-items:center;justify-content:center;margin-bottom:.6rem;font-size:1.05rem}
+.flow-node.input-node .flow-node-icon{background:var(--blue-light);color:var(--blue)}
+.flow-node.process-node .flow-node-icon{background:var(--orange-glow);color:var(--orange)}
+.flow-node.output-node-ops .flow-node-icon{background:var(--red-light);color:var(--red)}
+.flow-node.output-node-cust .flow-node-icon{background:var(--green-light);color:var(--green-dark)}
+.flow-node-label{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);margin-bottom:.25rem}
+.flow-node-title{font-family:'DM Serif Display',serif;font-size:1rem;color:var(--navy);line-height:1.25;margin-bottom:.3rem}
+.flow-node-sub{font-size:.74rem;color:var(--text-secondary);line-height:1.5}
+
+.flow-detail{margin-top:2rem;padding:1.5rem;background:var(--bg-light);border-radius:var(--radius);border:1px solid var(--border);min-height:140px}
+.flow-detail-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:.7rem;flex-wrap:wrap;gap:.5rem}
+.flow-detail-title{font-family:'DM Serif Display',serif;font-size:1.1rem;color:var(--navy);display:flex;align-items:center;gap:.5rem}
+.flow-detail-stage{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--orange);font-family:'JetBrains Mono',monospace}
+.flow-detail-body{font-size:.86rem;color:var(--text-secondary);line-height:1.65}
+.flow-detail-body code{background:#fff;padding:.15rem .4rem;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:.78rem;color:var(--navy);border:1px solid var(--border)}
+.flow-prompt-snippet{margin-top:.8rem;padding:.8rem 1rem;background:#1E2536;color:#E0E0E0;font-family:'JetBrains Mono',monospace;font-size:.74rem;line-height:1.6;border-radius:var(--radius-sm);overflow-x:auto}
+.flow-prompt-snippet .field{color:#7BBA7A}
+
+/* ─── SECTION 3: TWO AUDIENCES ─── */
+.audiences-wrap{background:var(--bg-card);border-radius:var(--radius-lg);padding:2rem;border:1px solid var(--border);box-shadow:var(--shadow-md)}
+.scenario-picker{display:flex;flex-wrap:wrap;gap:.55rem;padding:1.1rem 1.2rem;background:var(--bg-light);border-radius:var(--radius-sm);border:1px solid var(--border);margin-bottom:1.5rem}
+.scenario-picker-label{width:100%;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);margin-bottom:.25rem}
+.scn-btn{padding:.55rem 1rem;background:#fff;border:1.5px solid var(--border);border-radius:50px;font-family:inherit;font-size:.78rem;color:var(--navy);cursor:pointer;transition:all .18s;font-weight:500;display:inline-flex;align-items:center;gap:.4rem}
+.scn-btn:hover{border-color:var(--orange);color:var(--orange);transform:translateY(-1px)}
+.scn-btn.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+.scn-btn .scn-icon{font-size:.95rem}
+
+.scenario-display{padding:1.2rem 1.4rem;background:linear-gradient(135deg,#FBE9D6,#F5D9B8);border-left:4px solid var(--orange);border-radius:var(--radius);margin-bottom:1.4rem}
+.scenario-display-tag{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--orange-dark);margin-bottom:.4rem;display:flex;align-items:center;gap:.4rem}
+.scenario-display-tag::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--orange)}
+.scenario-display-text{font-size:.94rem;color:#5c3e1c;line-height:1.55;font-family:'DM Serif Display',serif;font-style:italic}
+
+.outputs-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+
+/* Ops message — Slack-style */
+.ops-msg{background:#FAF8F5;border-radius:var(--radius);border:1px solid var(--border);overflow:hidden}
+.ops-msg-head{padding:.7rem 1.1rem;background:#3A0C2C;color:#fff;display:flex;align-items:center;gap:.55rem;font-size:.76rem;font-weight:600}
+.ops-msg-head .ch-icon{color:#A47CB0;font-weight:700}
+.ops-msg-head .ch-name{flex:1}
+.ops-msg-head .ch-meta{font-size:.65rem;font-weight:500;opacity:.7;font-family:'JetBrains Mono',monospace}
+.ops-msg-body{padding:1.1rem 1.2rem}
+.ops-msg-user{display:flex;align-items:center;gap:.5rem;margin-bottom:.5rem}
+.ops-msg-avatar{width:28px;height:28px;border-radius:5px;background:linear-gradient(135deg,var(--red),#FF7A6B);display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:.75rem;flex-shrink:0}
+.ops-msg-name{font-size:.78rem;font-weight:700;color:var(--navy)}
+.ops-msg-time{font-size:.65rem;color:var(--text-muted);font-family:'JetBrains Mono',monospace}
+.ops-msg-content{font-size:.82rem;color:var(--text-primary);line-height:1.55;padding-left:2.2rem}
+.ops-msg-content b{color:var(--navy)}
+.ops-msg-content ul{margin:.4rem 0;padding-left:1.1rem}
+.ops-msg-content li{margin-bottom:.2rem}
+.ops-msg-content .ops-action{color:var(--red);font-weight:600}
+.ops-msg-content .priority{display:inline-block;font-size:.65rem;background:var(--red);color:#fff;padding:.1rem .4rem;border-radius:4px;font-weight:700;letter-spacing:.05em;margin-left:.3rem;font-family:'JetBrains Mono',monospace}
+
+/* Customer message — email style */
+.cust-msg{background:#fff;border-radius:var(--radius);border:1px solid var(--border);overflow:hidden}
+.cust-msg-head{padding:.85rem 1.2rem;background:#F0F4F2;border-bottom:1px solid var(--border)}
+.cust-msg-row{display:flex;align-items:baseline;gap:.5rem;font-size:.72rem;color:var(--text-secondary);margin-bottom:.25rem}
+.cust-msg-row .lbl{font-weight:700;color:var(--navy);min-width:48px;font-size:.65rem;text-transform:uppercase;letter-spacing:.06em}
+.cust-msg-row .val{color:var(--navy);font-weight:500}
+.cust-msg-row.subj .val{font-weight:600;font-size:.84rem;color:var(--navy);font-family:'DM Serif Display',serif}
+.cust-msg-body{padding:1.3rem 1.4rem;font-size:.84rem;color:var(--text-primary);line-height:1.7}
+.cust-msg-body p{margin-bottom:.7rem}
+.cust-msg-body p:last-child{margin-bottom:0}
+.cust-msg-body .signoff{margin-top:1rem;color:var(--text-secondary);font-size:.8rem}
+
+.outputs-row.transitioning{opacity:0.3}
+.outputs-row{transition:opacity .25s}
+
+.tone-comparison{display:flex;gap:.6rem;margin-top:1.2rem;padding-top:1.2rem;border-top:1px dashed var(--border);justify-content:space-between;flex-wrap:wrap}
+.tone-chip{display:inline-flex;align-items:center;gap:.4rem;padding:.4rem .8rem;background:var(--bg-light);border-radius:50px;font-size:.7rem;color:var(--text-secondary);border:1px solid var(--border)}
+.tone-chip b{color:var(--navy);font-weight:600}
+.tone-chip .swatch{width:7px;height:7px;border-radius:50%}
+.tone-chip.ops .swatch{background:var(--red)}
+.tone-chip.cust .swatch{background:var(--green)}
+
+/* ─── SECTION 4: TRY YOUR OWN ─── */
+.try-wrap{background:var(--bg-card);border-radius:var(--radius-lg);padding:2rem;border:1px solid var(--border);box-shadow:var(--shadow-md)}
+.try-input-block{margin-bottom:1.2rem}
+.try-input-block label{display:block;font-size:.74rem;font-weight:600;color:var(--navy);margin-bottom:.5rem;text-transform:uppercase;letter-spacing:.06em}
+.try-input-block textarea{width:100%;padding:.95rem 1.1rem;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:inherit;font-size:.88rem;background:var(--bg-light);resize:vertical;min-height:100px;line-height:1.55;color:var(--navy);transition:all .2s}
+.try-input-block textarea:focus{outline:none;border-color:var(--orange);background:#fff;box-shadow:0 0 0 3px rgba(232,122,46,.08)}
+.try-examples{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.6rem}
+.try-ex-btn{padding:.35rem .75rem;background:var(--bg-light);border:1px solid var(--border);border-radius:50px;font-family:inherit;font-size:.7rem;color:var(--text-secondary);cursor:pointer;transition:all .15s}
+.try-ex-btn:hover{border-color:var(--orange);color:var(--orange);background:var(--orange-glow)}
+.try-status{display:none;margin-top:1rem;padding:.7rem 1.1rem;background:var(--bg-light);border-radius:var(--radius-sm);font-size:.78rem;color:var(--text-secondary);border-left:3px solid var(--orange)}
+.try-status.show{display:block;animation:fadeUp .3s}
+.try-output{display:none;margin-top:1.4rem}
+.try-output.show{display:block;animation:fadeUp .4s}
+
+.workflow-stages-running{display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem;margin-bottom:1.2rem}
+.wstage{padding:.7rem .9rem;background:var(--bg-light);border-radius:8px;border:1px solid var(--border);font-size:.74rem;display:flex;align-items:center;gap:.5rem;transition:all .25s}
+.wstage.done{background:var(--green-light);border-color:var(--green)}
+.wstage.running{background:var(--orange-glow);border-color:var(--orange)}
+.wstage-dot{width:8px;height:8px;border-radius:50%;background:var(--text-muted);flex-shrink:0}
+.wstage.done .wstage-dot{background:var(--green)}
+.wstage.running .wstage-dot{background:var(--orange);animation:pulse 1s infinite}
+.wstage-label{font-weight:600;color:var(--navy)}
+
+/* ─── SECTION 5: BUILD IN 3 WAYS ─── */
+.builds-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.2rem}
+.build-card{background:var(--bg-card);border-radius:var(--radius-lg);padding:1.7rem;border:1px solid var(--border);transition:all .3s;position:relative;overflow:hidden}
+.build-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;transform:scaleX(0);transform-origin:left;transition:transform .3s}
+.build-card:nth-child(1)::before{background:linear-gradient(90deg,#10B981,#34D399)}
+.build-card:nth-child(2)::before{background:linear-gradient(90deg,#FF4F00,#FF7530)}
+.build-card:nth-child(3)::before{background:linear-gradient(90deg,#0078D4,#50A0E0)}
+.build-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);border-color:transparent}
+.build-card:hover::before{transform:scaleX(1)}
+.build-card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
+.build-icon{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;font-weight:700}
+.build-card:nth-child(1) .build-icon{background:rgba(16,185,129,.12);color:#10B981}
+.build-card:nth-child(2) .build-icon{background:rgba(255,79,0,.12);color:#FF4F00}
+.build-card:nth-child(3) .build-icon{background:rgba(0,120,212,.12);color:#0078D4}
+.build-tag{font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);padding:.25rem .55rem;background:var(--bg-light);border-radius:4px}
+.build-card h4{font-family:'DM Serif Display',serif;font-size:1.15rem;color:var(--navy);margin-bottom:.4rem;line-height:1.25}
+.build-card p{font-size:.82rem;color:var(--text-secondary);line-height:1.6;margin-bottom:1rem}
+.build-flow{padding:.9rem;background:var(--bg-light);border-radius:var(--radius-sm);margin-bottom:1rem;border:1px solid var(--border)}
+.build-flow-row{display:flex;align-items:center;gap:.4rem;font-size:.7rem;color:var(--navy);font-family:'JetBrains Mono',monospace;margin-bottom:.4rem}
+.build-flow-row:last-child{margin-bottom:0}
+.build-flow-row .node{padding:.2rem .5rem;background:#fff;border:1px solid var(--border);border-radius:4px;font-weight:600;display:inline-flex;align-items:center;gap:.3rem}
+.build-flow-row .node.input{border-color:var(--blue);color:var(--blue)}
+.build-flow-row .node.proc{border-color:var(--navy)}
+.build-flow-row .node.out-ops{border-color:var(--red);color:var(--red)}
+.build-flow-row .node.out-cust{border-color:var(--green-dark);color:var(--green-dark)}
+.build-flow-row .arrow{color:var(--text-muted);font-weight:700}
+.build-pros-cons{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;margin-top:.7rem}
+.build-pc{padding:.55rem .7rem;border-radius:6px;font-size:.7rem;line-height:1.45}
+.build-pc.pro{background:var(--green-light);color:var(--green-dark);border-left:3px solid var(--green)}
+.build-pc.con{background:var(--red-light);color:var(--red);border-left:3px solid var(--red)}
+.build-pc b{display:block;font-size:.62rem;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.2rem;font-weight:700}
+
+/* ─── DEFINITIONS ─── */
+.defs-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;margin-top:1rem}
+.def-card{background:linear-gradient(135deg,var(--navy-dark),var(--navy));color:#fff;padding:1.7rem;border-radius:var(--radius-lg);position:relative;overflow:hidden}
+.def-card::after{content:'';position:absolute;top:-30px;right:-30px;width:120px;height:120px;border-radius:50%;background:rgba(232,122,46,.13)}
+.def-label{display:inline-flex;align-items:center;gap:.4rem;font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--orange-light);margin-bottom:.6rem;position:relative;z-index:1}
+.def-label::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--orange-light)}
+.def-card h4{font-family:'DM Serif Display',serif;font-size:1.25rem;margin-bottom:.5rem;position:relative;z-index:1}
+.def-card p{font-size:.86rem;color:rgba(255,255,255,.8);line-height:1.65;position:relative;z-index:1}
+.def-card p em{font-style:normal;color:var(--orange-light)}
+
+/* ─── HONEST LIMITATIONS ─── */
+.honest-wrap{background:linear-gradient(135deg,#FBF7F2,#F5EFE6);border-radius:var(--radius-lg);padding:2.2rem;border:1px solid var(--border);box-shadow:var(--shadow-md)}
+.limit-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1rem;margin-top:1.4rem}
+.limit-item{background:var(--bg-card);padding:1.2rem 1.4rem;border-radius:var(--radius);border:1px solid var(--border);display:flex;gap:.9rem;align-items:flex-start;transition:all .25s}
+.limit-item:hover{transform:translateY(-2px);box-shadow:var(--shadow-sm)}
+.limit-icon{width:36px;height:36px;border-radius:9px;background:rgba(245,166,35,.12);color:#A07517;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;font-weight:700}
+.limit-content h5{font-family:'DM Serif Display',serif;font-size:1rem;color:var(--navy);margin-bottom:.3rem;line-height:1.25}
+.limit-content p{font-size:.8rem;color:var(--text-secondary);line-height:1.55}
+
+/* ─── FOOTER ─── */
+footer{background:var(--navy-dark);color:rgba(255,255,255,.55);padding:2rem;text-align:center;font-size:.78rem}
+
+/* ─── ANIMATIONS ─── */
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes typing{from{width:0}to{width:100%}}
+
+/* ─── RESPONSIVE ─── */
+@media(max-width:960px){
+  .hero-split{grid-template-columns:1fr}
+  .flow-grid{grid-template-columns:1fr;gap:1.5rem}
+  .outputs-row{grid-template-columns:1fr}
+  .builds-grid{grid-template-columns:1fr}
+  .defs-grid{grid-template-columns:1fr}
+  .limit-grid{grid-template-columns:1fr}
+  .workflow-stages-running{grid-template-columns:1fr}
+  .flow-svg{display:none}
+}
+@media(max-width:600px){
+  section,.hero{padding:3rem 1.2rem}
+  .nav{padding:.6rem 1.2rem}
+  .nav-title{font-size:.92rem}
+  .trap-wrap,.workflow-wrap,.audiences-wrap,.try-wrap,.honest-wrap{padding:1.4rem}
+}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-title">From Single Prompts to <span>Small Workflows</span></div>
+  <div class="nav-logo">
+    <img src="hero.svg" alt="logo">
+  </div>
+</nav>
+
+<!-- ═══ HERO ═══ -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-eyebrow"><span class="dot"></span>Week 3 · Logistics Disruption Response</div>
+    <h1>The same event needs to be explained <em>twice</em> — to operations, and to the customer. In two different tones.</h1>
+    <p class="hero-lede">Real organisational tasks are almost never single-step. A logistics disruption isn't "tell the customer" — it's "explain to ops what to do, then tell the customer something appropriate, in a different tone, without compromising the operations message." This week you'll build your first two-stage workflow: one input, two parallel outputs, two audiences.</p>
+    <div class="hero-split">
+      <div class="hero-split-card ops">
+        <div class="hsc-tag">For Operations</div>
+        <div class="hsc-body">Direct, action-oriented. <b>What to do, by when, who owns it.</b></div>
+      </div>
+      <div class="hero-split-card cust">
+        <div class="hsc-tag">For the Customer</div>
+        <div class="hsc-body">Empathetic, reassuring. <b>What this means for them, and how it's being fixed.</b></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SECTION 1: THE SINGLE-PROMPT TRAP ═══ -->
+<section style="background:var(--bg-light)">
+  <div class="container">
+    <div class="sec-label"><span class="num">1</span>The Trap</div>
+    <h2 class="sec-title">What happens when you try to do this in a single prompt.</h2>
+    <p class="sec-sub">Below is a real disruption event landing in your inbox at 6:47 AM. A naive approach is to send one prompt: "draft a reply." Click the button and see what falls out — and what's missing.</p>
+
+    <div class="trap-wrap">
+      <div class="event-card">
+        <div class="event-card-tag">Incoming Disruption · 06:47 IST</div>
+        <div class="event-card-title">Truck breakdown on NH48 — Mumbai-Pune corridor</div>
+        <div class="event-card-body">Vehicle MH-12-PD-4421 carrying 312 outbound packages has suffered a transmission failure 47 km from Pune hub. Recovery vehicle dispatched. Estimated repair + transit time: 18 hours. 187 customers affected. Delivery slots booked for today between 11 AM and 8 PM.</div>
+        <div class="event-card-meta">
+          <div class="event-meta-item">Packages: <b>312</b></div>
+          <div class="event-meta-item">Affected customers: <b>187</b></div>
+          <div class="event-meta-item">Delay: <b>~18 hrs</b></div>
+          <div class="event-meta-item">SLA breach: <b>YES</b></div>
+        </div>
+      </div>
+
+      <div class="trap-prompt-box">
+        <span class="pr-user">→ </span>You: "Given this logistics disruption, draft a reply to send out."
+      </div>
+
+      <button class="btn-run" id="trapRunBtn" onclick="runSinglePrompt()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+        Run single prompt
+      </button>
+
+      <div class="trap-output-box" id="trapOutput">
+        <div class="trap-output-body">
+          <p style="margin-bottom:.6rem"><b>Dear Customer,</b></p>
+          <p style="margin-bottom:.6rem">We regret to inform you that due to an unforeseen vehicular issue on the Mumbai-Pune highway, your delivery may be delayed by approximately 18 hours. Our team is working hard to resolve this. We apologise for the inconvenience caused.</p>
+          <p style="margin-bottom:.6rem">Please bear with us. Our operations team has been alerted and a recovery vehicle has been dispatched. Affected customers will receive their packages tomorrow. Thank you for your patience.</p>
+          <p>— Customer Care Team</p>
+        </div>
+        <div class="trap-critique">
+          <b>What's wrong?</b> &nbsp;The output mixes two purposes badly. <b>Operations</b> receives no actionable detail — no who-does-what, no SLA-breach handling, no escalation flag. <b>The customer</b> gets internal phrases like "recovery vehicle dispatched" that mean nothing to them. One audience would have been better served if the other hadn't existed. <b>That's the case for splitting the work into a workflow.</b>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SECTION 2: THE WORKFLOW ═══ -->
+<section>
+  <div class="container">
+    <div class="sec-label"><span class="num">2</span>The Workflow</div>
+    <h2 class="sec-title">One input. One analyser. Two parallel writers.</h2>
+    <p class="sec-sub">Instead of asking the AI to do everything at once, split it. Stage one understands the event. Stage two has two branches — one writes for ops, one writes for the customer. Each branch sees the same facts but writes to its own audience. Click any node to see what it does and the prompt it runs.</p>
+
+    <div class="workflow-wrap">
+      <div class="flow-canvas">
+        <svg class="flow-svg" id="flowSvg" preserveAspectRatio="none"></svg>
+        <div class="flow-grid">
+          <div class="flow-col">
+            <div class="flow-node input-node active" onclick="showFlowNode('input')" id="node-input">
+              <div class="flow-node-icon">📥</div>
+              <div class="flow-node-label">Stage 0 — Input</div>
+              <div class="flow-node-title">Disruption event</div>
+              <div class="flow-node-sub">Raw facts arrive from ops/ERP/email/SMS</div>
+            </div>
+          </div>
+
+          <div class="flow-col">
+            <div class="flow-node process-node" onclick="showFlowNode('analyse')" id="node-analyse">
+              <div class="flow-node-icon">🧠</div>
+              <div class="flow-node-label">Stage 1 — Process</div>
+              <div class="flow-node-title">Analyse & structure</div>
+              <div class="flow-node-sub">Extract: severity, audiences, actions, SLA impact</div>
+            </div>
+          </div>
+
+          <div class="flow-col">
+            <div class="flow-node output-node-ops" onclick="showFlowNode('ops')" id="node-ops">
+              <div class="flow-node-icon">⚙️</div>
+              <div class="flow-node-label">Stage 2a — Output</div>
+              <div class="flow-node-title">Operations brief</div>
+              <div class="flow-node-sub">For the warehouse / dispatch / hub team</div>
+            </div>
+            <div class="flow-node output-node-cust" onclick="showFlowNode('cust')" id="node-cust">
+              <div class="flow-node-icon">💬</div>
+              <div class="flow-node-label">Stage 2b — Output</div>
+              <div class="flow-node-title">Customer update</div>
+              <div class="flow-node-sub">For 187 affected end-customers</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flow-detail" id="flowDetail">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SECTION 3: TWO AUDIENCES ═══ -->
+<section style="background:var(--bg-light)">
+  <div class="container">
+    <div class="sec-label"><span class="num">3</span>Tone Separation In Practice</div>
+    <h2 class="sec-title">Same event. Two messages. Two registers.</h2>
+    <p class="sec-sub">Pick a disruption below and watch how the same input becomes two genuinely different outputs. Read both carefully — notice that the operations message is <b>not</b> a sanitised version of the customer message, and the customer message is <b>not</b> a softened version of the operations message. They are written from the audience inward, not from the facts outward.</p>
+
+    <div class="audiences-wrap">
+      <div class="scenario-picker">
+        <div class="scenario-picker-label">Choose a disruption scenario</div>
+        <button class="scn-btn active" onclick="loadScenario(0,this)"><span class="scn-icon">🚚</span> Truck breakdown</button>
+        <button class="scn-btn" onclick="loadScenario(1,this)"><span class="scn-icon">🌪️</span> Cyclone in Chennai</button>
+        <button class="scn-btn" onclick="loadScenario(2,this)"><span class="scn-icon">🔥</span> Warehouse fire</button>
+        <button class="scn-btn" onclick="loadScenario(3,this)"><span class="scn-icon">📦</span> Customs hold</button>
+      </div>
+
+      <div class="scenario-display" id="scenarioDisplay">
+        <div class="scenario-display-tag">Disruption event</div>
+        <div class="scenario-display-text" id="scenarioText">Loading…</div>
+      </div>
+
+      <div class="outputs-row" id="outputsRow">
+        <!-- Ops message -->
+        <div class="ops-msg">
+          <div class="ops-msg-head">
+            <span class="ch-icon">#</span>
+            <span class="ch-name">ops-disruptions</span>
+            <span class="ch-meta">🔒 private channel · 47 members</span>
+          </div>
+          <div class="ops-msg-body">
+            <div class="ops-msg-user">
+              <div class="ops-msg-avatar">OB</div>
+              <div>
+                <span class="ops-msg-name">OpsBot</span>
+                <span class="ops-msg-time"> · today at 06:47</span>
+              </div>
+            </div>
+            <div class="ops-msg-content" id="opsMsgContent">
+              Loading…
+            </div>
+          </div>
+        </div>
+
+        <!-- Customer message -->
+        <div class="cust-msg">
+          <div class="cust-msg-head">
+            <div class="cust-msg-row"><span class="lbl">From</span><span class="val">care@swiftcart.in</span></div>
+            <div class="cust-msg-row"><span class="lbl">To</span><span class="val" id="custToVal">priya.s@gmail.com</span></div>
+            <div class="cust-msg-row subj"><span class="lbl">Subject</span><span class="val" id="custSubjVal">An update on your order #SC-48291</span></div>
+          </div>
+          <div class="cust-msg-body" id="custMsgBody">
+            Loading…
+          </div>
+        </div>
+      </div>
+
+      <div class="tone-comparison">
+        <div class="tone-chip ops"><span class="swatch"></span>Operations: <b id="opsTone">direct · numeric · action-led</b></div>
+        <div class="tone-chip cust"><span class="swatch"></span>Customer: <b id="custTone">warm · clear · reassuring</b></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SECTION 4: TRY YOUR OWN ═══ -->
+<section>
+  <div class="container">
+    <div class="sec-label"><span class="num">4</span>Run Your Own</div>
+    <h2 class="sec-title">Type a disruption. Watch the workflow run.</h2>
+    <p class="sec-sub">Describe any logistics, supply-chain, or service incident in your own words. The three workflow stages will run in front of you — analyse, then ops message, then customer message — exactly as a real Zapier or Copilot Studio scenario would execute them.</p>
+
+    <div class="try-wrap">
+      <div class="try-input-block">
+        <label>Disruption description</label>
+        <textarea id="tryInput" placeholder="e.g., A cold-storage truck carrying vaccines lost refrigeration for 4 hours overnight. 1,200 doses may be compromised. Hospital deliveries scheduled for 10 AM tomorrow are at risk."></textarea>
+        <div class="try-examples">
+          <button class="try-ex-btn" onclick="loadTryExample(0)">Cold-chain failure</button>
+          <button class="try-ex-btn" onclick="loadTryExample(1)">Wrong-address shipment</button>
+          <button class="try-ex-btn" onclick="loadTryExample(2)">Festival surge delay</button>
+          <button class="try-ex-btn" onclick="loadTryExample(3)">Port worker strike</button>
+        </div>
+      </div>
+
+      <button class="btn-run" onclick="runWorkflow()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+        Run workflow
+      </button>
+
+      <div class="try-output" id="tryOutput">
+        <div class="workflow-stages-running" id="wstages">
+          <div class="wstage" data-stage="0"><span class="wstage-dot"></span><span class="wstage-label">Stage 1 — Analyse</span></div>
+          <div class="wstage" data-stage="1"><span class="wstage-dot"></span><span class="wstage-label">Stage 2a — Ops brief</span></div>
+          <div class="wstage" data-stage="2"><span class="wstage-dot"></span><span class="wstage-label">Stage 2b — Customer note</span></div>
+        </div>
+
+        <div class="outputs-row">
+          <div class="ops-msg">
+            <div class="ops-msg-head">
+              <span class="ch-icon">#</span>
+              <span class="ch-name">ops-disruptions</span>
+              <span class="ch-meta">your workflow output</span>
+            </div>
+            <div class="ops-msg-body">
+              <div class="ops-msg-user">
+                <div class="ops-msg-avatar">OB</div>
+                <div>
+                  <span class="ops-msg-name">OpsBot</span>
+                  <span class="ops-msg-time"> · just now</span>
+                </div>
+              </div>
+              <div class="ops-msg-content" id="tryOpsContent">Waiting…</div>
+            </div>
+          </div>
+
+          <div class="cust-msg">
+            <div class="cust-msg-head">
+              <div class="cust-msg-row"><span class="lbl">From</span><span class="val">care@yourcompany.com</span></div>
+              <div class="cust-msg-row"><span class="lbl">To</span><span class="val">affected customers</span></div>
+              <div class="cust-msg-row subj"><span class="lbl">Subject</span><span class="val" id="tryCustSubj">An update on your order</span></div>
+            </div>
+            <div class="cust-msg-body" id="tryCustBody">Waiting…</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SECTION 5: BUILD IN 3 WAYS ═══ -->
+<section style="background:var(--bg-light)">
+  <div class="container">
+    <div class="sec-label"><span class="num">5</span>Three Ways to Build It</div>
+    <h2 class="sec-title">No code. Three honest options. Pick the one that fits your stack.</h2>
+    <p class="sec-sub">The exact same workflow can be assembled in three different no-code environments. The mechanics are nearly identical; the difference is what's <i>around</i> it — your existing tools, your IT/security policies, your team's comfort. Pick one and own its trade-offs honestly.</p>
+
+    <div class="builds-grid">
+      <div class="build-card">
+        <div class="build-card-head">
+          <div class="build-icon">G</div>
+          <span class="build-tag">OpenAI · Free w/ Plus</span>
+        </div>
+        <h4>Two linked Custom GPTs</h4>
+        <p>One GPT analyses the event, then routes structured output to two specialist GPTs — one for ops, one for customer messaging. Cheapest, fastest setup. Lives inside ChatGPT.</p>
+        <div class="build-flow">
+          <div class="build-flow-row">
+            <span class="node input">Event</span>
+            <span class="arrow">→</span>
+            <span class="node proc">Analyser GPT</span>
+          </div>
+          <div class="build-flow-row">
+            <span class="node proc">↓</span>
+            <span class="arrow">splits into</span>
+          </div>
+          <div class="build-flow-row">
+            <span class="node out-ops">Ops GPT</span>
+            <span class="arrow">+</span>
+            <span class="node out-cust">Customer GPT</span>
+          </div>
+        </div>
+        <div class="build-pros-cons">
+          <div class="build-pc pro"><b>✓ Best for</b>One person, ad-hoc workflows, fast experimentation</div>
+          <div class="build-pc con"><b>✗ Limit</b>Manual triggering; no Slack/Gmail/CRM integration</div>
+        </div>
+      </div>
+
+      <div class="build-card">
+        <div class="build-card-head">
+          <div class="build-icon">Z</div>
+          <span class="build-tag">Zapier or Make · SaaS</span>
+        </div>
+        <h4>Zapier / Make scenario</h4>
+        <p>Trigger fires when a disruption is logged. The scenario calls OpenAI/Claude for each stage, posts ops message to Slack, sends customer email via SendGrid. Genuinely automated.</p>
+        <div class="build-flow">
+          <div class="build-flow-row">
+            <span class="node input">Trigger: form / webhook</span>
+          </div>
+          <div class="build-flow-row">
+            <span class="arrow">↓</span>
+            <span class="node proc">OpenAI: Analyse</span>
+          </div>
+          <div class="build-flow-row">
+            <span class="arrow">↓</span>
+            <span class="node out-ops">Slack: ops msg</span>
+          </div>
+          <div class="build-flow-row">
+            <span class="arrow">↓</span>
+            <span class="node out-cust">SendGrid: customer mail</span>
+          </div>
+        </div>
+        <div class="build-pros-cons">
+          <div class="build-pc pro"><b>✓ Best for</b>SMBs needing real automation across SaaS tools</div>
+          <div class="build-pc con"><b>✗ Limit</b>Monthly task limits; debugging requires care</div>
+        </div>
+      </div>
+
+      <div class="build-card">
+        <div class="build-card-head">
+          <div class="build-icon">C</div>
+          <span class="build-tag">Microsoft · Enterprise</span>
+        </div>
+        <h4>Copilot Studio flow</h4>
+        <p>Multi-step flow inside Microsoft 365. Trigger from Outlook or Teams, branches into Power Automate actions, with built-in human-approval steps. Stays inside your tenant.</p>
+        <div class="build-flow">
+          <div class="build-flow-row">
+            <span class="node input">Trigger: Outlook</span>
+          </div>
+          <div class="build-flow-row">
+            <span class="arrow">↓</span>
+            <span class="node proc">Topic: Analyse</span>
+          </div>
+          <div class="build-flow-row">
+            <span class="node out-ops">Teams channel</span>
+            <span class="arrow">+</span>
+            <span class="node out-cust">Outlook reply</span>
+          </div>
+          <div class="build-flow-row">
+            <span class="arrow">↓</span>
+            <span class="node proc">Human approval (optional)</span>
+          </div>
+        </div>
+        <div class="build-pros-cons">
+          <div class="build-pc pro"><b>✓ Best for</b>Enterprises with M365 & strict data-residency</div>
+          <div class="build-pc con"><b>✗ Limit</b>Steeper setup; needs IT involvement to deploy</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ DEFINITIONS ═══ -->
+<section>
+  <div class="container">
+    <div class="sec-label"><span class="num">6</span>The Vocabulary</div>
+    <h2 class="sec-title">Two definitions to take with you.</h2>
+    <p class="sec-sub">These are the terms you'll use the rest of the year. Knowing them precisely lets you describe what you're building — and recognise it when a vendor tries to sell you something different.</p>
+
+    <div class="defs-grid">
+      <div class="def-card">
+        <div class="def-label">Definition</div>
+        <h4>Workflow (in the AI sense)</h4>
+        <p>A chain of two or more AI steps where the <em>output of one step becomes the input of the next</em>, possibly with branching or human checkpoints in the middle. Workflows are how single-shot prompts grow up into systems.</p>
+      </div>
+      <div class="def-card">
+        <div class="def-label">Definition</div>
+        <h4>Tone Separation</h4>
+        <p>The discipline of producing audience-appropriate output even when both audiences are responding to the <em>same event</em>. The internal operations team wants direct, action-oriented language. The affected customer wants empathy, clarity, and reassurance. <em>The same factual situation, expressed in two registers.</em></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ HONEST LIMITATIONS ═══ -->
+<section style="background:var(--bg-light)">
+  <div class="container">
+    <div class="sec-label"><span class="num">7</span>An Honest Reflection</div>
+    <h2 class="sec-title">What this workflow can't do — and shouldn't try.</h2>
+    <p class="sec-sub">Demos make workflows look magical. Production makes them look mortal. Before you ship one, hold these limits clearly in mind. None of them is a reason not to build the workflow — but each one is a reason to think about <i>where the human stays in the loop</i>.</p>
+
+    <div class="honest-wrap">
+      <div class="limit-grid">
+        <div class="limit-item">
+          <div class="limit-icon">!</div>
+          <div class="limit-content">
+            <h5>It can't read context outside the prompt</h5>
+            <p>If the disruption involves a VIP client, a regulatory threshold, or a recent escalation history — and that context isn't fed in — the workflow will produce a generic, technically correct, contextually tone-deaf message.</p>
+          </div>
+        </div>
+        <div class="limit-item">
+          <div class="limit-icon">?</div>
+          <div class="limit-content">
+            <h5>It can't tell when to escalate to a human</h5>
+            <p>The system has no instinct for "this one is different." A passenger death, a viral social media moment, a regulator's tweet — these need a person, not a workflow. Build an explicit escalation rule, don't assume the AI will sense it.</p>
+          </div>
+        </div>
+        <div class="limit-item">
+          <div class="limit-icon">≈</div>
+          <div class="limit-content">
+            <h5>Tone separation can drift over time</h5>
+            <p>As you tune the customer message to be warmer, the ops message can creep towards the same register. Periodically read both side-by-side and ask: would my warehouse manager and my customer both feel served? If not, retune.</p>
+          </div>
+        </div>
+        <div class="limit-item">
+          <div class="limit-icon">⌖</div>
+          <div class="limit-content">
+            <h5>Multi-audience nuance still requires a human</h5>
+            <p>A B2B customer and a B2C customer should not receive the same email, even if both are affected by the same delay. A two-output workflow handles two audiences — not four. Decide consciously how many branches you need.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  © Disruption Workflow Lab · Week 3 · An interactive learning module
+</footer>
+
+<script>
+/* ═══════════════════════════════════════════════════════════
+   DATA — Workflow stages, scenarios, examples
+   ═══════════════════════════════════════════════════════════ */
+
+const FLOW_STAGE_DETAIL = {
+  input: {
+    stage: 'Stage 0',
+    title: 'Disruption event arrives',
+    body: 'This is the raw input — a free-text or structured description of what just happened. In production it might come from your TMS (transportation management system), a webhook from your warehouse software, an Outlook email, or a Slack message in #ops-alerts. The workflow does not care about the source; it only cares about the content.',
+    snippet: `<span class="field">event_type:</span> "logistics_disruption"
+<span class="field">received_at:</span> "2026-05-25T06:47:00+05:30"
+<span class="field">payload:</span> "Vehicle MH-12-PD-4421 ... 312 packages ... 18-hr delay ..."`
+  },
+  analyse: {
+    stage: 'Stage 1',
+    title: 'Analyse and structure',
+    body: 'The first AI step is the simplest and the most important. It reads the unstructured event and pulls out the fields downstream steps need: severity, affected count, root cause, owner, expected resolution time, SLA-breach status. Without this stage, your downstream prompts would each have to do their own extraction — and produce three different interpretations.',
+    snippet: `You will receive a logistics disruption. Output JSON with:
+<span class="field">severity:</span> low | medium | high | critical
+<span class="field">affected_count:</span> integer
+<span class="field">root_cause:</span> short phrase
+<span class="field">expected_delay_hours:</span> number
+<span class="field">sla_breach:</span> true | false
+<span class="field">primary_action:</span> short imperative phrase`
+  },
+  ops: {
+    stage: 'Stage 2a',
+    title: 'Operations brief — for the warehouse / dispatch team',
+    body: 'Takes the structured output from Stage 1 and writes an internal Slack message. Optimised for one thing: a manager seeing this on a phone at 6:50 AM should know within five seconds what to do. The tone is deliberately stripped down — no apologies, no softeners. Just facts, owners, deadlines.',
+    snippet: `You are writing an internal ops message.
+Audience: warehouse manager, on phone, in a hurry.
+Rules:
+  • Lead with the severity badge
+  • Bullet the action items (≤3)
+  • Name owners (Hub/Driver/CS lead)
+  • State the deadline
+  • No apologies. No "we regret".
+Input: { stage_1_output }
+Output: Slack-formatted message, ≤80 words.`
+  },
+  cust: {
+    stage: 'Stage 2b',
+    title: 'Customer update — for the affected end-customer',
+    body: 'Takes the same structured output from Stage 1 and writes a customer-facing email. Optimised for a very different thing: a person who was expecting a package today should feel heard, informed, and reassured. Mentions of internal infrastructure (vehicle IDs, hub names, SLA breach codes) are explicitly forbidden.',
+    snippet: `You are writing to an affected customer.
+Audience: end-user, expects something today.
+Rules:
+  • Open with acknowledgement of impact
+  • State the new expected time clearly
+  • Offer one concrete remedy (refund / reschedule / discount)
+  • NEVER mention vehicle IDs, hub names, SLA codes
+  • Sign off warmly
+Input: { stage_1_output }
+Output: short email, ≤120 words.`
+  }
+};
+
+
+/* Scenarios for tone-separation comparison */
+const SCENARIOS = [
+  {
+    event: 'Vehicle MH-12-PD-4421 carrying 312 outbound packages has suffered a transmission failure 47 km from Pune hub. Recovery vehicle dispatched. Estimated repair + transit time: 18 hours. 187 customers affected.',
+    custTo: 'priya.s@gmail.com',
+    custSubj: 'An update on your order #SC-48291',
+    opsContent: `<b>🚨 P1 disruption</b> <span class="priority">SLA BREACH</span><br>
+Truck MH-12-PD-4421 down, 47km from Pune hub. 312 pkgs, 187 customers.<br>
+<b>Actions:</b>
+<ul>
+  <li><span class="ops-action">Hub-Pune:</span> redirect inbound capacity to backup van fleet by 09:00</li>
+  <li><span class="ops-action">Driver lead:</span> confirm recovery ETA every 90 min</li>
+  <li><span class="ops-action">CS team:</span> auto-credit ₹150 voucher to all 187 affected customers</li>
+</ul>
+ETA new delivery window: <b>tomorrow 10:00–18:00</b>. Escalation needed if recovery ETA slips past 11:00.`,
+    custBody: `<p>Hi Priya,</p>
+<p>I'm writing with a heads-up about your SwiftCart order. Due to an unexpected delay on the road today, your package won't arrive within today's window as planned.</p>
+<p>The new estimated delivery is <b>tomorrow between 10:00 AM and 6:00 PM</b>. As an apology for the inconvenience, we've added a <b>₹150 voucher</b> to your account, valid on your next order.</p>
+<p>If tomorrow doesn't work for you, reply to this email and we'll reschedule or refund — your call.</p>
+<p class="signoff">Apologies again,<br>Aanya from SwiftCart Care</p>`,
+    opsTone: 'P1 · numeric · 3 actions · 80 words',
+    custTone: 'apologetic · concrete · offers choice'
+  },
+  {
+    event: 'Cyclone Reva landfall in Chennai expected 04:00 IST tomorrow. State govt has ordered all freight movement to halt 18:00 today onwards. ~2,400 deliveries scheduled for tomorrow across TN affected. Warehouses safe; staff sent home by 16:00.',
+    custTo: 'arjun.k@chennaipost.in',
+    custSubj: 'Important: your order #SC-51847 paused due to cyclone',
+    opsContent: `<b>⚠️ Weather pause — Tamil Nadu</b> <span class="priority">REGIONAL</span><br>
+Cyclone Reva landfall ~04:00 tomorrow. State order: all freight halt 18:00 today.<br>
+<b>Actions:</b>
+<ul>
+  <li><span class="ops-action">All TN hubs:</span> staff out by 16:00, warehouses sealed, generators on standby</li>
+  <li><span class="ops-action">Dispatch:</span> hold 2,400 TN orders. Resume window assessment at 09:00 day-after</li>
+  <li><span class="ops-action">CS:</span> trigger pre-built cyclone comms to affected pin codes</li>
+</ul>
+Reassessment call: <b>tomorrow 09:00</b>. State emergency hotline: 1077.`,
+    custBody: `<p>Dear Arjun,</p>
+<p>We hope you and your family are staying safe. Because of Cyclone Reva, all deliveries in Tamil Nadu are being held until the weather clears — your safety, and our team's, comes first.</p>
+<p>Your order is secure in our warehouse. We expect to resume deliveries <b>within 48 hours of the all-clear from local authorities</b>, and we'll email you the new ETA as soon as it's confirmed.</p>
+<p>No action is needed from you. Please follow your local civic authority's instructions and stay indoors.</p>
+<p class="signoff">Stay safe,<br>SwiftCart Care · Chennai region</p>`,
+    opsTone: 'regional · pre-built · safety-first',
+    custTone: 'concerned · human · zero-pressure'
+  },
+  {
+    event: 'Fire reported in Section C of Bhiwandi DC at 03:15. Fire brigade on site, contained by 04:30. Estimated 1,840 packages affected — some destroyed, some smoke-damaged. Insurance assessor arrives 09:00. No injuries.',
+    custTo: 'meera.j@gmail.com',
+    custSubj: 'About your order #SC-39120 — we need to make this right',
+    opsContent: `<b>🔥 Fire — Bhiwandi DC Section C</b> <span class="priority">CRITICAL</span><br>
+Contained 04:30. No injuries. ~1,840 pkgs affected (mix destroyed / smoke-damaged).<br>
+<b>Actions:</b>
+<ul>
+  <li><span class="ops-action">DC manager:</span> seal Section C until insurance assessor arrives (ETA 09:00)</li>
+  <li><span class="ops-action">Inventory:</span> SKU-level audit of all 1,840 pkgs by 14:00 — flag re-orderable vs not</li>
+  <li><span class="ops-action">CS lead:</span> escalate to Tier-2; full refund + 20% credit to all 1,840 customers, no questions</li>
+</ul>
+<b>Do not</b> share fire details externally until press statement drafted. Press call: <b>11:00</b>.`,
+    custBody: `<p>Dear Meera,</p>
+<p>I'm writing personally to tell you about something that happened at one of our warehouses overnight, which affects your order.</p>
+<p>An incident at our Bhiwandi facility means your package can't be delivered in its original condition. <b>We've issued a full refund of ₹3,240 to your original payment method</b>, which you'll see in 3–5 business days. We've also added <b>₹650 in store credit</b> (that's 20% of your order) to your account, as our way of saying we're sorry.</p>
+<p>If you'd like to re-order the item, we'll prioritise it and ship it free. Just reply.</p>
+<p class="signoff">Sincerely apologetic,<br>Vikram · Head of Customer Care</p>`,
+    opsTone: 'critical · sealed · press-aware',
+    custTone: 'personal · proactive · over-compensating'
+  },
+  {
+    event: 'Container MAEU-9112847 holding 4,200 cross-border units held at JNPT customs. Random verification flagged. Estimated clearance: 5–7 working days. Pre-orders for international brands affected.',
+    custTo: 'rohit.b@gmail.com',
+    custSubj: 'Your pre-order #SC-72104 is taking a few extra days',
+    opsContent: `<b>🛃 Customs hold — JNPT</b> <span class="priority">MED</span><br>
+Container MAEU-9112847 flagged for random verification. 4,200 units. Est. clearance 5–7 working days.<br>
+<b>Actions:</b>
+<ul>
+  <li><span class="ops-action">CHA partner:</span> daily status update; escalate if delay exceeds 7 days</li>
+  <li><span class="ops-action">Brand mgmt:</span> notify 6 international brand teams of holdup</li>
+  <li><span class="ops-action">CS:</span> proactive comms to 4,200 pre-order customers with new ETA range</li>
+</ul>
+No SLA breach yet (pre-order T&C covers ±10 days). Monitor daily.`,
+    custBody: `<p>Hi Rohit,</p>
+<p>Quick update on your pre-order — the international shipment carrying your item is going through a routine customs check, which is going to add a few extra days to delivery.</p>
+<p>The new expected delivery is <b>between 6 and 8 working days from today</b>. We'll send you the exact dispatch date the moment your item leaves our warehouse.</p>
+<p>If you'd prefer to cancel and get a refund, just reply to this email and we'll process it the same day — no questions asked.</p>
+<p>Thanks for your patience.</p>
+<p class="signoff">Warmly,<br>SwiftCart Pre-Orders Team</p>`,
+    opsTone: 'medium · routine · monitored',
+    custTone: 'casual · choice-offering · low-pressure'
+  }
+];
+
+
+const TRY_EXAMPLES = [
+  'A cold-storage truck carrying vaccines lost refrigeration for 4 hours overnight. 1,200 doses may be compromised. Hospital deliveries scheduled for 10 AM tomorrow are at risk.',
+  'Our dispatch system bulk-printed 240 shipping labels with mirrored pincodes overnight. Packages went out before the error was caught. Customers in Bangalore are receiving Bhubaneswar orders and vice-versa.',
+  'Diwali order surge has overwhelmed Mumbai hub. Backlog of ~6,800 orders, expected 2-day delay across the city. Customer support tickets up 340% this morning.',
+  'Mumbai port workers begin 72-hour strike starting tomorrow 00:00. 14 containers of our inbound stock stranded. International suppliers asking for revised dispatch windows.'
+];
+
+
+/* ═══════════════════════════════════════════════════════════
+   SECTION 1 — Single prompt trap
+   ═══════════════════════════════════════════════════════════ */
+function runSinglePrompt(){
+  document.getElementById('trapRunBtn').disabled = true;
+  document.getElementById('trapRunBtn').innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg> Generating…';
+  setTimeout(()=>{
+    document.getElementById('trapOutput').classList.add('show');
+    document.getElementById('trapRunBtn').innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-3-6.7L21 8M21 3v5h-5"/></svg> Run again';
+    document.getElementById('trapRunBtn').disabled = false;
+    document.getElementById('trapOutput').scrollIntoView({behavior:'smooth',block:'center'});
+  }, 700);
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   SECTION 2 — Workflow node detail
+   ═══════════════════════════════════════════════════════════ */
+function showFlowNode(key){
+  document.querySelectorAll('.flow-node').forEach(n => n.classList.remove('active'));
+  document.getElementById('node-' + key).classList.add('active');
+  const d = FLOW_STAGE_DETAIL[key];
+  document.getElementById('flowDetail').innerHTML = `
+    <div class="flow-detail-head">
+      <div class="flow-detail-title">${d.title}</div>
+      <div class="flow-detail-stage">${d.stage}</div>
+    </div>
+    <div class="flow-detail-body">${d.body}</div>
+    <div class="flow-prompt-snippet">${d.snippet}</div>
+  `;
+}
+
+function drawFlowLines(){
+  const svg = document.getElementById('flowSvg');
+  const canvas = svg.parentElement;
+  const cw = canvas.offsetWidth, ch = canvas.offsetHeight;
+  svg.setAttribute('width', cw);
+  svg.setAttribute('height', ch);
+  svg.setAttribute('viewBox', `0 0 ${cw} ${ch}`);
+  svg.innerHTML = '';
+
+  const input = document.getElementById('node-input');
+  const analyse = document.getElementById('node-analyse');
+  const ops = document.getElementById('node-ops');
+  const cust = document.getElementById('node-cust');
+  if(!input || !analyse || !ops || !cust) return;
+  const cRect = canvas.getBoundingClientRect();
+
+  function rightCenter(el){
+    const r = el.getBoundingClientRect();
+    return {x: r.right - cRect.left, y: r.top + r.height/2 - cRect.top};
+  }
+  function leftCenter(el){
+    const r = el.getBoundingClientRect();
+    return {x: r.left - cRect.left, y: r.top + r.height/2 - cRect.top};
+  }
+
+  const p1 = rightCenter(input), p2 = leftCenter(analyse);
+  const p3 = rightCenter(analyse), p4o = leftCenter(ops), p4c = leftCenter(cust);
+
+  function curve(a, b, color){
+    const mx = (a.x + b.x)/2;
+    const path = document.createElementNS('http://www.w3.org/2000/svg','path');
+    path.setAttribute('d', `M ${a.x} ${a.y} C ${mx} ${a.y}, ${mx} ${b.y}, ${b.x} ${b.y}`);
+    path.setAttribute('stroke', color);
+    path.setAttribute('stroke-width', '2');
+    path.setAttribute('fill', 'none');
+    path.setAttribute('stroke-dasharray', '5,4');
+    svg.appendChild(path);
+    // Arrow
+    const arrow = document.createElementNS('http://www.w3.org/2000/svg','path');
+    arrow.setAttribute('d', `M ${b.x-7} ${b.y-4} L ${b.x} ${b.y} L ${b.x-7} ${b.y+4}`);
+    arrow.setAttribute('stroke', color);
+    arrow.setAttribute('stroke-width', '2');
+    arrow.setAttribute('fill', 'none');
+    arrow.setAttribute('stroke-linecap', 'round');
+    arrow.setAttribute('stroke-linejoin', 'round');
+    svg.appendChild(arrow);
+  }
+
+  curve(p1, p2, '#9597A6');
+  curve(p3, p4o, '#E04848');
+  curve(p3, p4c, '#4CAF50');
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   SECTION 3 — Scenarios
+   ═══════════════════════════════════════════════════════════ */
+function loadScenario(idx, btn){
+  document.querySelectorAll('.scn-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const row = document.getElementById('outputsRow');
+  row.classList.add('transitioning');
+  setTimeout(()=>{
+    const s = SCENARIOS[idx];
+    document.getElementById('scenarioText').textContent = s.event;
+    document.getElementById('custToVal').textContent = s.custTo;
+    document.getElementById('custSubjVal').textContent = s.custSubj;
+    document.getElementById('opsMsgContent').innerHTML = s.opsContent;
+    document.getElementById('custMsgBody').innerHTML = s.custBody;
+    document.getElementById('opsTone').textContent = s.opsTone;
+    document.getElementById('custTone').textContent = s.custTone;
+    row.classList.remove('transitioning');
+  }, 180);
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   SECTION 4 — Try your own
+   ═══════════════════════════════════════════════════════════ */
+function loadTryExample(i){
+  document.getElementById('tryInput').value = TRY_EXAMPLES[i];
+}
+
+function analyseUserInput(text){
+  const t = text.toLowerCase();
+  // crude scoring of severity, type, affected count
+  let severity = 'medium', sevBadge = 'MED';
+  if(/critical|fire|death|injur|fatal|compromis|hazard|toxic|vaccine|medical/.test(t)){
+    severity = 'critical'; sevBadge = 'CRITICAL';
+  } else if(/cyclone|earthquake|strike|fire|customs|halt|stranded/.test(t)){
+    severity = 'high'; sevBadge = 'P1';
+  } else if(/delay|surge|backlog|wrong|swap/.test(t)){
+    severity = 'medium'; sevBadge = 'P2';
+  }
+  // Extract numbers
+  const nums = text.match(/\b\d[\d,]*\b/g) || [];
+  const bigNum = nums.map(n => parseInt(n.replace(/,/g,''))).find(n => n > 10) || null;
+  // Detect domain
+  let kind = 'logistics';
+  if(/vaccine|medical|hospital|cold|chain|refrig/.test(t)) kind = 'medical';
+  else if(/customs|port|container|international/.test(t)) kind = 'customs';
+  else if(/cyclone|storm|weather|rain|flood/.test(t)) kind = 'weather';
+  else if(/fire|damage|destroy/.test(t)) kind = 'damage';
+  else if(/strike|protest|union|worker/.test(t)) kind = 'strike';
+  else if(/surge|festival|peak|holiday/.test(t)) kind = 'surge';
+  else if(/wrong|swap|mirror|misroute/.test(t)) kind = 'misroute';
+  return {severity, sevBadge, bigNum, kind};
+}
+
+function generateOpsMessage(text, a){
+  const num = a.bigNum ? `${a.bigNum.toLocaleString('en-IN')}` : 'Multiple';
+  const variants = {
+    medical: `<b>🚨 Cold-chain breach</b> <span class="priority">${a.sevBadge}</span><br>
+${num} units at risk. Refrigeration loss confirmed.<br>
+<b>Actions:</b>
+<ul>
+  <li><span class="ops-action">QA team:</span> sample-test affected stock within 2 hrs — viability call by 09:00</li>
+  <li><span class="ops-action">Hospital partners:</span> hold tomorrow's dispatch; await viability ruling</li>
+  <li><span class="ops-action">Insurance:</span> file FNOL within 4 hrs; preserve temp logs</li>
+</ul>
+<b>Do not</b> distribute any affected stock until QA clears. Press/PR: stand by.`,
+    customs: `<b>🛃 Customs hold</b> <span class="priority">${a.sevBadge}</span><br>
+${num} units stranded. Routine inspection, est. 5–7 working days.<br>
+<b>Actions:</b>
+<ul>
+  <li><span class="ops-action">CHA partner:</span> daily status update; escalate past day 7</li>
+  <li><span class="ops-action">Inventory:</span> identify backup stock for high-velocity SKUs</li>
+  <li><span class="ops-action">CS:</span> proactive comms to all pre-order customers with revised window</li>
+</ul>
+Monitor daily. No SLA action yet.`,
+    weather: `<b>⛈️ Weather pause</b> <span class="priority">${a.sevBadge}</span><br>
+${num} deliveries impacted. Movement suspended for safety.<br>
+<b>Actions:</b>
+<ul>
+  <li><span class="ops-action">Hub leads:</span> staff stand-down per regional protocol; warehouses sealed</li>
+  <li><span class="ops-action">Dispatch:</span> hold all orders; reassess at 09:00 daily</li>
+  <li><span class="ops-action">CS:</span> trigger pre-built weather comms to affected pincodes</li>
+</ul>
+Safety first. Emergency hotline live.`,
+    damage: `<b>🔥 Damage incident</b> <span class="priority">${a.sevBadge}</span><br>
+${num} units affected. Site secured. No injuries reported.<br>
+<b>Actions:</b>
+<ul>
+  <li><span class="ops-action">DC manager:</span> seal affected zone; await insurance assessor</li>
+  <li><span class="ops-action">Inventory:</span> SKU audit by 14:00 — flag re-orderable vs not</li>
+  <li><span class="ops-action">CS lead:</span> escalate to Tier-2; full refund + credit to all affected</li>
+</ul>
+<b>Do not</b> share details externally until press statement drafted.`,
+    strike: `<b>✋ Labour action</b> <span class="priority">${a.sevBadge}</span><br>
+${num} units / shipments impacted. Duration uncertain.<br>
+<b>Actions:</b>
+<ul>
+  <li><span class="ops-action">Logistics partner:</span> evaluate alternate ports/routes within 6 hrs</li>
+  <li><span class="ops-action">Supplier mgmt:</span> notify all affected vendors; revise dispatch windows</li>
+  <li><span class="ops-action">CS:</span> blanket update to pre-order customers, framed as supply-chain delay</li>
+</ul>
+Daily status sync at 10:00 until resolved.`,
+    surge: `<b>📈 Volume surge</b> <span class="priority">${a.sevBadge}</span><br>
+~${num} order backlog. Tickets up sharply.<br>
+<b>Actions:</b>
+<ul>
+  <li><span class="ops-action">Hub manager:</span> activate surge capacity protocol — extra shifts authorised</li>
+  <li><span class="ops-action">CS lead:</span> deploy holiday-script playbook; staff overflow queue</li>
+  <li><span class="ops-action">Routing:</span> reassess pin-code priority every 4 hrs</li>
+</ul>
+Expected normalisation: 48–72 hrs.`,
+    misroute: `<b>📦 Misroute event</b> <span class="priority">${a.sevBadge}</span><br>
+${num} packages dispatched to incorrect destinations.<br>
+<b>Actions:</b>
+<ul>
+  <li><span class="ops-action">Hub ops:</span> recall instructions issued to local hubs; intercept where possible</li>
+  <li><span class="ops-action">CS:</span> proactive outreach + free reshipment to all affected</li>
+  <li><span class="ops-action">Systems:</span> root-cause within 6 hrs; freeze affected automation</li>
+</ul>
+Post-mortem owner: Dispatch Head. Due in 24 hrs.`,
+    logistics: `<b>🚚 Logistics disruption</b> <span class="priority">${a.sevBadge}</span><br>
+${num} units / deliveries affected.<br>
+<b>Actions:</b>
+<ul>
+  <li><span class="ops-action">Hub ops:</span> activate contingency routing; reassess capacity</li>
+  <li><span class="ops-action">Dispatch:</span> revise ETAs and notify CS</li>
+  <li><span class="ops-action">CS lead:</span> proactive customer comms with new window + remedy</li>
+</ul>
+Monitor and update at next standup.`
+  };
+  return variants[a.kind] || variants.logistics;
+}
+
+function generateCustomerMessage(text, a){
+  const variants = {
+    medical: `<p>Hello,</p>
+<p>We're writing to let you know that scheduled deliveries from us tomorrow may be affected by an issue with one of our cold-storage shipments. Your team's safety, and the integrity of the supplies, are our priority.</p>
+<p>We're running urgent quality checks now. We'll confirm by <b>09:00 tomorrow</b> whether the planned dispatch will go ahead or be replaced from backup stock. Either way, you will hear from us before your scheduled receiving window.</p>
+<p>If you have any questions in the meantime, our medical-supply team is on the line at the number on file.</p>
+<p class="signoff">Sincerely,<br>Medical Supply Coordination Team</p>`,
+    customs: `<p>Hi there,</p>
+<p>Quick update on your pre-order — the international shipment carrying your item is going through a routine customs check, which is going to add a few extra days.</p>
+<p>The new expected delivery window is <b>6 to 8 working days from today</b>. We'll send you the exact dispatch date as soon as your item leaves our warehouse.</p>
+<p>If you'd prefer to cancel and get a refund, just reply and we'll process it the same day — no questions asked.</p>
+<p class="signoff">Thanks for your patience,<br>Pre-Orders Team</p>`,
+    weather: `<p>Hi,</p>
+<p>We hope you're staying safe. Because of the weather, all deliveries in your region are paused until conditions improve and local authorities give the all-clear.</p>
+<p>Your order is safe in our warehouse. We expect to resume within <b>48 hours of the all-clear</b>, and we'll email you the new ETA the moment it's confirmed.</p>
+<p>No action needed from you. Please follow your local authority's guidance and stay indoors.</p>
+<p class="signoff">Stay safe,<br>Customer Care</p>`,
+    damage: `<p>Hi,</p>
+<p>I'm writing personally about something that happened at one of our warehouses, which affects your order.</p>
+<p>An incident means your package can't be delivered as planned. We've issued a <b>full refund to your original payment method</b> — you'll see it in 3–5 business days — and added <b>store credit equal to 20% of your order</b> to your account, as our way of saying we're sorry.</p>
+<p>If you'd like to re-order, just reply and we'll prioritise it and ship it free.</p>
+<p class="signoff">Sincerely apologetic,<br>Customer Care Lead</p>`,
+    strike: `<p>Hi,</p>
+<p>A quick note about your order — there's a temporary supply-chain situation that's holding up our incoming stock, and we want to be upfront about the delay.</p>
+<p>The current expected delay is <b>3 to 5 working days</b> beyond your original ETA. We're actively pursuing alternative routes and will share the confirmed dispatch date as soon as we have it.</p>
+<p>If the delay doesn't work for you, you can reply to this email for a full refund — no hassle.</p>
+<p class="signoff">Apologies and thank you,<br>Customer Care</p>`,
+    surge: `<p>Hi,</p>
+<p>Your order is on its way — but because of higher-than-usual volume right now, it's running a little behind schedule.</p>
+<p>The new expected delivery is <b>within the next 48 to 72 hours</b>. We've added <b>₹100 in store credit</b> to your account by way of apology.</p>
+<p>If you'd like to switch to a faster shipping option or cancel, just reply and we'll handle it the same day.</p>
+<p class="signoff">Thanks for bearing with us,<br>Customer Care</p>`,
+    misroute: `<p>Hi,</p>
+<p>I have to apologise — your recent order was dispatched to the wrong address due to an error on our end. That's on us, and we're fixing it.</p>
+<p>A <b>fresh shipment to your correct address is being prepared today</b>, free of charge, with priority handling. You'll receive a new tracking link within 2 hours.</p>
+<p>You don't need to return anything or take any action. We've also added a <b>₹250 voucher</b> to your account.</p>
+<p class="signoff">Genuinely sorry,<br>Operations Head, Customer Care</p>`,
+    logistics: `<p>Hi,</p>
+<p>I'm writing with a heads-up about your order — there's been a delay we want to flag before it surprises you.</p>
+<p>Your new expected delivery window is <b>within the next 24 to 48 hours</b>. We've added a small <b>credit to your account</b> as a thank-you for your patience.</p>
+<p>If this timing doesn't work, reply to this email and we'll reschedule or refund — your call.</p>
+<p class="signoff">Apologies again,<br>Customer Care</p>`
+  };
+  return variants[a.kind] || variants.logistics;
+}
+
+function generateSubject(a){
+  const subjects = {
+    medical: 'Update on tomorrow\'s medical-supply dispatch',
+    customs: 'Your pre-order is taking a few extra days',
+    weather: 'Important: weather pause on your order',
+    damage: 'About your order — we need to make this right',
+    strike: 'A short delay on your order',
+    surge: 'Your order is delayed — and a small thank-you',
+    misroute: 'Apologies — fixing a mistake on your order',
+    logistics: 'An update on your order'
+  };
+  return subjects[a.kind] || subjects.logistics;
+}
+
+function runWorkflow(){
+  const text = document.getElementById('tryInput').value.trim();
+  if(!text){
+    alert('Describe a disruption first.');
+    return;
+  }
+  document.getElementById('tryOutput').classList.add('show');
+  // Reset stages
+  document.querySelectorAll('.wstage').forEach(s => s.classList.remove('done','running'));
+  document.getElementById('tryOpsContent').innerHTML = '<i style="color:var(--text-muted)">Waiting for analyser…</i>';
+  document.getElementById('tryCustBody').innerHTML = '<i style="color:var(--text-muted)">Waiting for analyser…</i>';
+  document.getElementById('tryCustSubj').textContent = '…';
+
+  // Stage 1 — Analyse
+  const stage0 = document.querySelector('.wstage[data-stage="0"]');
+  stage0.classList.add('running');
+  setTimeout(()=>{
+    const a = analyseUserInput(text);
+    stage0.classList.remove('running');
+    stage0.classList.add('done');
+    // Stage 2a — Ops
+    const stage1 = document.querySelector('.wstage[data-stage="1"]');
+    stage1.classList.add('running');
+    setTimeout(()=>{
+      const opsHtml = generateOpsMessage(text, a);
+      document.getElementById('tryOpsContent').innerHTML = opsHtml;
+      stage1.classList.remove('running');
+      stage1.classList.add('done');
+      // Stage 2b — Customer
+      const stage2 = document.querySelector('.wstage[data-stage="2"]');
+      stage2.classList.add('running');
+      setTimeout(()=>{
+        const custHtml = generateCustomerMessage(text, a);
+        document.getElementById('tryCustBody').innerHTML = custHtml;
+        document.getElementById('tryCustSubj').textContent = generateSubject(a);
+        stage2.classList.remove('running');
+        stage2.classList.add('done');
+      }, 800);
+    }, 700);
+  }, 800);
+  document.getElementById('tryOutput').scrollIntoView({behavior:'smooth',block:'center'});
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   INIT
+   ═══════════════════════════════════════════════════════════ */
+window.addEventListener('DOMContentLoaded', ()=>{
+  showFlowNode('input');
+  loadScenario(0, document.querySelector('.scn-btn'));
+  // Initial line draw with slight delay so layout settles
+  setTimeout(drawFlowLines, 100);
+});
+window.addEventListener('resize', () => {
+  clearTimeout(window._flowResize);
+  window._flowResize = setTimeout(drawFlowLines, 120);
+});
+</script>
+</body>
+</html>

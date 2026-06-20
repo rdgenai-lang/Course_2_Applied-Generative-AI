@@ -1,0 +1,1160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>From Answering to Organising — Banking Triage with AI</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --orange:#E87A2E;--orange-dark:#D06A20;--orange-light:#F5943E;--orange-glow:rgba(232,122,46,0.12);
+  --navy:#2B2D42;--navy-dark:#1A1B2E;
+  --bg:#F3EDE7;--bg-card:#FFFFFF;--bg-light:#F9F5F0;
+  --text-primary:#2B2D42;--text-secondary:#6B6D7B;--text-muted:#9597A6;
+  --border:#E5DDD4;
+  --green:#4CAF50;--green-light:#E8F5E9;--green-dark:#388E3C;
+  --red:#E04848;--red-light:#FCE8E8;
+  --blue:#4285F4;--blue-light:#E6EFFD;
+  --yellow:#F5A623;--yellow-light:#FFF4D6;
+  --shadow-sm:0 2px 8px rgba(43,45,66,0.06);
+  --shadow-md:0 8px 24px rgba(43,45,66,0.08);
+  --shadow-lg:0 16px 48px rgba(43,45,66,0.12);
+  --radius:14px;--radius-sm:8px;--radius-lg:20px;
+}
+html{scroll-behavior:smooth}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text-primary);overflow-x:hidden;-webkit-font-smoothing:antialiased;line-height:1.55}
+
+/* ─── NAV ─── */
+.nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,0.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:.7rem 2rem;display:flex;align-items:center;justify-content:space-between}
+.nav-title{font-family:'DM Serif Display',serif;font-size:1.05rem;color:var(--navy);letter-spacing:-.01em}
+.nav-title span{color:var(--orange)}
+.nav-logo{width:48px;height:48px;display:flex;align-items:center;justify-content:center}
+.nav-logo img{width:100%;height:100%;object-fit:contain}
+
+/* ─── HERO ─── */
+.hero{padding:5rem 2rem 3rem;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-100px;right:-100px;width:400px;height:400px;border-radius:50%;background:radial-gradient(circle,rgba(232,122,46,0.10),transparent 70%);z-index:0}
+.hero-inner{max-width:1100px;margin:0 auto;position:relative;z-index:1}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:.5rem;padding:.45rem 1.1rem;border-radius:50px;background:var(--orange-glow);color:var(--orange);font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:1.4rem}
+.hero-eyebrow .dot{width:7px;height:7px;border-radius:50%;background:var(--orange);animation:pulse 2s infinite}
+.hero h1{font-family:'DM Serif Display',serif;font-size:clamp(2.2rem,5vw,3.8rem);line-height:1.08;color:var(--navy);margin-bottom:1rem;max-width:760px;letter-spacing:-.015em}
+.hero h1 em{font-style:normal;color:var(--orange);position:relative;display:inline-block}
+.hero h1 em::after{content:'';position:absolute;bottom:.05em;left:0;right:0;height:.18em;background:rgba(232,122,46,0.18);z-index:-1;border-radius:2px}
+.hero-lede{font-size:1.08rem;color:var(--text-secondary);line-height:1.7;max-width:640px;margin-bottom:2.2rem}
+.hero-actor-row{display:flex;align-items:center;gap:1.2rem;flex-wrap:wrap;padding:1.2rem 1.5rem;background:var(--bg-card);border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow-sm);max-width:760px}
+.actor-pill{display:flex;align-items:center;gap:.6rem;font-size:.85rem;color:var(--text-secondary);font-weight:500;white-space:nowrap}
+.actor-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.actor-pill:nth-child(1) .actor-dot{background:var(--orange)}
+.actor-pill:nth-child(2) .actor-dot{background:var(--blue)}
+.actor-pill:nth-child(3) .actor-dot{background:var(--green)}
+.actor-pill:nth-child(4) .actor-dot{background:var(--yellow)}
+.actor-arrow{color:var(--text-muted);font-size:.8rem}
+
+/* ─── SECTION COMMON ─── */
+section{padding:4rem 2rem}
+.container{max-width:1100px;margin:0 auto}
+.sec-label{display:inline-flex;align-items:center;gap:.45rem;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--orange);margin-bottom:.7rem}
+.sec-label .num{width:22px;height:22px;border-radius:50%;background:var(--orange);color:#fff;display:inline-flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:800;letter-spacing:0}
+.sec-title{font-family:'DM Serif Display',serif;font-size:clamp(1.8rem,3.4vw,2.5rem);color:var(--navy);line-height:1.18;margin-bottom:.6rem;letter-spacing:-.01em;max-width:780px}
+.sec-sub{font-size:1rem;color:var(--text-secondary);line-height:1.7;max-width:680px;margin-bottom:2.5rem}
+
+/* ─── SECTION 1: VOLUME SIMULATOR ─── */
+.volume-wrap{background:var(--bg-card);border-radius:var(--radius-lg);border:1px solid var(--border);overflow:hidden;box-shadow:var(--shadow-md)}
+.volume-header{padding:1.4rem 1.8rem;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg,var(--navy-dark),var(--navy));color:#fff;flex-wrap:wrap;gap:1rem}
+.volume-header h3{font-family:'DM Serif Display',serif;font-size:1.15rem;display:flex;align-items:center;gap:.6rem}
+.volume-header h3::before{content:'';width:10px;height:10px;border-radius:50%;background:var(--green);box-shadow:0 0 0 4px rgba(76,175,80,0.25);animation:livePulse 2s infinite}
+.volume-controls{display:flex;gap:.5rem;align-items:center}
+.btn-play{display:inline-flex;align-items:center;gap:.45rem;padding:.55rem 1.2rem;background:var(--orange);color:#fff;border:none;border-radius:8px;font-family:inherit;font-size:.82rem;font-weight:600;cursor:pointer;transition:all .2s}
+.btn-play:hover{background:var(--orange-dark);transform:translateY(-1px)}
+.btn-play:disabled{background:#888;cursor:not-allowed;transform:none}
+.btn-reset{padding:.55rem 1rem;background:transparent;color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:8px;font-family:inherit;font-size:.78rem;font-weight:500;cursor:pointer;transition:all .2s}
+.btn-reset:hover{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.4)}
+.volume-body{display:grid;grid-template-columns:1.3fr 1fr;gap:0;min-height:380px}
+.volume-stream{padding:1.5rem;background:var(--bg-light);border-right:1px solid var(--border);position:relative;overflow:hidden;max-height:480px;overflow-y:auto}
+.volume-stream::-webkit-scrollbar{width:6px}
+.volume-stream::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+.stream-empty{text-align:center;color:var(--text-muted);font-size:.85rem;padding:5rem 1rem;font-style:italic}
+.query-row{background:#fff;border:1px solid var(--border);border-radius:var(--radius-sm);padding:.7rem .9rem;margin-bottom:.55rem;display:flex;align-items:flex-start;gap:.6rem;animation:slideIn .35s ease;box-shadow:var(--shadow-sm)}
+.query-row .qicon{width:26px;height:26px;border-radius:50%;background:var(--orange-glow);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.78rem}
+.query-row .qtext{flex:1;font-size:.8rem;color:var(--text-primary);line-height:1.45}
+.query-row .qtime{font-size:.65rem;color:var(--text-muted);font-weight:600;letter-spacing:.04em;font-family:'JetBrains Mono',monospace;flex-shrink:0}
+.volume-stats{padding:1.8rem;display:flex;flex-direction:column;justify-content:center;gap:1.2rem;background:var(--bg-card)}
+.big-stat{text-align:center}
+.big-stat-num{font-family:'DM Serif Display',serif;font-size:3.6rem;color:var(--orange);line-height:1;letter-spacing:-.02em}
+.big-stat-label{font-size:.72rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.1em;font-weight:600;margin-top:.4rem}
+.stat-row-mini{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
+.mini-stat{padding:.8rem;background:var(--bg-light);border-radius:var(--radius-sm);text-align:center;border:1px solid var(--border)}
+.mini-stat-num{font-family:'DM Serif Display',serif;font-size:1.4rem;color:var(--navy);line-height:1}
+.mini-stat-label{font-size:.65rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;font-weight:600;margin-top:.3rem}
+.volume-message{background:var(--orange-glow);border-left:3px solid var(--orange);padding:.8rem 1rem;border-radius:var(--radius-sm);font-size:.78rem;color:var(--navy);line-height:1.5;margin-top:.5rem;display:none}
+.volume-message.show{display:block;animation:fadeUp .4s ease}
+
+/* ─── SECTION 2: MANUAL TRIAGE GAME ─── */
+.game-wrap{background:var(--bg-card);border-radius:var(--radius-lg);padding:2.2rem;border:1px solid var(--border);box-shadow:var(--shadow-md)}
+.game-intro{text-align:center;margin-bottom:1rem}
+.btn-start-game{display:inline-flex;align-items:center;gap:.5rem;padding:.85rem 2rem;background:var(--orange);color:#fff;border:none;border-radius:10px;font-family:inherit;font-size:.95rem;font-weight:600;cursor:pointer;transition:all .25s;box-shadow:0 4px 14px rgba(232,122,46,.25)}
+.btn-start-game:hover{background:var(--orange-dark);transform:translateY(-2px);box-shadow:0 6px 18px rgba(232,122,46,.35)}
+.game-arena{display:none}
+.game-arena.active{display:block}
+.game-progress{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem}
+.progress-bar-wrap{flex:1;height:8px;background:var(--bg-light);border-radius:4px;overflow:hidden;min-width:200px}
+.progress-bar{height:100%;background:linear-gradient(90deg,var(--orange),var(--orange-light));transition:width .3s ease;border-radius:4px}
+.progress-info{display:flex;gap:1.3rem;font-size:.82rem;font-weight:600;color:var(--text-secondary)}
+.progress-info b{color:var(--navy);font-family:'JetBrains Mono',monospace}
+.timer-ring{position:relative;width:36px;height:36px}
+.timer-svg{transform:rotate(-90deg)}
+.timer-text{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:.82rem;font-weight:700;color:var(--navy);font-family:'JetBrains Mono',monospace}
+.game-query-card{background:var(--bg-light);border:1.5px solid var(--border);border-radius:var(--radius);padding:1.8rem;margin-bottom:1.5rem;position:relative;min-height:120px;display:flex;align-items:center}
+.game-query-card::before{content:'"';position:absolute;top:-.5rem;left:1.4rem;font-family:'DM Serif Display',serif;font-size:5rem;color:var(--orange);opacity:.18;line-height:1}
+.game-query-text{font-family:'DM Serif Display',serif;font-size:1.15rem;color:var(--navy);line-height:1.45;padding-left:1rem;position:relative;z-index:1}
+.game-options{display:grid;grid-template-columns:repeat(4,1fr);gap:.7rem}
+.game-option-btn{padding:1rem .9rem;background:#fff;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:inherit;font-size:.82rem;font-weight:600;color:var(--navy);cursor:pointer;transition:all .15s;text-align:center;line-height:1.3}
+.game-option-btn:hover{border-color:var(--orange);background:var(--orange-glow);transform:translateY(-2px)}
+.game-option-btn.correct{background:var(--green-light);border-color:var(--green);color:var(--green-dark);animation:flashCorrect .4s}
+.game-option-btn.wrong{background:var(--red-light);border-color:var(--red);color:var(--red);animation:flashWrong .4s}
+.game-option-btn:disabled{cursor:not-allowed}
+.game-result{display:none;text-align:center;padding:1rem 0}
+.game-result.active{display:block;animation:fadeUp .5s ease}
+.game-result-num{font-family:'DM Serif Display',serif;font-size:4rem;color:var(--orange);line-height:1;margin-bottom:.3rem}
+.game-result-detail{font-size:1rem;color:var(--text-secondary);margin-bottom:1.4rem}
+.game-result-callout{background:var(--bg-light);padding:1rem 1.4rem;border-radius:var(--radius-sm);border-left:4px solid var(--orange);text-align:left;max-width:540px;margin:0 auto 1.2rem;font-size:.86rem;color:var(--navy);line-height:1.55}
+.btn-replay{padding:.6rem 1.4rem;background:transparent;color:var(--orange);border:1.5px solid var(--orange);border-radius:8px;font-family:inherit;font-size:.85rem;font-weight:600;cursor:pointer;transition:all .2s}
+.btn-replay:hover{background:var(--orange);color:#fff}
+
+/* ─── SECTION 3: BUCKETS DRAG ─── */
+.buckets-wrap{background:var(--bg-card);border-radius:var(--radius-lg);padding:2rem;border:1px solid var(--border);box-shadow:var(--shadow-md)}
+.bucket-stage{display:grid;grid-template-columns:repeat(4,1fr);gap:.9rem;margin-bottom:1.8rem}
+.bucket{background:var(--bg-light);border:2px dashed var(--border);border-radius:var(--radius);padding:1rem;min-height:170px;transition:all .2s}
+.bucket.hover{background:var(--orange-glow);border-color:var(--orange);border-style:solid}
+.bucket-head{font-size:.78rem;font-weight:700;color:var(--navy);margin-bottom:.6rem;display:flex;align-items:center;gap:.4rem}
+.bucket-head .bdot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.bucket[data-cat="card"] .bdot{background:#4285F4}
+.bucket[data-cat="loan"] .bdot{background:#E8A040}
+.bucket[data-cat="account"] .bdot{background:#66BB6A}
+.bucket[data-cat="fraud"] .bdot{background:#E04848}
+.dropped-card{background:#fff;border:1px solid var(--border);border-radius:6px;padding:.45rem .55rem;margin-bottom:.4rem;font-size:.7rem;color:var(--text-primary);line-height:1.35;animation:fadeUp .25s ease;display:flex;align-items:center;gap:.35rem}
+.dropped-card.correct{background:var(--green-light);border-color:var(--green)}
+.dropped-card.wrong{background:var(--red-light);border-color:var(--red)}
+.dropped-card .check{color:var(--green);font-weight:700;font-size:.85rem}
+.dropped-card .wrong-x{color:var(--red);font-weight:700;font-size:.85rem}
+.queries-tray{background:var(--bg-light);border-radius:var(--radius);padding:1.1rem;border:1px solid var(--border)}
+.tray-label{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);margin-bottom:.7rem}
+.tray-items{display:flex;flex-wrap:wrap;gap:.5rem}
+.drag-card{background:#fff;border:1px solid var(--border);border-radius:8px;padding:.55rem .8rem;font-size:.78rem;cursor:grab;transition:all .2s;color:var(--navy);box-shadow:var(--shadow-sm);user-select:none;line-height:1.4;max-width:280px}
+.drag-card:hover{border-color:var(--orange);transform:translateY(-2px);box-shadow:var(--shadow-md)}
+.drag-card.dragging{opacity:.4;cursor:grabbing}
+.bucket-feedback{margin-top:1.2rem;padding:1rem 1.2rem;background:var(--green-light);border-radius:var(--radius-sm);border-left:4px solid var(--green);font-size:.86rem;color:var(--navy);line-height:1.55;display:none}
+.bucket-feedback.show{display:block;animation:fadeUp .4s ease}
+
+/* ─── SECTION 4: FEW-SHOT DEMO ─── */
+.fewshot-grid{display:grid;grid-template-columns:1fr 1.1fr;gap:1.5rem}
+.fewshot-panel{background:var(--bg-card);border-radius:var(--radius-lg);padding:1.6rem;border:1px solid var(--border);box-shadow:var(--shadow-md)}
+.panel-title{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);margin-bottom:1rem;display:flex;align-items:center;gap:.5rem}
+.panel-title::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--orange)}
+.example-pair{background:var(--bg-light);border-radius:var(--radius-sm);padding:.8rem 1rem;margin-bottom:.55rem;border-left:3px solid var(--orange)}
+.example-pair:nth-child(2){border-left-color:#E8A040}
+.example-pair:nth-child(3){border-left-color:#66BB6A}
+.example-pair:nth-child(4){border-left-color:#E04848}
+.example-pair:nth-child(5){border-left-color:#4285F4}
+.example-q{font-size:.8rem;color:var(--navy);line-height:1.45;margin-bottom:.3rem}
+.example-tag{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--text-muted);display:flex;align-items:center;gap:.3rem}
+.example-tag .arrow{color:var(--orange)}
+.input-block{margin-top:.5rem}
+.input-block label{display:block;font-size:.8rem;font-weight:600;color:var(--navy);margin-bottom:.5rem}
+.input-block textarea{width:100%;padding:.9rem 1rem;border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:inherit;font-size:.88rem;background:var(--bg-light);resize:vertical;min-height:80px;line-height:1.5;color:var(--navy);transition:all .2s}
+.input-block textarea:focus{outline:none;border-color:var(--orange);background:#fff;box-shadow:0 0 0 3px rgba(232,122,46,.08)}
+.example-buttons{display:flex;gap:.4rem;flex-wrap:wrap;margin-top:.6rem;margin-bottom:.8rem}
+.ex-btn{padding:.35rem .7rem;background:var(--bg-light);border:1px solid var(--border);border-radius:50px;font-family:inherit;font-size:.7rem;color:var(--text-secondary);cursor:pointer;transition:all .15s}
+.ex-btn:hover{border-color:var(--orange);color:var(--orange);background:var(--orange-glow)}
+.btn-classify{padding:.7rem 1.4rem;background:var(--orange);color:#fff;border:none;border-radius:8px;font-family:inherit;font-size:.85rem;font-weight:600;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:.4rem}
+.btn-classify:hover{background:var(--orange-dark);box-shadow:0 4px 14px rgba(232,122,46,.3);transform:translateY(-1px)}
+.result-block{margin-top:1.2rem;padding:1.2rem;background:var(--bg-light);border-radius:var(--radius);border:1px solid var(--border);min-height:160px}
+.result-empty{color:var(--text-muted);font-size:.85rem;font-style:italic;text-align:center;padding:2rem 1rem}
+.result-thinking{text-align:center;padding:1.5rem;color:var(--text-secondary);font-size:.85rem}
+.result-thinking .dots{display:inline-flex;gap:.25rem;margin-left:.4rem}
+.result-thinking .dots span{width:6px;height:6px;border-radius:50%;background:var(--orange);animation:bounce 1.4s infinite}
+.result-thinking .dots span:nth-child(2){animation-delay:.2s}
+.result-thinking .dots span:nth-child(3){animation-delay:.4s}
+.result-category{display:flex;align-items:center;gap:.6rem;margin-bottom:.9rem}
+.result-cat-icon{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.1rem}
+.result-cat-icon.card{background:rgba(66,133,244,.12);color:#4285F4}
+.result-cat-icon.loan{background:rgba(232,160,64,.15);color:#C08830}
+.result-cat-icon.account{background:rgba(102,187,106,.15);color:#388E3C}
+.result-cat-icon.fraud{background:rgba(224,72,72,.12);color:var(--red)}
+.result-cat-label{font-size:.72rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.07em;font-weight:600}
+.result-cat-name{font-family:'DM Serif Display',serif;font-size:1.15rem;color:var(--navy);line-height:1.2}
+.confidence-bar-wrap{margin-top:.7rem}
+.confidence-bar-head{display:flex;justify-content:space-between;font-size:.72rem;font-weight:600;color:var(--text-secondary);margin-bottom:.35rem}
+.confidence-bar-head b{font-family:'JetBrains Mono',monospace;color:var(--navy);font-size:.85rem}
+.confidence-bar{height:8px;background:var(--border);border-radius:4px;overflow:hidden}
+.confidence-fill{height:100%;background:linear-gradient(90deg,var(--orange),var(--orange-light));border-radius:4px;transition:width .8s cubic-bezier(.4,0,.2,1)}
+.confidence-fill.low{background:linear-gradient(90deg,var(--yellow),#f5c443)}
+.confidence-fill.high{background:linear-gradient(90deg,var(--green),#7CC97F)}
+.alt-categories{margin-top:1rem;padding-top:1rem;border-top:1px dashed var(--border)}
+.alt-categories-label{font-size:.7rem;color:var(--text-muted);font-weight:600;margin-bottom:.5rem;text-transform:uppercase;letter-spacing:.06em}
+.alt-row{display:flex;justify-content:space-between;align-items:center;font-size:.78rem;color:var(--text-secondary);padding:.3rem 0}
+.alt-row .pct{font-family:'JetBrains Mono',monospace;font-size:.75rem;color:var(--text-muted)}
+
+/* ─── SECTION 5: THRESHOLD SLIDER ─── */
+.threshold-wrap{background:var(--bg-card);border-radius:var(--radius-lg);padding:2rem;border:1px solid var(--border);box-shadow:var(--shadow-md)}
+.thresh-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.4rem;flex-wrap:wrap;gap:1rem}
+.thresh-value{font-family:'DM Serif Display',serif;font-size:2.6rem;color:var(--orange);line-height:1}
+.thresh-value sup{font-size:1.3rem;color:var(--text-muted);font-weight:400;font-family:inherit;margin-left:.1rem}
+.thresh-value-label{font-size:.72rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;font-weight:600;margin-top:.2rem}
+.thresh-slider-wrap{position:relative;padding:1rem 0}
+.thresh-slider{width:100%;height:6px;border-radius:3px;background:linear-gradient(90deg,var(--green) 0%,var(--yellow) 50%,var(--red) 100%);outline:none;appearance:none;cursor:pointer}
+.thresh-slider::-webkit-slider-thumb{appearance:none;width:24px;height:24px;border-radius:50%;background:#fff;border:3px solid var(--orange);cursor:grab;box-shadow:0 2px 8px rgba(0,0,0,.15);transition:transform .15s}
+.thresh-slider::-webkit-slider-thumb:active{cursor:grabbing;transform:scale(1.15)}
+.thresh-slider::-moz-range-thumb{width:24px;height:24px;border-radius:50%;background:#fff;border:3px solid var(--orange);cursor:grab;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+.thresh-marks{display:flex;justify-content:space-between;font-size:.7rem;color:var(--text-muted);font-weight:600;margin-top:.5rem;font-family:'JetBrains Mono',monospace}
+.thresh-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:.9rem;margin-top:1.5rem}
+.thresh-stat{padding:1.1rem;border-radius:var(--radius-sm);border:1px solid var(--border);background:var(--bg-light);text-align:center;transition:all .25s}
+.thresh-stat.auto{border-left:4px solid var(--green)}
+.thresh-stat.human{border-left:4px solid var(--orange)}
+.thresh-stat.errors{border-left:4px solid var(--red)}
+.thresh-stat-num{font-family:'DM Serif Display',serif;font-size:2.2rem;line-height:1;color:var(--navy)}
+.thresh-stat.auto .thresh-stat-num{color:var(--green)}
+.thresh-stat.human .thresh-stat-num{color:var(--orange)}
+.thresh-stat.errors .thresh-stat-num{color:var(--red)}
+.thresh-stat-lbl{font-size:.7rem;text-transform:uppercase;letter-spacing:.07em;color:var(--text-muted);font-weight:600;margin-top:.35rem}
+.thresh-stat-sub{font-size:.7rem;color:var(--text-secondary);margin-top:.3rem}
+
+.routing-grid{display:grid;grid-template-columns:repeat(20,1fr);gap:3px;margin-top:1.5rem;padding:1rem;background:var(--bg-light);border-radius:var(--radius-sm);border:1px solid var(--border)}
+.routing-dot{aspect-ratio:1;border-radius:3px;background:var(--border);transition:all .35s}
+.routing-dot.auto{background:var(--green)}
+.routing-dot.human{background:var(--orange)}
+.routing-dot.error{background:var(--red);animation:wiggle .35s}
+
+.routing-legend{display:flex;gap:1.5rem;font-size:.72rem;color:var(--text-secondary);margin-top:.8rem;justify-content:center;flex-wrap:wrap}
+.legend-item{display:flex;align-items:center;gap:.4rem;font-weight:500}
+.legend-swatch{width:11px;height:11px;border-radius:3px}
+.legend-swatch.auto{background:var(--green)}
+.legend-swatch.human{background:var(--orange)}
+.legend-swatch.error{background:var(--red)}
+
+.thresh-insight{margin-top:1.4rem;padding:1.1rem 1.4rem;background:var(--orange-glow);border-left:4px solid var(--orange);border-radius:var(--radius-sm);font-size:.88rem;color:var(--navy);line-height:1.6}
+.thresh-insight b{color:var(--orange-dark);font-weight:700}
+
+/* ─── SECTION 6: FAILURE GALLERY ─── */
+.fail-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1rem}
+.fail-card{background:var(--bg-card);border-radius:var(--radius);padding:1.4rem;border:1px solid var(--border);cursor:pointer;transition:all .25s;position:relative;overflow:hidden}
+.fail-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--red);transform:scaleX(0);transition:transform .3s;transform-origin:left}
+.fail-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-md);border-color:transparent}
+.fail-card:hover::before{transform:scaleX(1)}
+.fail-card.revealed::before{transform:scaleX(1)}
+.fail-tag{display:inline-flex;align-items:center;gap:.35rem;padding:.25rem .6rem;border-radius:50px;background:var(--red-light);color:var(--red);font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.8rem}
+.fail-query{font-family:'DM Serif Display',serif;font-size:1.02rem;color:var(--navy);line-height:1.45;margin-bottom:1rem;font-style:italic}
+.fail-row{display:flex;align-items:center;gap:.5rem;font-size:.78rem;margin-bottom:.45rem;color:var(--text-secondary)}
+.fail-row .lbl{font-weight:700;color:var(--navy);min-width:90px;font-size:.7rem;text-transform:uppercase;letter-spacing:.05em}
+.fail-row .val{color:var(--text-primary)}
+.fail-row.ai .val{color:var(--red);font-weight:600}
+.fail-row.real .val{color:var(--green-dark);font-weight:600}
+.fail-explain{margin-top:1rem;padding:.8rem 1rem;background:var(--bg-light);border-radius:var(--radius-sm);font-size:.78rem;color:var(--text-secondary);line-height:1.55;border-left:3px solid var(--text-muted);display:none}
+.fail-card.revealed .fail-explain{display:block;animation:fadeUp .35s ease}
+.fail-toggle{font-size:.75rem;color:var(--orange);font-weight:600;display:inline-flex;align-items:center;gap:.3rem;margin-top:.5rem}
+.fail-card.revealed .fail-toggle{display:none}
+
+/* ─── DEFINITION BOX ─── */
+.defs-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;margin-top:2.5rem}
+.def-card{background:linear-gradient(135deg,var(--navy-dark),var(--navy));color:#fff;padding:1.6rem;border-radius:var(--radius);position:relative;overflow:hidden}
+.def-card::after{content:'';position:absolute;top:-30px;right:-30px;width:120px;height:120px;border-radius:50%;background:rgba(232,122,46,.13)}
+.def-label{display:inline-flex;align-items:center;gap:.4rem;font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--orange-light);margin-bottom:.6rem;position:relative;z-index:1}
+.def-label::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--orange-light)}
+.def-card h4{font-family:'DM Serif Display',serif;font-size:1.2rem;margin-bottom:.5rem;position:relative;z-index:1}
+.def-card p{font-size:.85rem;color:rgba(255,255,255,.78);line-height:1.65;position:relative;z-index:1}
+
+/* ─── TAKEAWAYS ─── */
+.takeaways{background:var(--bg-light)}
+.takeaway-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.2rem;margin-top:2.5rem}
+.takeaway{padding:1.6rem;background:var(--bg-card);border-radius:var(--radius);border:1px solid var(--border);transition:all .25s}
+.takeaway:hover{transform:translateY(-3px);box-shadow:var(--shadow-md)}
+.takeaway-num{font-family:'DM Serif Display',serif;font-size:2rem;color:var(--orange);line-height:1;margin-bottom:.5rem}
+.takeaway h4{font-family:'DM Serif Display',serif;font-size:1.1rem;color:var(--navy);margin-bottom:.4rem;line-height:1.25}
+.takeaway p{font-size:.86rem;color:var(--text-secondary);line-height:1.6}
+
+/* ─── FOOTER ─── */
+footer{background:var(--navy-dark);color:rgba(255,255,255,.55);padding:2rem;text-align:center;font-size:.78rem}
+
+/* ─── ANIMATIONS ─── */
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+@keyframes livePulse{0%,100%{box-shadow:0 0 0 0 rgba(76,175,80,.5)}50%{box-shadow:0 0 0 6px rgba(76,175,80,0)}}
+@keyframes slideIn{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:translateX(0)}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes flashCorrect{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+@keyframes flashWrong{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+@keyframes wiggle{0%,100%{transform:scale(1)}50%{transform:scale(1.4)}}
+@keyframes bounce{0%,100%{transform:translateY(0);opacity:.5}50%{transform:translateY(-5px);opacity:1}}
+
+/* ─── RESPONSIVE ─── */
+@media(max-width:900px){
+  .volume-body{grid-template-columns:1fr}
+  .volume-stream{border-right:none;border-bottom:1px solid var(--border);max-height:280px}
+  .fewshot-grid{grid-template-columns:1fr}
+  .bucket-stage{grid-template-columns:repeat(2,1fr)}
+  .fail-grid{grid-template-columns:1fr}
+  .defs-grid{grid-template-columns:1fr}
+  .takeaway-grid{grid-template-columns:1fr}
+  .game-options{grid-template-columns:repeat(2,1fr)}
+  .thresh-stats{grid-template-columns:1fr}
+  .routing-grid{grid-template-columns:repeat(10,1fr)}
+}
+@media(max-width:600px){
+  section,.hero{padding:3rem 1.2rem}
+  .nav{padding:.6rem 1.2rem}
+  .nav-title{font-size:.92rem}
+  .game-wrap,.buckets-wrap,.threshold-wrap,.fewshot-panel{padding:1.4rem}
+  .hero-actor-row{padding:1rem}
+}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-title">From Answering to <span>Organising</span></div>
+  <div class="nav-logo">
+    <img src="hero.svg" alt="logo">
+  </div>
+</nav>
+
+<!-- ═══ HERO ═══ -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-eyebrow"><span class="dot"></span>Week 1 · Banking Customer Queries</div>
+    <h1>Most professional reading isn't for insight. It's <em>reading for triage</em>.</h1>
+    <p class="hero-lede">A help-desk lead skims 100 customer queries to find the urgent ones. A claims handler sorts insurance submissions. A bank routes complaints to the right department. None of this is profound — but it's exhausting at volume. And it's exactly where AI begins to earn its keep.</p>
+    <div class="hero-actor-row">
+      <div class="actor-pill"><span class="actor-dot"></span>Help-desk skim</div>
+      <span class="actor-arrow">→</span>
+      <div class="actor-pill"><span class="actor-dot"></span>Claims sort</div>
+      <span class="actor-arrow">→</span>
+      <div class="actor-pill"><span class="actor-dot"></span>Complaint routing</div>
+      <span class="actor-arrow">→</span>
+      <div class="actor-pill"><span class="actor-dot"></span>CV triage</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SECTION 1: VOLUME REALITY ═══ -->
+<section style="background:var(--bg-light)">
+  <div class="container">
+    <div class="sec-label"><span class="num">1</span>The Reality</div>
+    <h2 class="sec-title">A mid-sized bank receives a customer query every 30 seconds.</h2>
+    <p class="sec-sub">Press play. Watch what an inbox looks like during peak hours at a real retail bank. The counter you'll see is calibrated to a typical Tier-2 Indian bank's actual daily inflow.</p>
+
+    <div class="volume-wrap">
+      <div class="volume-header">
+        <h3>Live Customer Query Stream — Retail Banking</h3>
+        <div class="volume-controls">
+          <button class="btn-play" id="playBtn" onclick="toggleStream()">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            <span id="playLabel">Play 60 seconds</span>
+          </button>
+          <button class="btn-reset" onclick="resetStream()">Reset</button>
+        </div>
+      </div>
+      <div class="volume-body">
+        <div class="volume-stream" id="streamBox">
+          <div class="stream-empty" id="streamEmpty">Press <b>Play</b> to start the day's incoming queries.</div>
+        </div>
+        <div class="volume-stats">
+          <div class="big-stat">
+            <div class="big-stat-num" id="streamCount">0</div>
+            <div class="big-stat-label">Queries in queue</div>
+          </div>
+          <div class="stat-row-mini">
+            <div class="mini-stat">
+              <div class="mini-stat-num" id="streamRate">0</div>
+              <div class="mini-stat-label">Per minute</div>
+            </div>
+            <div class="mini-stat">
+              <div class="mini-stat-num" id="streamProjection">0</div>
+              <div class="mini-stat-label">Projected / day</div>
+            </div>
+          </div>
+          <div class="volume-message" id="streamMsg">
+            <b>At this pace</b>, one human agent reading at 30 seconds per query would need <b id="hoursNeeded">0 hours</b> just to read everything — before deciding what to do next.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SECTION 2: MANUAL TRIAGE GAME ═══ -->
+<section>
+  <div class="container">
+    <div class="sec-label"><span class="num">2</span>Try It Yourself</div>
+    <h2 class="sec-title">Now sort 8 queries in 40 seconds. Welcome to triage.</h2>
+    <p class="sec-sub">You have 5 seconds per query to assign it to one of four banking categories. This is what every front-line agent does, all day. Notice how fast accuracy slips when speed matters.</p>
+
+    <div class="game-wrap">
+      <div class="game-intro" id="gameIntro">
+        <p style="font-size:.95rem;color:var(--text-secondary);margin-bottom:1.4rem;max-width:520px;margin-left:auto;margin-right:auto">Sort each query into <b>Card Issues</b>, <b>Loans & Mortgages</b>, <b>Account & KYC</b>, or <b>Fraud & Disputes</b>. Clock's ticking.</p>
+        <button class="btn-start-game" onclick="startGame()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          Start triage challenge
+        </button>
+      </div>
+
+      <div class="game-arena" id="gameArena">
+        <div class="game-progress">
+          <div class="progress-bar-wrap"><div class="progress-bar" id="gameProgress" style="width:0%"></div></div>
+          <div class="progress-info">
+            <span>Query <b id="gameQNum">1</b>/8</span>
+            <span>Score <b id="gameScore">0</b></span>
+            <div class="timer-ring">
+              <svg class="timer-svg" width="36" height="36">
+                <circle cx="18" cy="18" r="15" stroke="#E5DDD4" stroke-width="3" fill="none"/>
+                <circle cx="18" cy="18" r="15" stroke="#E87A2E" stroke-width="3" fill="none" stroke-dasharray="94.25" stroke-dashoffset="0" id="timerCircle"/>
+              </svg>
+              <div class="timer-text" id="timerText">5</div>
+            </div>
+          </div>
+        </div>
+        <div class="game-query-card">
+          <div class="game-query-text" id="gameQueryText">Loading…</div>
+        </div>
+        <div class="game-options" id="gameOptions">
+          <button class="game-option-btn" onclick="answer('card', this)">💳<br>Card Issues</button>
+          <button class="game-option-btn" onclick="answer('loan', this)">🏠<br>Loans & Mortgages</button>
+          <button class="game-option-btn" onclick="answer('account', this)">🏦<br>Account & KYC</button>
+          <button class="game-option-btn" onclick="answer('fraud', this)">🚨<br>Fraud & Disputes</button>
+        </div>
+      </div>
+
+      <div class="game-result" id="gameResult">
+        <div class="game-result-num"><span id="resultScore">0</span>/8</div>
+        <div class="game-result-detail" id="resultDetail">Correctly triaged in <b id="resultTime">0</b> seconds.</div>
+        <div class="game-result-callout" id="resultCallout">
+          At this pace, you could handle ~720 queries per shift — but a real bank receives <b>~2,400 per day</b>. And your accuracy here was on a calm webpage, not after 4 hours of back-to-back calls.
+        </div>
+        <button class="btn-replay" onclick="startGame()">Try again</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SECTION 3: WHAT CLASSIFICATION REALLY MEANS ═══ -->
+<section style="background:var(--bg-light)">
+  <div class="container">
+    <div class="sec-label"><span class="num">3</span>The Core Idea</div>
+    <h2 class="sec-title">Classification is just sorting text into pre-defined buckets.</h2>
+    <p class="sec-sub">"Is this email a complaint, question, or feedback?" That's classification. "Which of four product lines does this query relate to?" Also classification. Drag the queries below into the right bucket. Then we'll talk about how AI does this at 10,000× your speed.</p>
+
+    <div class="buckets-wrap">
+      <div class="bucket-stage">
+        <div class="bucket" data-cat="card" ondragover="event.preventDefault();this.classList.add('hover')" ondragleave="this.classList.remove('hover')" ondrop="dropQuery(event,'card',this)">
+          <div class="bucket-head"><span class="bdot"></span>💳 Card Issues</div>
+          <div class="bucket-items" id="bucket-card"></div>
+        </div>
+        <div class="bucket" data-cat="loan" ondragover="event.preventDefault();this.classList.add('hover')" ondragleave="this.classList.remove('hover')" ondrop="dropQuery(event,'loan',this)">
+          <div class="bucket-head"><span class="bdot"></span>🏠 Loans & Mortgages</div>
+          <div class="bucket-items" id="bucket-loan"></div>
+        </div>
+        <div class="bucket" data-cat="account" ondragover="event.preventDefault();this.classList.add('hover')" ondragleave="this.classList.remove('hover')" ondrop="dropQuery(event,'account',this)">
+          <div class="bucket-head"><span class="bdot"></span>🏦 Account & KYC</div>
+          <div class="bucket-items" id="bucket-account"></div>
+        </div>
+        <div class="bucket" data-cat="fraud" ondragover="event.preventDefault();this.classList.add('hover')" ondragleave="this.classList.remove('hover')" ondrop="dropQuery(event,'fraud',this)">
+          <div class="bucket-head"><span class="bdot"></span>🚨 Fraud & Disputes</div>
+          <div class="bucket-items" id="bucket-fraud"></div>
+        </div>
+      </div>
+      <div class="queries-tray">
+        <div class="tray-label">📥 Drag these queries to their correct bucket</div>
+        <div class="tray-items" id="trayItems"></div>
+      </div>
+      <div class="bucket-feedback" id="bucketFeedback"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SECTION 4: FEW-SHOT ═══ -->
+<section>
+  <div class="container">
+    <div class="sec-label"><span class="num">4</span>Few-Shot Magic</div>
+    <h2 class="sec-title">Give the AI 5 examples. It classifies the next 50,000.</h2>
+    <p class="sec-sub">Traditional approaches needed thousands of labelled examples. Generative AI compresses that to <b>five carefully chosen ones</b>. Below is a working few-shot classifier — 5 labelled examples on the left, a live input box on the right. Try your own query, in your own words.</p>
+
+    <div class="fewshot-grid">
+      <div class="fewshot-panel">
+        <div class="panel-title">The 5 training examples</div>
+        <div class="example-pair">
+          <div class="example-q">"My debit card got swallowed by the ATM and I need an emergency replacement."</div>
+          <div class="example-tag">label <span class="arrow">→</span> Card Issues</div>
+        </div>
+        <div class="example-pair">
+          <div class="example-q">"What is the current interest rate on a home loan of 50 lakh for 20 years?"</div>
+          <div class="example-tag">label <span class="arrow">→</span> Loans & Mortgages</div>
+        </div>
+        <div class="example-pair">
+          <div class="example-q">"I need to update my address — I've moved to Bangalore last month."</div>
+          <div class="example-tag">label <span class="arrow">→</span> Account & KYC</div>
+        </div>
+        <div class="example-pair">
+          <div class="example-q">"There's a transaction of ₹47,000 to some Mumbai shop on Saturday. I was in Delhi. Please block immediately."</div>
+          <div class="example-tag">label <span class="arrow">→</span> Fraud & Disputes</div>
+        </div>
+        <div class="example-pair">
+          <div class="example-q">"How do I check my account balance without going to a branch?"</div>
+          <div class="example-tag">label <span class="arrow">→</span> Account & KYC</div>
+        </div>
+      </div>
+
+      <div class="fewshot-panel">
+        <div class="panel-title">Try your own query</div>
+        <div class="input-block">
+          <label for="userQuery">Paste or type a banking customer query:</label>
+          <textarea id="userQuery" placeholder="e.g., I tried to withdraw cash but the ATM didn't dispense money and my account got debited..."></textarea>
+          <div class="example-buttons">
+            <button class="ex-btn" onclick="loadExample('I forgot my UPI PIN and got locked out')">Forgot UPI PIN</button>
+            <button class="ex-btn" onclick="loadExample('I want to prepay my personal loan and close it')">Prepay loan</button>
+            <button class="ex-btn" onclick="loadExample('Someone called pretending to be from the bank and asked for my OTP. I shared it. Now ₹15,000 is missing.')">Phishing victim</button>
+            <button class="ex-btn" onclick="loadExample('Need PAN card updated in my account records')">Update PAN</button>
+          </div>
+          <button class="btn-classify" onclick="classifyQuery()">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+            Classify
+          </button>
+        </div>
+        <div class="result-block" id="resultBlock">
+          <div class="result-empty">Your prediction and confidence will appear here.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="defs-grid">
+      <div class="def-card">
+        <div class="def-label">Definition</div>
+        <h4>Few-shot classification</h4>
+        <p>Give the AI a handful of input/output examples — five to ten is usually enough — and ask it to apply the same labels to new inputs. Works astonishingly well for tasks that needed days of model training a decade ago.</p>
+      </div>
+      <div class="def-card">
+        <div class="def-label">Definition</div>
+        <h4>Confidence threshold</h4>
+        <p>A rule saying "if the system is less than X% sure, route it to a human." It's the single most important guardrail in any automated decision system — almost never in the demo, always in the production version.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SECTION 5: CONFIDENCE THRESHOLD ═══ -->
+<section style="background:var(--bg-light)">
+  <div class="container">
+    <div class="sec-label"><span class="num">5</span>The Safety Net</div>
+    <h2 class="sec-title">Drag the slider. Watch the trade-off.</h2>
+    <p class="sec-sub">Below are 100 queries the AI has classified. Each dot is one query. As you raise the confidence threshold, the AI hands more uncertain cases to a human — fewer errors, but also less automation. There's no free lunch here.</p>
+
+    <div class="threshold-wrap">
+      <div class="thresh-header">
+        <div>
+          <div class="thresh-value"><span id="thValue">75</span><sup>%</sup></div>
+          <div class="thresh-value-label">Confidence threshold</div>
+        </div>
+        <div style="font-size:.85rem;color:var(--text-secondary);max-width:340px;text-align:right">If the AI's confidence falls below this number, the query is automatically routed to a human reviewer.</div>
+      </div>
+
+      <div class="thresh-slider-wrap">
+        <input type="range" min="50" max="99" value="75" class="thresh-slider" id="thSlider" oninput="updateThreshold(this.value)">
+        <div class="thresh-marks">
+          <span>50% (risky)</span>
+          <span>75%</span>
+          <span>99% (safe)</span>
+        </div>
+      </div>
+
+      <div class="thresh-stats">
+        <div class="thresh-stat auto">
+          <div class="thresh-stat-num" id="autoCount">0</div>
+          <div class="thresh-stat-lbl">Auto-handled</div>
+          <div class="thresh-stat-sub">No human needed</div>
+        </div>
+        <div class="thresh-stat human">
+          <div class="thresh-stat-num" id="humanCount">0</div>
+          <div class="thresh-stat-lbl">Routed to human</div>
+          <div class="thresh-stat-sub">Below threshold</div>
+        </div>
+        <div class="thresh-stat errors">
+          <div class="thresh-stat-num" id="errorCount">0</div>
+          <div class="thresh-stat-lbl">Wrong auto-classifications</div>
+          <div class="thresh-stat-sub">Slipped past</div>
+        </div>
+      </div>
+
+      <div class="routing-grid" id="routingGrid"></div>
+      <div class="routing-legend">
+        <div class="legend-item"><span class="legend-swatch auto"></span>Correctly auto-handled</div>
+        <div class="legend-item"><span class="legend-swatch human"></span>Routed to human</div>
+        <div class="legend-item"><span class="legend-swatch error"></span>Wrong, but auto-handled (slipped through)</div>
+      </div>
+
+      <div class="thresh-insight" id="threshInsight">
+        At <b>75%</b>, you'll catch most uncertain cases — but a handful of confidently-wrong answers will still slip through. That's why high-stakes triage (fraud, complaints, medical) typically uses 90%+ thresholds, even though it means more human work.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ SECTION 6: WHERE AI FAILS ═══ -->
+<section>
+  <div class="container">
+    <div class="sec-label"><span class="num">6</span>Honest Failure Modes</div>
+    <h2 class="sec-title">Where this approach quietly breaks.</h2>
+    <p class="sec-sub">Every triage system has failure modes. The shameful ones are the queries the AI gets wrong <i>confidently</i>. Click each card to see what really happened.</p>
+
+    <div class="fail-grid">
+      <div class="fail-card" onclick="this.classList.add('revealed')">
+        <span class="fail-tag">⚠ Ambiguous mention</span>
+        <div class="fail-query">"My loan EMI got auto-debited from my card. Should have been from the savings account."</div>
+        <div class="fail-row ai"><span class="lbl">AI guessed</span><span class="val">Loans & Mortgages (88%)</span></div>
+        <div class="fail-row real"><span class="lbl">Actually</span><span class="val">Account & KYC (auto-pay setup)</span></div>
+        <div class="fail-explain">The word "loan" carries strong signal. But the actual complaint is about which account is being debited — that's an account-settings issue. Keyword-heavy classifiers consistently miss this kind of intent vs. mention distinction.</div>
+        <div class="fail-toggle">Click to see why →</div>
+      </div>
+
+      <div class="fail-card" onclick="this.classList.add('revealed')">
+        <span class="fail-tag">⚠ Multiple categories</span>
+        <div class="fail-query">"Lost my card and now there are 4 transactions I don't recognise. Please help!"</div>
+        <div class="fail-row ai"><span class="lbl">AI guessed</span><span class="val">Card Issues (76%)</span></div>
+        <div class="fail-row real"><span class="lbl">Actually</span><span class="val">Both — Fraud is the priority</span></div>
+        <div class="fail-explain">Two real categories collide here. AI picks the dominant one by text proportion. But operationally, "unrecognised transactions" must go to fraud first — a card replacement can wait, a fraud freeze cannot. This is a routing-priority problem the model doesn't see.</div>
+        <div class="fail-toggle">Click to see why →</div>
+      </div>
+
+      <div class="fail-card" onclick="this.classList.add('revealed')">
+        <span class="fail-tag">⚠ Hinglish / code-switch</span>
+        <div class="fail-query">"Mera card block ho gaya hai by mistake, please activate kar do urgently — flight tomorrow."</div>
+        <div class="fail-row ai"><span class="lbl">AI guessed</span><span class="val">Fraud & Disputes (62%)</span></div>
+        <div class="fail-row real"><span class="lbl">Actually</span><span class="val">Card Issues (re-activation)</span></div>
+        <div class="fail-explain">"Block" is a high-signal word in fraud examples. Without local examples in Hinglish, the model misreads the customer's situation — they're not reporting fraud, they're requesting unblock. Few-shot examples must reflect the actual linguistic mix of your customers.</div>
+        <div class="fail-toggle">Click to see why →</div>
+      </div>
+
+      <div class="fail-card" onclick="this.classList.add('revealed')">
+        <span class="fail-tag">⚠ Sarcasm / tone</span>
+        <div class="fail-query">"Great service guys, only took 3 weeks to credit a refund of ₹200. Really feeling valued as a customer."</div>
+        <div class="fail-row ai"><span class="lbl">AI guessed</span><span class="val">Account & KYC (54%) — neutral tone</span></div>
+        <div class="fail-row real"><span class="lbl">Actually</span><span class="val">Complaint requiring escalation</span></div>
+        <div class="fail-explain">The customer is furious but using polite words. Models pick up surface sentiment, not irony. Triage systems that miss escalations cost the bank more than mis-routed routine queries — a frustrated long-tenure customer might churn.</div>
+        <div class="fail-toggle">Click to see why →</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ TAKEAWAYS ═══ -->
+<section class="takeaways">
+  <div class="container">
+    <div class="sec-label"><span class="num">7</span>Bring It Home</div>
+    <h2 class="sec-title">The three things to carry forward.</h2>
+
+    <div class="takeaway-grid">
+      <div class="takeaway">
+        <div class="takeaway-num">01</div>
+        <h4>Triage beats brilliance</h4>
+        <p>For high-volume work, consistent and fast is more valuable than occasionally brilliant. AI classification earns its keep here — not in writing novels.</p>
+      </div>
+      <div class="takeaway">
+        <div class="takeaway-num">02</div>
+        <h4>Five examples is the new ten thousand</h4>
+        <p>Few-shot classification reduces what used to take days of model training to a single prompt. The quality of those five examples now matters more than the quantity.</p>
+      </div>
+      <div class="takeaway">
+        <div class="takeaway-num">03</div>
+        <h4>The threshold is the system</h4>
+        <p>Demo systems show classification accuracy. Production systems show the confidence threshold. Always know where uncertain cases go — and to whom.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  © Banking Triage Lab · Week 1 · An interactive learning module
+</footer>
+
+<script>
+/* ═══════════════════════════════════════════════════════════
+   DATA — Banking queries with categories
+   ═══════════════════════════════════════════════════════════ */
+const STREAM_QUERIES = [
+  {t:"Hi, my debit card is showing as blocked. Can you help unblock it?",c:"card"},
+  {t:"I need to know the EMI for a ₹12 lakh personal loan over 5 years.",c:"loan"},
+  {t:"Two unauthorised transactions on my card from a website I don't know. Please block.",c:"fraud"},
+  {t:"How do I update my mobile number registered with the bank?",c:"account"},
+  {t:"My ATM didn't dispense cash but account is debited ₹5000.",c:"card"},
+  {t:"Want to foreclose my home loan — what charges apply?",c:"loan"},
+  {t:"Got a call asking for OTP. I think I was scammed. ₹22,000 gone.",c:"fraud"},
+  {t:"Please update my Aadhaar in the KYC records.",c:"account"},
+  {t:"Lost my credit card at the airport. Need urgent block.",c:"card"},
+  {t:"Need a loan statement for tax purposes for FY 2024-25.",c:"loan"},
+  {t:"Mini statement is not showing the last 3 transactions.",c:"account"},
+  {t:"Why was my card declined at a petrol pump yesterday?",c:"card"},
+  {t:"Address change request — moving from Mumbai to Pune.",c:"account"},
+  {t:"Charge of ₹599 appeared on my card. I never made it.",c:"fraud"},
+  {t:"Personal loan top-up — can I get an additional ₹2 lakh?",c:"loan"},
+  {t:"PIN reset for my debit card, please.",c:"card"},
+  {t:"Cheque book request — running out of pages.",c:"account"},
+  {t:"Suspicious SMS asking me to click a link to verify account.",c:"fraud"},
+  {t:"Home loan interest rate reset — when does the next reset happen?",c:"loan"},
+  {t:"International usage block on my card during my UK trip.",c:"card"},
+  {t:"Account balance inquiry through SMS not working.",c:"account"},
+  {t:"₹3500 debited at midnight — no transaction notification received.",c:"fraud"},
+  {t:"Need NOC for my car loan that I closed last month.",c:"loan"},
+  {t:"Joint account holder name change after marriage.",c:"account"},
+  {t:"Credit card limit increase request.",c:"card"},
+  {t:"Mortgage pre-approval letter needed for property purchase.",c:"loan"},
+  {t:"Old account dormant — how to reactivate it?",c:"account"},
+  {t:"Saw a fake bank app on Play Store — got money transferred from my account.",c:"fraud"},
+  {t:"Card expiry next month — when will the new one arrive?",c:"card"},
+  {t:"Education loan disbursal status check.",c:"loan"}
+];
+
+const GAME_QUERIES = [
+  {t:"My credit card was stolen at the metro. Please block it immediately.",c:"card"},
+  {t:"I need to check my home loan principal outstanding for tax filing.",c:"loan"},
+  {t:"Someone made a transfer of ₹35,000 from my account without my consent.",c:"fraud"},
+  {t:"I want to add my wife as a joint holder on my savings account.",c:"account"},
+  {t:"Tried to use my card abroad — got declined despite international usage enabled.",c:"card"},
+  {t:"Personal loan EMI bounced last month due to insufficient balance — what to do?",c:"loan"},
+  {t:"Got an OTP I didn't request — should I be worried about my account being compromised?",c:"fraud"},
+  {t:"Need to download last 6 months of account statements as PDF.",c:"account"}
+];
+
+const TRAY_QUERIES = [
+  {id:"q1",t:"My ATM card is jammed in the machine at MG Road branch.",c:"card"},
+  {id:"q2",t:"Need to download loan repayment schedule.",c:"loan"},
+  {id:"q3",t:"Two strange ₹999 charges from a website I've never visited.",c:"fraud"},
+  {id:"q4",t:"How do I open a fixed deposit through net banking?",c:"account"},
+  {id:"q5",t:"Credit card PIN not working after I changed it yesterday.",c:"card"},
+  {id:"q6",t:"Want to enable international transactions on my debit card for my UAE trip.",c:"card"}
+];
+
+const FEWSHOT_PRECOMP = [
+  // 100 queries with category + AI confidence + whether AI was correct
+  ...Array.from({length:30},(_,i)=>({c:"card",conf:0.65+Math.random()*0.33,correct:Math.random()>0.07})),
+  ...Array.from({length:25},(_,i)=>({c:"loan",conf:0.60+Math.random()*0.38,correct:Math.random()>0.10})),
+  ...Array.from({length:25},(_,i)=>({c:"account",conf:0.55+Math.random()*0.42,correct:Math.random()>0.12})),
+  ...Array.from({length:20},(_,i)=>({c:"fraud",conf:0.50+Math.random()*0.45,correct:Math.random()>0.18}))
+].sort(()=>Math.random()-0.5);
+
+// Keyword scoring weights for "AI" classification simulation
+const KEYWORDS = {
+  card:{
+    high:['debit card','credit card','atm','pin','card block','card replace','card swallow','card jam','card decline','card expir','card pin','tap to pay','contactless','swipe','card lost','card stolen','new card'],
+    med:['card','atm','pin','swipe','plastic','tap','contactless'],
+    low:['payment','transaction']
+  },
+  loan:{
+    high:['home loan','personal loan','car loan','education loan','emi','interest rate','mortgage','foreclose','prepay','prepayment','top up','loan statement','loan disbur','loan close','noc','principal outstanding','loan repay','repayment schedule'],
+    med:['loan','emi','interest','mortgage','tenure','prepay'],
+    low:['rate','months','years']
+  },
+  account:{
+    high:['kyc','aadhaar','pan card','address change','mobile number','update mobile','update address','account balance','mini statement','statement','cheque book','passbook','account open','close account','joint account','nominee','reactivate','dormant','fixed deposit','fd','recurring deposit','rd','update pan','update aadhaar'],
+    med:['account','balance','statement','update','change','kyc'],
+    low:['details','profile']
+  },
+  fraud:{
+    high:['unauthorised','unauthorized','fraud','scam','suspicious','phishing','otp shared','i shared','someone called','pretend','impersonat','stolen money','money gone','not done','i didn\'t','i did not','never made','don\'t recogni','dont recogni','don\'t know','dont know this','hack','spoof','blocked immediately','block immediate'],
+    med:['unauthorised','unauthorized','fraud','suspicious','stolen','hack','strange'],
+    low:['help','urgent']
+  }
+};
+
+const CAT_LABELS = {
+  card:{name:'Card Issues',icon:'💳',cls:'card'},
+  loan:{name:'Loans & Mortgages',icon:'🏠',cls:'loan'},
+  account:{name:'Account & KYC',icon:'🏦',cls:'account'},
+  fraud:{name:'Fraud & Disputes',icon:'🚨',cls:'fraud'}
+};
+
+
+/* ═══════════════════════════════════════════════════════════
+   VOLUME STREAM SIMULATOR
+   ═══════════════════════════════════════════════════════════ */
+let streamInterval = null;
+let streamCounter = 0;
+let streamSeconds = 0;
+const streamDuration = 60; // seconds
+const queryInterval = 1500; // every 1.5s = ~40 queries per minute = 2400/day at 1 per minute steady
+
+function toggleStream(){
+  const btn = document.getElementById('playBtn');
+  const lbl = document.getElementById('playLabel');
+  if(streamInterval){
+    clearInterval(streamInterval);
+    streamInterval = null;
+    lbl.textContent = 'Resume';
+  } else {
+    if(streamSeconds >= streamDuration){ resetStream(); }
+    document.getElementById('streamEmpty').style.display = 'none';
+    lbl.textContent = 'Pause';
+    streamInterval = setInterval(tickStream, queryInterval);
+    tickStream(); // immediate first
+  }
+}
+
+function tickStream(){
+  if(streamSeconds >= streamDuration){
+    clearInterval(streamInterval);
+    streamInterval = null;
+    document.getElementById('playLabel').textContent = 'Done';
+    document.getElementById('playBtn').disabled = true;
+    document.getElementById('streamMsg').classList.add('show');
+    return;
+  }
+  const q = STREAM_QUERIES[Math.floor(Math.random()*STREAM_QUERIES.length)];
+  streamCounter++;
+  streamSeconds += queryInterval/1000;
+  const time = formatTime(streamSeconds);
+  const row = document.createElement('div');
+  row.className = 'query-row';
+  row.innerHTML = `<div class="qicon">📨</div><div class="qtext">${q.t}</div><div class="qtime">${time}</div>`;
+  const stream = document.getElementById('streamBox');
+  stream.insertBefore(row, stream.firstChild);
+  // Keep only last 12 visible
+  while(stream.children.length > 12){ stream.removeChild(stream.lastChild); }
+  // Update stats
+  document.getElementById('streamCount').textContent = streamCounter;
+  const perMin = Math.round((streamCounter / streamSeconds) * 60);
+  document.getElementById('streamRate').textContent = perMin;
+  const perDay = Math.round(perMin * 60 * 8); // 8 working hours
+  document.getElementById('streamProjection').textContent = perDay.toLocaleString();
+  const hours = (perDay * 0.5 / 60).toFixed(1);
+  document.getElementById('hoursNeeded').textContent = `${hours} hours`;
+  if(streamSeconds >= 5 && !document.getElementById('streamMsg').classList.contains('show')){
+    document.getElementById('streamMsg').classList.add('show');
+  }
+}
+
+function resetStream(){
+  if(streamInterval){ clearInterval(streamInterval); streamInterval = null; }
+  streamCounter = 0;
+  streamSeconds = 0;
+  document.getElementById('streamCount').textContent = '0';
+  document.getElementById('streamRate').textContent = '0';
+  document.getElementById('streamProjection').textContent = '0';
+  document.getElementById('streamBox').innerHTML = '<div class="stream-empty" id="streamEmpty">Press <b>Play</b> to start the day\'s incoming queries.</div>';
+  document.getElementById('playLabel').textContent = 'Play 60 seconds';
+  document.getElementById('playBtn').disabled = false;
+  document.getElementById('streamMsg').classList.remove('show');
+}
+
+function formatTime(s){
+  const m = Math.floor(s/60); const sec = Math.floor(s%60);
+  return `${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   MANUAL TRIAGE GAME
+   ═══════════════════════════════════════════════════════════ */
+let gameQueries = [];
+let gameIndex = 0;
+let gameScore = 0;
+let gameTimer = null;
+let gameTimeLeft = 5;
+let gameStartTime = 0;
+let gameLocked = false;
+
+function startGame(){
+  document.getElementById('gameIntro').style.display = 'none';
+  document.getElementById('gameResult').classList.remove('active');
+  document.getElementById('gameArena').classList.add('active');
+  gameQueries = [...GAME_QUERIES].sort(()=>Math.random()-0.5);
+  gameIndex = 0;
+  gameScore = 0;
+  gameStartTime = Date.now();
+  showQuery();
+}
+
+function showQuery(){
+  if(gameIndex >= gameQueries.length){ endGame(); return; }
+  gameLocked = false;
+  const q = gameQueries[gameIndex];
+  document.getElementById('gameQueryText').textContent = q.t;
+  document.getElementById('gameQNum').textContent = gameIndex + 1;
+  document.getElementById('gameScore').textContent = gameScore;
+  document.getElementById('gameProgress').style.width = (gameIndex / gameQueries.length * 100) + '%';
+  // Reset buttons
+  document.querySelectorAll('.game-option-btn').forEach(b => {
+    b.classList.remove('correct','wrong');
+    b.disabled = false;
+  });
+  // Start timer
+  gameTimeLeft = 5;
+  updateTimer();
+  if(gameTimer) clearInterval(gameTimer);
+  gameTimer = setInterval(()=>{
+    gameTimeLeft -= 0.1;
+    if(gameTimeLeft <= 0){
+      gameTimeLeft = 0;
+      updateTimer();
+      timeOut();
+    } else { updateTimer(); }
+  }, 100);
+}
+
+function updateTimer(){
+  document.getElementById('timerText').textContent = Math.ceil(gameTimeLeft);
+  const circ = 94.25;
+  const off = circ * (1 - gameTimeLeft/5);
+  document.getElementById('timerCircle').setAttribute('stroke-dashoffset', off);
+  if(gameTimeLeft < 2){
+    document.getElementById('timerCircle').setAttribute('stroke', '#E04848');
+  } else {
+    document.getElementById('timerCircle').setAttribute('stroke', '#E87A2E');
+  }
+}
+
+function answer(cat, btn){
+  if(gameLocked) return;
+  gameLocked = true;
+  clearInterval(gameTimer);
+  const correct = gameQueries[gameIndex].c;
+  if(cat === correct){
+    btn.classList.add('correct');
+    gameScore++;
+  } else {
+    btn.classList.add('wrong');
+    // Highlight correct one
+    document.querySelectorAll('.game-option-btn').forEach(b => {
+      if(b.textContent.toLowerCase().includes(getCatKeyword(correct))) b.classList.add('correct');
+    });
+  }
+  document.querySelectorAll('.game-option-btn').forEach(b => b.disabled = true);
+  setTimeout(()=>{ gameIndex++; showQuery(); }, 900);
+}
+
+function getCatKeyword(c){
+  return {card:'card',loan:'loan',account:'account',fraud:'fraud'}[c];
+}
+
+function timeOut(){
+  if(gameLocked) return;
+  gameLocked = true;
+  const correct = gameQueries[gameIndex].c;
+  document.querySelectorAll('.game-option-btn').forEach(b => {
+    if(b.textContent.toLowerCase().includes(getCatKeyword(correct))) b.classList.add('correct');
+    b.disabled = true;
+  });
+  setTimeout(()=>{ gameIndex++; showQuery(); }, 900);
+}
+
+function endGame(){
+  if(gameTimer) clearInterval(gameTimer);
+  const totalSec = Math.round((Date.now() - gameStartTime)/1000);
+  document.getElementById('gameArena').classList.remove('active');
+  document.getElementById('gameResult').classList.add('active');
+  document.getElementById('resultScore').textContent = gameScore;
+  document.getElementById('resultTime').textContent = totalSec;
+  let msg;
+  const acc = gameScore/8;
+  if(acc >= 0.875){
+    msg = `Excellent triage — you got ${gameScore}/8. But notice the cognitive load: you focused on each query for 5 seconds. After 4 hours of back-to-back queries, even your accuracy will drop. <b>This is why volume-tolerant systems aren't built around human attention.</b>`;
+  } else if(acc >= 0.625){
+    msg = `${gameScore}/8 — solid, but not perfect. Real agents do this for 8 hours straight while also dealing with angry tones, half-finished sentences, and code-switched languages. <b>At 2,400 queries per day, even 95% accuracy means 120 misroutes daily.</b>`;
+  } else {
+    msg = `${gameScore}/8 — and you were under no operational pressure. Now imagine doing this for an 8-hour shift, with managers tracking your handle time. <b>This is why classification is the first place AI earns its keep.</b>`;
+  }
+  document.getElementById('resultCallout').innerHTML = msg;
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   BUCKETS DRAG & DROP
+   ═══════════════════════════════════════════════════════════ */
+let bucketCorrect = 0;
+let bucketTotal = TRAY_QUERIES.length;
+
+function initBuckets(){
+  const tray = document.getElementById('trayItems');
+  tray.innerHTML = '';
+  TRAY_QUERIES.forEach(q => {
+    const el = document.createElement('div');
+    el.className = 'drag-card';
+    el.draggable = true;
+    el.textContent = q.t;
+    el.dataset.id = q.id;
+    el.dataset.cat = q.c;
+    el.addEventListener('dragstart', e=>{ e.dataTransfer.setData('id', q.id); e.dataTransfer.setData('cat', q.c); el.classList.add('dragging'); });
+    el.addEventListener('dragend', ()=>el.classList.remove('dragging'));
+    tray.appendChild(el);
+  });
+}
+
+function dropQuery(e, targetCat, bucket){
+  e.preventDefault();
+  bucket.classList.remove('hover');
+  const id = e.dataTransfer.getData('id');
+  const cat = e.dataTransfer.getData('cat');
+  const q = TRAY_QUERIES.find(x => x.id === id);
+  if(!q) return;
+  const draggedEl = document.querySelector(`.drag-card[data-id="${id}"]`);
+  if(!draggedEl) return;
+  const correct = (cat === targetCat);
+  const itemsBox = bucket.querySelector('.bucket-items');
+  const card = document.createElement('div');
+  card.className = 'dropped-card ' + (correct ? 'correct' : 'wrong');
+  card.innerHTML = `<span class="${correct?'check':'wrong-x'}">${correct?'✓':'✗'}</span><span>${q.t.length>60?q.t.substring(0,57)+'…':q.t}</span>`;
+  itemsBox.appendChild(card);
+  draggedEl.remove();
+  if(correct) bucketCorrect++;
+  const placed = document.querySelectorAll('.dropped-card').length;
+  if(placed === bucketTotal){
+    showBucketFeedback();
+  }
+}
+
+function showBucketFeedback(){
+  const fb = document.getElementById('bucketFeedback');
+  fb.innerHTML = `<b>You placed ${bucketCorrect}/${bucketTotal} correctly.</b> This is exactly the task you'll soon hand to AI. Each "bucket" is a category in the classifier. The AI doesn't learn the categories — <i>you</i> define them. The AI learns the pattern of which queries belong in each. Coming up next: how it does this from just 5 examples.`;
+  fb.classList.add('show');
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   FEW-SHOT CLASSIFIER (simulated keyword scoring)
+   ═══════════════════════════════════════════════════════════ */
+function loadExample(txt){
+  document.getElementById('userQuery').value = txt;
+}
+
+function scoreQuery(text){
+  const t = text.toLowerCase();
+  const scores = {card:0, loan:0, account:0, fraud:0};
+  Object.keys(KEYWORDS).forEach(cat => {
+    KEYWORDS[cat].high.forEach(k => { if(t.includes(k)) scores[cat] += 3; });
+    KEYWORDS[cat].med.forEach(k => { if(t.includes(k)) scores[cat] += 1.5; });
+    KEYWORDS[cat].low.forEach(k => { if(t.includes(k)) scores[cat] += 0.5; });
+  });
+  // Convert to softmax-style probabilities
+  const totalRaw = Object.values(scores).reduce((a,b)=>a+b,0);
+  if(totalRaw === 0){
+    // No keywords matched — uncertain
+    return {card:0.25, loan:0.25, account:0.25, fraud:0.25, predicted:'account', confidence:0.28};
+  }
+  const probs = {};
+  Object.keys(scores).forEach(c => probs[c] = (scores[c] + 0.5) / (totalRaw + 2));
+  // Normalize
+  const sum = Object.values(probs).reduce((a,b)=>a+b,0);
+  Object.keys(probs).forEach(c => probs[c] = probs[c]/sum);
+  // Find top
+  let topCat = 'account', topProb = 0;
+  Object.entries(probs).forEach(([c,p])=>{ if(p > topProb){ topProb = p; topCat = c; } });
+  // Slightly boost confidence based on signal strength
+  const conf = Math.min(0.97, topProb + Math.min(0.15, totalRaw/30));
+  return {...probs, predicted: topCat, confidence: conf};
+}
+
+function classifyQuery(){
+  const txt = document.getElementById('userQuery').value.trim();
+  const rb = document.getElementById('resultBlock');
+  if(!txt){
+    rb.innerHTML = '<div class="result-empty">Please enter a query above first.</div>';
+    return;
+  }
+  rb.innerHTML = '<div class="result-thinking">Classifying<span class="dots"><span></span><span></span><span></span></span></div>';
+  setTimeout(()=>{
+    const r = scoreQuery(txt);
+    const cat = CAT_LABELS[r.predicted];
+    const conf = (r.confidence * 100).toFixed(1);
+    const confCls = r.confidence < 0.6 ? 'low' : r.confidence > 0.8 ? 'high' : '';
+    // Sort alternates
+    const alts = Object.entries(r).filter(([k,v]) => ['card','loan','account','fraud'].includes(k) && k !== r.predicted)
+      .sort((a,b) => b[1] - a[1]);
+    let altHtml = '';
+    alts.forEach(([k,v])=>{
+      altHtml += `<div class="alt-row"><span>${CAT_LABELS[k].icon} ${CAT_LABELS[k].name}</span><span class="pct">${(v*100).toFixed(1)}%</span></div>`;
+    });
+    let routingNote = '';
+    if(r.confidence < 0.60){
+      routingNote = `<div style="margin-top:.9rem;padding:.7rem .9rem;background:rgba(245,166,35,.12);border-left:3px solid var(--yellow);border-radius:6px;font-size:.78rem;color:var(--navy);line-height:1.5"><b>⚠ Low confidence.</b> A production system with a 70% threshold would route this query to a human reviewer — not auto-respond.</div>`;
+    } else if(r.confidence > 0.88){
+      routingNote = `<div style="margin-top:.9rem;padding:.7rem .9rem;background:rgba(76,175,80,.10);border-left:3px solid var(--green);border-radius:6px;font-size:.78rem;color:var(--navy);line-height:1.5"><b>✓ High confidence.</b> Above most production thresholds — this would be auto-routed to the ${cat.name} team without human review.</div>`;
+    }
+    rb.innerHTML = `
+      <div class="result-category">
+        <div class="result-cat-icon ${cat.cls}">${cat.icon}</div>
+        <div>
+          <div class="result-cat-label">Predicted category</div>
+          <div class="result-cat-name">${cat.name}</div>
+        </div>
+      </div>
+      <div class="confidence-bar-wrap">
+        <div class="confidence-bar-head"><span>Confidence</span><b>${conf}%</b></div>
+        <div class="confidence-bar"><div class="confidence-fill ${confCls}" style="width:${conf}%"></div></div>
+      </div>
+      <div class="alt-categories">
+        <div class="alt-categories-label">Other category probabilities</div>
+        ${altHtml}
+      </div>
+      ${routingNote}
+    `;
+  }, 600);
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   CONFIDENCE THRESHOLD VISUALISATION
+   ═══════════════════════════════════════════════════════════ */
+function initRouting(){
+  const grid = document.getElementById('routingGrid');
+  grid.innerHTML = '';
+  FEWSHOT_PRECOMP.forEach((q,i)=>{
+    const dot = document.createElement('div');
+    dot.className = 'routing-dot';
+    dot.dataset.idx = i;
+    dot.title = `Query #${i+1} · ${(q.conf*100).toFixed(0)}% confident · ${q.correct?'actually correct':'actually wrong'}`;
+    grid.appendChild(dot);
+  });
+  updateThreshold(75);
+}
+
+function updateThreshold(val){
+  val = parseInt(val);
+  document.getElementById('thValue').textContent = val;
+  let autoCorrect = 0, human = 0, error = 0;
+  FEWSHOT_PRECOMP.forEach((q,i)=>{
+    const dot = document.querySelector(`.routing-dot[data-idx="${i}"]`);
+    if(!dot) return;
+    dot.classList.remove('auto','human','error');
+    if(q.conf*100 >= val){
+      // Auto-handled
+      if(q.correct){ dot.classList.add('auto'); autoCorrect++; }
+      else { dot.classList.add('error'); error++; }
+    } else {
+      dot.classList.add('human');
+      human++;
+    }
+  });
+  document.getElementById('autoCount').textContent = autoCorrect;
+  document.getElementById('humanCount').textContent = human;
+  document.getElementById('errorCount').textContent = error;
+
+  // Insight text
+  let msg;
+  if(val < 60){
+    msg = `<b>${val}%</b> is dangerously low. You're auto-handling almost everything — including the cases the AI is unsure about. <b>${error} wrong answers</b> just got sent to customers without a human ever seeing them.`;
+  } else if(val < 75){
+    msg = `<b>${val}%</b> is a typical demo setting. Looks impressive (high automation), but <b>${error} cases</b> slip through wrong. Production teams usually feel queasy below 80%.`;
+  } else if(val < 90){
+    msg = `<b>${val}%</b> is the sweet spot for most low-stakes categories — like routing FAQ queries. You're auto-handling <b>${autoCorrect}</b> and only letting <b>${error}</b> errors slip through.`;
+  } else {
+    msg = `<b>${val}%</b> is conservative. Fewer wrong auto-responses (<b>${error}</b>), but <b>${human}</b> queries now sit in the human queue. Right for fraud, complaints, medical claims — anywhere a wrong answer is expensive.`;
+  }
+  document.getElementById('threshInsight').innerHTML = msg;
+}
+
+
+/* ═══════════════════════════════════════════════════════════
+   INIT
+   ═══════════════════════════════════════════════════════════ */
+window.addEventListener('DOMContentLoaded', ()=>{
+  initBuckets();
+  initRouting();
+});
+</script>
+</body>
+</html>
