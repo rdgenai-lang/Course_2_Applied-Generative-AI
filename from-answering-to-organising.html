@@ -1,0 +1,1230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>From Answering to Organising — MokshPath</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --orange:#E87A2E;--orange-dark:#D06A20;--orange-light:#F5943E;--orange-glow:rgba(232,122,46,0.12);
+  --navy:#2B2D42;--navy-dark:#1A1B2E;
+  --bg:#F3EDE7;--bg-card:#FFFFFF;--bg-light:#F9F5F0;
+  --text-primary:#2B2D42;--text-secondary:#6B6D7B;--text-muted:#9597A6;
+  --border:#E5DDD4;--green:#4CAF50;--green-light:#E8F5E9;
+  --blue:#4285F4;--blue-light:#E8F0FE;
+  --red:#E74C3C;--red-light:#FCEAE8;
+  --yellow:#F5B342;--yellow-light:#FEF4E1;
+  --shadow-sm:0 2px 8px rgba(43,45,66,0.06);
+  --shadow-md:0 8px 24px rgba(43,45,66,0.08);
+  --shadow-lg:0 16px 48px rgba(43,45,66,0.12);
+  --radius:14px;--radius-sm:8px
+}
+html{scroll-behavior:smooth}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text-primary);overflow-x:hidden;-webkit-font-smoothing:antialiased;line-height:1.5}
+
+/* ─── TOP BAR + NAV ─── */
+.top-bar{background:var(--navy-dark);padding:.45rem 2rem;display:flex;justify-content:center;gap:2rem;color:rgba(255,255,255,0.85);font-size:.75rem;font-weight:500;letter-spacing:.02em}
+.nav{position:sticky;top:0;z-index:100;background:var(--bg-card);border-bottom:1px solid var(--border);padding:0 2rem;height:72px;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--shadow-sm)}
+.nav-left{display:flex;align-items:center;gap:.7rem}
+.nav-title{font-family:'DM Serif Display',serif;font-size:1.15rem;color:var(--navy);line-height:1.15}
+.nav-title em{font-style:normal;color:var(--orange)}
+.nav-sub{font-size:.68rem;color:var(--text-muted);font-weight:500;letter-spacing:.04em;text-transform:uppercase;margin-top:.15rem}
+.nav-logo-img{width:48px;height:48px;object-fit:contain}
+
+/* ─── HERO ─── */
+.hero{padding:4.5rem 2rem 3.5rem;position:relative;overflow:hidden;background:linear-gradient(180deg,var(--bg) 0%,var(--bg-light) 100%)}
+.hero-inner{max-width:1160px;margin:0 auto;display:grid;grid-template-columns:1.05fr 1fr;gap:3rem;align-items:center}
+.hero-badge{display:inline-flex;align-items:center;gap:.45rem;padding:.4rem 1rem;border-radius:50px;background:var(--orange-glow);color:var(--orange);font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:1.2rem;animation:fadeUp .7s ease}
+.hero-badge .dot{width:7px;height:7px;border-radius:50%;background:var(--orange);animation:pulse 2s infinite}
+.hero h1{font-family:'DM Serif Display',serif;font-size:clamp(2.1rem,4.5vw,3.2rem);line-height:1.13;color:var(--navy);margin-bottom:1rem;animation:fadeUp .7s ease .1s both}
+.hero h1 em{font-style:normal;color:var(--orange)}
+.hero-sub{font-size:1.05rem;color:var(--text-secondary);line-height:1.7;max-width:500px;animation:fadeUp .7s ease .2s both}
+.hero-tags{display:flex;gap:.6rem;margin-top:1.6rem;flex-wrap:wrap;animation:fadeUp .7s ease .3s both}
+.hero-tag{padding:.4rem .85rem;border-radius:50px;background:var(--bg-card);border:1px solid var(--border);font-size:.72rem;font-weight:600;color:var(--text-secondary)}
+.hero-tag .tdot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--orange);margin-right:.4rem;vertical-align:middle}
+
+.hero-visual{position:relative;display:flex;justify-content:center;align-items:center;animation:fadeUp .8s ease .2s both}
+
+/* ─── HERO ANIMATION: messages flowing into buckets ─── */
+.hero-anim{width:100%;max-width:480px;aspect-ratio:1/1;position:relative}
+.hero-anim svg{width:100%;height:100%}
+@keyframes mailDrop{0%{transform:translate(0,-200px) rotate(-15deg);opacity:0}15%{opacity:1}50%{transform:translate(var(--dx,0),var(--dy,180px)) rotate(var(--dr,0deg));opacity:1}80%,100%{transform:translate(var(--dx,0),var(--dy,180px)) rotate(var(--dr,0deg));opacity:0}}
+.mail-drop{transform-origin:center;animation:mailDrop 4s ease-in-out infinite}
+.mail-1{--dx:-130px;--dy:140px;--dr:-12deg;animation-delay:0s}
+.mail-2{--dx:0px;--dy:140px;--dr:5deg;animation-delay:.8s}
+.mail-3{--dx:130px;--dy:140px;--dr:10deg;animation-delay:1.6s}
+.mail-4{--dx:-130px;--dy:140px;--dr:8deg;animation-delay:2.4s}
+.mail-5{--dx:130px;--dy:140px;--dr:-6deg;animation-delay:3.2s}
+@keyframes bucketPop{0%,40%,60%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+.bucket{transform-origin:center;transform-box:fill-box}
+.bucket-1{animation:bucketPop 4s ease-in-out infinite}
+.bucket-2{animation:bucketPop 4s ease-in-out .8s infinite}
+.bucket-3{animation:bucketPop 4s ease-in-out 1.6s infinite}
+
+/* ─── GENERAL SECTIONS ─── */
+section{padding:5rem 2rem}
+.container{max-width:1160px;margin:0 auto}
+.section-header{text-align:center;margin-bottom:3rem}
+.section-label{display:inline-flex;align-items:center;gap:.5rem;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:var(--orange);margin-bottom:.7rem}
+.section-label .step{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:var(--orange);color:#fff;font-weight:800;font-size:.7rem}
+.section-title{font-family:'DM Serif Display',serif;font-size:clamp(1.7rem,3vw,2.3rem);color:var(--navy);line-height:1.2;margin-bottom:.6rem}
+.section-title em{font-style:normal;color:var(--orange)}
+.section-sub{font-size:1rem;color:var(--text-secondary);line-height:1.65;max-width:620px;margin:0 auto}
+
+.alt{background:var(--bg-light)}
+.dark{background:var(--navy-dark);color:#fff}
+.dark .section-title{color:#fff}
+.dark .section-sub{color:rgba(255,255,255,0.7)}
+.dark .section-label{color:var(--orange-light)}
+
+/* ─── STAGE: container for an animated scene ─── */
+.stage{background:var(--bg-card);border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow-sm);padding:2rem;position:relative;overflow:hidden}
+.dark .stage{background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08)}
+.stage-canvas{aspect-ratio:16/9;width:100%;display:flex;align-items:center;justify-content:center;position:relative;background:linear-gradient(135deg,var(--bg-light),#fff);border-radius:var(--radius-sm);overflow:hidden}
+.dark .stage-canvas{background:linear-gradient(135deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02))}
+.stage-canvas svg{width:100%;height:100%;display:block}
+
+/* ─── STEP STRIP ─── */
+.step-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:.8rem;margin-top:1.5rem}
+.step-pill{padding:1rem;border-radius:var(--radius-sm);background:var(--bg-light);border:1.5px solid var(--border);transition:all .3s;position:relative}
+.dark .step-pill{background:rgba(255,255,255,0.04);border-color:rgba(255,255,255,0.1)}
+.step-pill.active{background:var(--orange-glow);border-color:var(--orange);transform:translateY(-2px);box-shadow:var(--shadow-sm)}
+.step-pill .step-num{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--orange);color:#fff;font-weight:800;font-size:.78rem;margin-bottom:.5rem}
+.step-pill .step-title{font-size:.85rem;font-weight:700;color:var(--navy);margin-bottom:.2rem}
+.dark .step-pill .step-title{color:#fff}
+.step-pill .step-desc{font-size:.74rem;color:var(--text-muted);line-height:1.5}
+
+/* ─── INBOX OVERWHELM (Section 2) ─── */
+.overwhelm{display:grid;grid-template-columns:repeat(4,1fr);gap:1.2rem;margin-bottom:2rem}
+.over-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1.4rem;text-align:center;position:relative;overflow:hidden;min-height:220px;display:flex;flex-direction:column;justify-content:space-between}
+.over-card-svg{height:90px;display:flex;align-items:center;justify-content:center;margin-bottom:.6rem}
+.over-card-svg svg{height:100%;width:auto}
+.over-card-num{font-family:'DM Serif Display',serif;font-size:1.6rem;color:var(--orange);line-height:1}
+.over-card-label{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--text-muted);margin-top:.4rem;margin-bottom:.5rem}
+.over-card-vibe{font-size:.82rem;color:var(--text-secondary);font-weight:500;line-height:1.5}
+.over-card:nth-child(1){border-top:3px solid var(--green)}
+.over-card:nth-child(2){border-top:3px solid var(--yellow)}
+.over-card:nth-child(3){border-top:3px solid var(--orange)}
+.over-card:nth-child(4){border-top:3px solid var(--red)}
+
+/* envelope animations: count grows */
+@keyframes wiggle{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(2deg)}}
+.env-anim{animation:wiggle 2.5s ease-in-out infinite}
+
+/* ─── PERSONA CARDS ─── */
+.personas{display:grid;grid-template-columns:repeat(4,1fr);gap:1.2rem}
+.persona{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;transition:all .3s;position:relative;overflow:hidden}
+.persona:hover{transform:translateY(-4px);box-shadow:var(--shadow-md);border-color:var(--orange)}
+.persona-svg{height:120px;display:flex;align-items:center;justify-content:center;margin-bottom:1rem}
+.persona-svg svg{width:100%;height:100%}
+.persona h4{font-family:'DM Serif Display',serif;font-size:1.05rem;color:var(--navy);margin-bottom:.4rem}
+.persona p{font-size:.82rem;color:var(--text-secondary);line-height:1.6}
+
+/* ─── BUCKET SORTING SECTION ─── */
+.classify-scene{aspect-ratio:16/9;width:100%}
+
+/* ─── COMPARE: OLD vs NEW ─── */
+.compare{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem}
+.compare-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1.8rem;position:relative;overflow:hidden}
+.compare-card.old{border-top:4px solid var(--text-muted)}
+.compare-card.new{border-top:4px solid var(--orange);box-shadow:0 8px 32px rgba(232,122,46,0.08)}
+.compare-tag{display:inline-block;padding:.25rem .7rem;border-radius:50px;font-size:.66rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:.8rem}
+.compare-card.old .compare-tag{background:#EFEFEF;color:var(--text-muted)}
+.compare-card.new .compare-tag{background:var(--orange-glow);color:var(--orange)}
+.compare-card h4{font-family:'DM Serif Display',serif;font-size:1.25rem;color:var(--navy);margin-bottom:1rem}
+.compare-svg{height:160px;margin-bottom:1rem;display:flex;align-items:center;justify-content:center}
+.compare-svg svg{width:100%;height:100%}
+.compare-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:.8rem;margin-top:1rem}
+.compare-stat{text-align:center;padding:.6rem;background:var(--bg-light);border-radius:var(--radius-sm)}
+.compare-stat-val{font-family:'DM Serif Display',serif;font-size:1.4rem;color:var(--navy);line-height:1}
+.compare-card.new .compare-stat-val{color:var(--orange)}
+.compare-stat-lbl{font-size:.68rem;text-transform:uppercase;color:var(--text-muted);font-weight:700;letter-spacing:.06em;margin-top:.3rem}
+
+/* ─── DEFINITION CARD ─── */
+.def-card{background:linear-gradient(135deg,var(--navy-dark),var(--navy));color:#fff;border-radius:var(--radius);padding:2.2rem;position:relative;overflow:hidden}
+.def-card::before{content:'';position:absolute;top:-50px;right:-50px;width:200px;height:200px;border-radius:50%;background:rgba(232,122,46,0.12)}
+.def-card::after{content:'';position:absolute;bottom:-30px;left:-30px;width:140px;height:140px;border-radius:50%;background:rgba(76,175,80,0.08)}
+.def-tag{display:inline-flex;align-items:center;gap:.4rem;padding:.3rem .8rem;border-radius:50px;background:rgba(232,122,46,0.18);color:var(--orange-light);font-size:.66rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:.8rem;position:relative;z-index:1}
+.def-card h3{font-family:'DM Serif Display',serif;font-size:1.7rem;color:#fff;margin-bottom:.7rem;position:relative;z-index:1}
+.def-card h3 em{font-style:normal;color:var(--orange-light)}
+.def-card p{font-size:.95rem;color:rgba(255,255,255,0.78);line-height:1.7;position:relative;z-index:1;max-width:760px}
+
+/* ─── FEW-SHOT WALKTHROUGH ─── */
+.fewshot-flow{display:grid;grid-template-columns:1fr;gap:1.2rem}
+.fewshot-stage{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1.8rem}
+.fs-row{display:grid;grid-template-columns:auto 1fr;gap:1.2rem;align-items:start;margin-bottom:1.4rem}
+.fs-row:last-child{margin-bottom:0}
+.fs-num{width:36px;height:36px;border-radius:50%;background:var(--orange);color:#fff;font-weight:800;font-size:.95rem;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.fs-row.brain .fs-num{background:var(--navy)}
+.fs-row.success .fs-num{background:var(--green)}
+.fs-body h5{font-size:.95rem;font-weight:700;color:var(--navy);margin-bottom:.5rem}
+.fs-examples{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.6rem}
+.fs-ex{display:inline-flex;align-items:center;gap:.4rem;padding:.4rem .8rem;background:var(--bg-light);border-radius:var(--radius-sm);font-size:.78rem;border:1px solid var(--border)}
+.fs-ex .fs-arrow{color:var(--text-muted)}
+.fs-ex .fs-label{font-weight:700}
+.fs-ex .fs-label.complaint{color:var(--red)}
+.fs-ex .fs-label.question{color:var(--blue)}
+.fs-ex .fs-label.feedback{color:var(--green)}
+.fs-brain{display:flex;align-items:center;gap:1rem;padding:.8rem 1rem;background:var(--bg-light);border-radius:var(--radius-sm);border:1px solid var(--border)}
+.fs-brain svg{width:36px;height:36px;flex-shrink:0}
+.fs-brain p{font-size:.85rem;color:var(--text-secondary);margin:0}
+.fs-input{padding:.8rem 1rem;background:#fff;border:1.5px dashed var(--orange);border-radius:var(--radius-sm);font-size:.85rem;color:var(--text-primary);font-style:italic}
+.fs-result{display:flex;align-items:center;gap:.7rem;padding:.8rem 1rem;background:var(--green-light);border-radius:var(--radius-sm);border:1px solid var(--green)}
+.fs-result-tag{display:inline-flex;align-items:center;gap:.3rem;padding:.25rem .65rem;border-radius:50px;background:var(--green);color:#fff;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+.fs-result p{font-size:.85rem;color:var(--text-primary);margin:0}
+
+/* ─── CONFIDENCE METER ─── */
+.conf-section{display:grid;grid-template-columns:1fr 1fr;gap:2rem;align-items:center}
+.conf-viz{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:2rem}
+.conf-item{display:grid;grid-template-columns:1fr auto;gap:1rem;align-items:center;padding:1rem;border-radius:var(--radius-sm);margin-bottom:.7rem;border:1px solid var(--border);background:var(--bg-light);transition:all .3s}
+.conf-item:last-child{margin-bottom:0}
+.conf-q{font-size:.82rem;color:var(--text-primary);line-height:1.5}
+.conf-bar-wrap{display:flex;flex-direction:column;align-items:flex-end;min-width:150px}
+.conf-bar{width:140px;height:7px;background:var(--border);border-radius:4px;overflow:hidden;margin-bottom:.3rem}
+.conf-bar-fill{height:100%;border-radius:4px;animation:fillBar 1.8s ease forwards;transform-origin:left}
+.conf-route{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+@keyframes fillBar{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+.conf-item.high .conf-bar-fill{background:linear-gradient(90deg,var(--green),#66BB6A);width:96%}
+.conf-item.high .conf-route{color:var(--green)}
+.conf-item.high{border-color:var(--green);background:rgba(76,175,80,0.04)}
+.conf-item.mid .conf-bar-fill{background:linear-gradient(90deg,var(--green),var(--orange-light));width:88%}
+.conf-item.mid .conf-route{color:var(--green)}
+.conf-item.mid{border-color:var(--green);background:rgba(76,175,80,0.04)}
+.conf-item.low .conf-bar-fill{background:linear-gradient(90deg,var(--orange),var(--red));width:52%}
+.conf-item.low .conf-route{color:var(--red)}
+.conf-item.low{border-color:var(--red);background:rgba(231,76,60,0.04)}
+
+.threshold-line{position:relative;height:14px;margin:1.1rem 0 .5rem;font-size:.7rem;color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+.threshold-line::before{content:'';position:absolute;left:0;right:0;top:50%;height:1.5px;background:repeating-linear-gradient(90deg,var(--orange) 0,var(--orange) 6px,transparent 6px,transparent 12px)}
+.threshold-line span{background:var(--bg-card);padding:0 .6rem;position:relative;color:var(--orange)}
+
+.conf-explain h3{font-family:'DM Serif Display',serif;font-size:1.5rem;color:var(--navy);margin-bottom:.7rem;line-height:1.25}
+.conf-explain h3 em{font-style:normal;color:var(--orange)}
+.conf-explain p{font-size:.92rem;color:var(--text-secondary);line-height:1.7;margin-bottom:1rem}
+.conf-explain ul{list-style:none;margin-top:1rem}
+.conf-explain li{display:flex;align-items:flex-start;gap:.7rem;padding:.5rem 0;font-size:.88rem;color:var(--text-secondary);line-height:1.55}
+.conf-explain li svg{flex-shrink:0;margin-top:3px;color:var(--green)}
+
+/* ─── PIPELINE (final scene) ─── */
+.pipeline{aspect-ratio:16/8;width:100%}
+
+/* ─── KEY TAKEAWAYS ─── */
+.takeaways{display:grid;grid-template-columns:repeat(3,1fr);gap:1.2rem;margin-top:2rem}
+.take{padding:1.6rem;background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);transition:all .3s}
+.take:hover{transform:translateY(-3px);box-shadow:var(--shadow-md)}
+.take-icon{width:44px;height:44px;border-radius:11px;background:var(--orange-glow);color:var(--orange);display:flex;align-items:center;justify-content:center;margin-bottom:.9rem}
+.take h5{font-size:.95rem;font-weight:700;color:var(--navy);margin-bottom:.4rem;line-height:1.3}
+.take p{font-size:.82rem;color:var(--text-secondary);line-height:1.6}
+
+/* ─── FOOTER ─── */
+footer{background:var(--bg-card);border-top:1px solid var(--border);padding:2rem}
+.footer-inner{max-width:1160px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem}
+.footer-copy{font-size:.78rem;color:var(--text-muted)}
+.footer-tag{font-size:.78rem;color:var(--text-secondary)}
+.footer-tag em{font-style:normal;color:var(--orange);font-weight:700}
+
+/* ─── ANIMATIONS ─── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(232,122,46,0.5)}50%{box-shadow:0 0 0 8px rgba(232,122,46,0)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes glow{0%,100%{filter:drop-shadow(0 0 0 rgba(232,122,46,0))}50%{filter:drop-shadow(0 0 8px rgba(232,122,46,0.5))}}
+@keyframes scanPulse{0%,100%{opacity:.3}50%{opacity:1}}
+@keyframes dash{to{stroke-dashoffset:0}}
+
+/* IntersectionObserver-triggered reveal */
+.reveal{opacity:0;transform:translateY(28px);transition:opacity .8s ease,transform .8s ease}
+.reveal.in{opacity:1;transform:translateY(0)}
+
+/* ─── RESPONSIVE ─── */
+@media(max-width:900px){
+  .hero-inner{grid-template-columns:1fr;gap:2rem}
+  .hero-visual{order:-1}
+  .step-strip{grid-template-columns:repeat(2,1fr)}
+  .overwhelm{grid-template-columns:repeat(2,1fr)}
+  .personas{grid-template-columns:repeat(2,1fr)}
+  .compare{grid-template-columns:1fr}
+  .conf-section{grid-template-columns:1fr}
+  .takeaways{grid-template-columns:1fr}
+  .nav-sub{display:none}
+}
+@media(max-width:520px){
+  section{padding:3rem 1.2rem}
+  .hero{padding:3rem 1.2rem 2.5rem}
+  .step-strip{grid-template-columns:1fr}
+  .overwhelm{grid-template-columns:1fr}
+  .personas{grid-template-columns:1fr}
+  .top-bar{font-size:.7rem;padding:.4rem 1rem;gap:1rem}
+  .stage{padding:1.2rem}
+}
+</style>
+</head>
+<body>
+
+<!-- ─── TOP BAR ─── -->
+<div class="top-bar">
+  <span>MokshPath · AI-Native Summer Series 2026</span>
+</div>
+
+<!-- ─── NAV with logo top right ─── -->
+<nav class="nav">
+  <div class="nav-left">
+    <div>
+      <div class="nav-title">From Answering to <em>Organising</em></div>
+      <div class="nav-sub">Lesson · Triage, Classification &amp; Confidence</div>
+    </div>
+  </div>
+  <img src="hero.svg" alt="MokshPath" class="nav-logo-img">
+</nav>
+
+<!-- ─── HERO ─── -->
+<header class="hero">
+  <div class="hero-inner">
+    <div class="hero-content">
+      <span class="hero-badge"><span class="dot"></span>Lesson 01 · Triage &amp; Classification</span>
+      <h1>Most professional reading isn't reading.<br>It's <em>sorting</em>.</h1>
+      <p class="hero-sub">A help-desk lead skims a hundred queries. A claims handler sorts insurance submissions. A bank routes complaints. None of it is profound — but at volume it's exhausting. This is exactly where AI starts to earn its keep.</p>
+      <div class="hero-tags">
+        <span class="hero-tag"><span class="tdot"></span>No-code friendly</span>
+        <span class="hero-tag"><span class="tdot"></span>Few-shot classification</span>
+        <span class="hero-tag"><span class="tdot"></span>Confidence thresholds</span>
+      </div>
+    </div>
+    <div class="hero-visual">
+      <div class="hero-anim">
+        <!-- Hero animation: envelopes drop and sort into 3 buckets -->
+        <svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+          <!-- Background grid -->
+          <defs>
+            <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+              <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(232,122,46,0.06)" stroke-width="1"/>
+            </pattern>
+            <linearGradient id="bg-grad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#FFF"/>
+              <stop offset="100%" stop-color="#F9F5F0"/>
+            </linearGradient>
+          </defs>
+          <rect width="400" height="400" fill="url(#bg-grad)" rx="14"/>
+          <rect width="400" height="400" fill="url(#grid)" rx="14"/>
+
+          <!-- Top source: stack of envelopes -->
+          <g transform="translate(170,40)">
+            <rect width="60" height="40" fill="#E5DDD4" stroke="#E87A2E" stroke-width="1.5" rx="3"/>
+            <path d="M0,0 L30,22 L60,0" fill="none" stroke="#E87A2E" stroke-width="1.5"/>
+            <rect y="-5" width="60" height="40" fill="#FFF" stroke="#E87A2E" stroke-width="1.5" rx="3"/>
+            <path d="M0,-5 L30,17 L60,-5" fill="none" stroke="#E87A2E" stroke-width="1.5"/>
+          </g>
+
+          <!-- Falling envelopes -->
+          <g class="mail-drop mail-1">
+            <g transform="translate(170,75)">
+              <rect width="48" height="32" fill="#FFF" stroke="#E87A2E" stroke-width="1.5" rx="3"/>
+              <path d="M0,0 L24,18 L48,0" fill="none" stroke="#E87A2E" stroke-width="1.5"/>
+              <circle cx="40" cy="6" r="3" fill="#E74C3C"/>
+            </g>
+          </g>
+          <g class="mail-drop mail-2">
+            <g transform="translate(170,75)">
+              <rect width="48" height="32" fill="#FFF" stroke="#4285F4" stroke-width="1.5" rx="3"/>
+              <path d="M0,0 L24,18 L48,0" fill="none" stroke="#4285F4" stroke-width="1.5"/>
+              <circle cx="40" cy="6" r="3" fill="#4285F4"/>
+            </g>
+          </g>
+          <g class="mail-drop mail-3">
+            <g transform="translate(170,75)">
+              <rect width="48" height="32" fill="#FFF" stroke="#4CAF50" stroke-width="1.5" rx="3"/>
+              <path d="M0,0 L24,18 L48,0" fill="none" stroke="#4CAF50" stroke-width="1.5"/>
+              <circle cx="40" cy="6" r="3" fill="#4CAF50"/>
+            </g>
+          </g>
+          <g class="mail-drop mail-4">
+            <g transform="translate(170,75)">
+              <rect width="48" height="32" fill="#FFF" stroke="#E74C3C" stroke-width="1.5" rx="3"/>
+              <path d="M0,0 L24,18 L48,0" fill="none" stroke="#E74C3C" stroke-width="1.5"/>
+              <circle cx="40" cy="6" r="3" fill="#E74C3C"/>
+            </g>
+          </g>
+          <g class="mail-drop mail-5">
+            <g transform="translate(170,75)">
+              <rect width="48" height="32" fill="#FFF" stroke="#4CAF50" stroke-width="1.5" rx="3"/>
+              <path d="M0,0 L24,18 L48,0" fill="none" stroke="#4CAF50" stroke-width="1.5"/>
+              <circle cx="40" cy="6" r="3" fill="#4CAF50"/>
+            </g>
+          </g>
+
+          <!-- AI brain in middle -->
+          <g transform="translate(200,210)">
+            <circle r="38" fill="rgba(232,122,46,0.1)" stroke="#E87A2E" stroke-width="1.5" stroke-dasharray="4 3">
+              <animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="20s" repeatCount="indefinite"/>
+            </circle>
+            <circle r="24" fill="#FFF" stroke="#E87A2E" stroke-width="2"/>
+            <path d="M-10,-8 Q-10,-14 -4,-14 Q0,-14 0,-10 M0,-10 Q0,-14 4,-14 Q10,-14 10,-8 Q14,-6 14,0 Q14,8 8,12 Q4,14 0,14 Q-4,14 -8,12 Q-14,8 -14,0 Q-14,-6 -10,-8 Z" fill="none" stroke="#E87A2E" stroke-width="1.6" stroke-linejoin="round"/>
+            <circle cx="-4" cy="-4" r="1.5" fill="#E87A2E"/>
+            <circle cx="4" cy="-4" r="1.5" fill="#E87A2E"/>
+            <circle cx="0" cy="3" r="1.5" fill="#E87A2E"/>
+          </g>
+
+          <!-- Buckets at bottom -->
+          <!-- Bucket 1 -->
+          <g class="bucket bucket-1" transform="translate(50,290)">
+            <path d="M0,10 L10,80 L75,80 L85,10 Z" fill="#FCEAE8" stroke="#E74C3C" stroke-width="2"/>
+            <rect x="-2" y="0" width="89" height="14" fill="#E74C3C" rx="2"/>
+            <text x="42.5" y="9.5" text-anchor="middle" font-family="Plus Jakarta Sans, sans-serif" font-size="8" font-weight="700" fill="#FFF">COMPLAINTS</text>
+          </g>
+          <!-- Bucket 2 -->
+          <g class="bucket bucket-2" transform="translate(157,290)">
+            <path d="M0,10 L10,80 L75,80 L85,10 Z" fill="#E8F0FE" stroke="#4285F4" stroke-width="2"/>
+            <rect x="-2" y="0" width="89" height="14" fill="#4285F4" rx="2"/>
+            <text x="42.5" y="9.5" text-anchor="middle" font-family="Plus Jakarta Sans, sans-serif" font-size="8" font-weight="700" fill="#FFF">QUESTIONS</text>
+          </g>
+          <!-- Bucket 3 -->
+          <g class="bucket bucket-3" transform="translate(264,290)">
+            <path d="M0,10 L10,80 L75,80 L85,10 Z" fill="#E8F5E9" stroke="#4CAF50" stroke-width="2"/>
+            <rect x="-2" y="0" width="89" height="14" fill="#4CAF50" rx="2"/>
+            <text x="42.5" y="9.5" text-anchor="middle" font-family="Plus Jakarta Sans, sans-serif" font-size="8" font-weight="700" fill="#FFF">FEEDBACK</text>
+          </g>
+        </svg>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ─── SECTION 1: The Problem at Scale ─── -->
+<section class="alt">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-label"><span class="step">1</span>The Problem · Reading at scale</div>
+      <h2 class="section-title">One email is easy. <em>A thousand is exhausting.</em></h2>
+      <p class="section-sub">As volume grows, even simple decisions become a wall. Watch what happens when the inbox keeps filling up.</p>
+    </div>
+
+    <div class="overwhelm reveal">
+      <!-- 1 email -->
+      <div class="over-card">
+        <div class="over-card-svg">
+          <svg viewBox="0 0 100 80" xmlns="http://www.w3.org/2000/svg">
+            <g class="env-anim" style="transform-origin:50px 40px">
+              <rect x="25" y="20" width="50" height="36" fill="#FFF" stroke="#4CAF50" stroke-width="2" rx="3"/>
+              <path d="M25,20 L50,42 L75,20" fill="none" stroke="#4CAF50" stroke-width="2"/>
+            </g>
+          </svg>
+        </div>
+        <div>
+          <div class="over-card-num">1</div>
+          <div class="over-card-label">email</div>
+          <div class="over-card-vibe">Easy. You read it, decide, reply. Done in 30 seconds.</div>
+        </div>
+      </div>
+
+      <!-- 10 emails -->
+      <div class="over-card">
+        <div class="over-card-svg">
+          <svg viewBox="0 0 100 80" xmlns="http://www.w3.org/2000/svg">
+            <g class="env-anim" style="transform-origin:50px 40px">
+              <rect x="18" y="14" width="44" height="32" fill="#FEF4E1" stroke="#F5B342" stroke-width="1.5" rx="3" transform="rotate(-6 40 30)"/>
+              <rect x="28" y="22" width="44" height="32" fill="#FEF4E1" stroke="#F5B342" stroke-width="1.5" rx="3" transform="rotate(4 50 38)"/>
+              <rect x="22" y="30" width="48" height="34" fill="#FFF" stroke="#F5B342" stroke-width="2" rx="3"/>
+              <path d="M22,30 L46,52 L70,30" fill="none" stroke="#F5B342" stroke-width="2"/>
+            </g>
+          </svg>
+        </div>
+        <div>
+          <div class="over-card-num">10</div>
+          <div class="over-card-label">queries</div>
+          <div class="over-card-vibe">Manageable. A coffee break and a focused half-hour.</div>
+        </div>
+      </div>
+
+      <!-- 100 emails -->
+      <div class="over-card">
+        <div class="over-card-svg">
+          <svg viewBox="0 0 100 80" xmlns="http://www.w3.org/2000/svg">
+            <g class="env-anim" style="transform-origin:50px 40px">
+              <rect x="8" y="8" width="38" height="28" fill="#F5943E" opacity=".4" stroke="#E87A2E" stroke-width="1" rx="2" transform="rotate(-10 27 22)"/>
+              <rect x="55" y="6" width="38" height="28" fill="#F5943E" opacity=".5" stroke="#E87A2E" stroke-width="1" rx="2" transform="rotate(8 74 20)"/>
+              <rect x="14" y="28" width="40" height="30" fill="#F5943E" opacity=".7" stroke="#E87A2E" stroke-width="1.5" rx="2" transform="rotate(-4 34 43)"/>
+              <rect x="48" y="30" width="42" height="30" fill="#FFF" stroke="#E87A2E" stroke-width="1.5" rx="2" transform="rotate(6 69 45)"/>
+              <rect x="22" y="44" width="46" height="32" fill="#FFF" stroke="#E87A2E" stroke-width="2" rx="3"/>
+              <path d="M22,44 L45,64 L68,44" fill="none" stroke="#E87A2E" stroke-width="2"/>
+            </g>
+          </svg>
+        </div>
+        <div>
+          <div class="over-card-num">100</div>
+          <div class="over-card-label">queries</div>
+          <div class="over-card-vibe">A whole morning gone. Attention starts to drift.</div>
+        </div>
+      </div>
+
+      <!-- 1000 emails -->
+      <div class="over-card">
+        <div class="over-card-svg">
+          <svg viewBox="0 0 100 80" xmlns="http://www.w3.org/2000/svg">
+            <g class="env-anim" style="transform-origin:50px 40px">
+              <rect x="2" y="2" width="22" height="16" fill="#E74C3C" opacity=".25" rx="2"/>
+              <rect x="22" y="6" width="22" height="16" fill="#E74C3C" opacity=".35" rx="2"/>
+              <rect x="46" y="2" width="22" height="16" fill="#E74C3C" opacity=".3" rx="2"/>
+              <rect x="70" y="8" width="22" height="16" fill="#E74C3C" opacity=".4" rx="2"/>
+              <rect x="8" y="22" width="22" height="16" fill="#E74C3C" opacity=".4" rx="2"/>
+              <rect x="32" y="20" width="22" height="16" fill="#E74C3C" opacity=".5" rx="2"/>
+              <rect x="58" y="24" width="22" height="16" fill="#E74C3C" opacity=".5" rx="2"/>
+              <rect x="0" y="40" width="22" height="16" fill="#E74C3C" opacity=".55" rx="2"/>
+              <rect x="26" y="40" width="22" height="16" fill="#E74C3C" opacity=".65" rx="2"/>
+              <rect x="50" y="42" width="22" height="16" fill="#E74C3C" opacity=".7" rx="2"/>
+              <rect x="74" y="40" width="22" height="16" fill="#E74C3C" opacity=".6" rx="2"/>
+              <rect x="14" y="58" width="22" height="16" fill="#E74C3C" opacity=".8" rx="2"/>
+              <rect x="40" y="60" width="22" height="16" fill="#E74C3C" opacity=".9" rx="2"/>
+              <rect x="66" y="58" width="22" height="16" fill="#E74C3C" opacity=".75" rx="2"/>
+            </g>
+          </svg>
+        </div>
+        <div>
+          <div class="over-card-num">1,000+</div>
+          <div class="over-card-label">queries</div>
+          <div class="over-card-vibe">Impossible to do well by hand. Mistakes pile up.</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="text-align:center;font-size:.9rem;color:var(--text-secondary);max-width:660px;margin:1.5rem auto 0;line-height:1.7" class="reveal">
+      <strong style="color:var(--navy)">The pain isn't in any single message — it's in the <em style="color:var(--orange);font-style:normal">volume</em>.</strong> And volume is exactly where AI starts to be useful: not for brilliance, but for being consistent, accurate, and fast — every time.
+    </div>
+  </div>
+</section>
+
+<!-- ─── SECTION 2: Triage is Everywhere ─── -->
+<section>
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-label"><span class="step">2</span>Triage is everywhere</div>
+      <h2 class="section-title">It's not just inboxes. <em>Every large organisation does this.</em></h2>
+      <p class="section-sub">Across industries, professionals spend hours every week reading not for insight, but to decide where something belongs and who should handle it.</p>
+    </div>
+
+    <div class="personas reveal">
+      <div class="persona">
+        <div class="persona-svg">
+          <!-- Help desk -->
+          <svg viewBox="0 0 140 120" xmlns="http://www.w3.org/2000/svg">
+            <!-- monitor -->
+            <rect x="20" y="20" width="100" height="64" fill="#FFF" stroke="#2B2D42" stroke-width="2" rx="4"/>
+            <rect x="56" y="84" width="28" height="8" fill="#2B2D42"/>
+            <rect x="46" y="92" width="48" height="4" fill="#2B2D42" rx="2"/>
+            <!-- screen items: ticket lines -->
+            <rect x="28" y="28" width="84" height="6" fill="#E87A2E" rx="1"/>
+            <rect x="28" y="40" width="60" height="4" fill="#E5DDD4" rx="1"/>
+            <rect x="92" y="40" width="20" height="4" fill="#E74C3C" rx="2">
+              <animate attributeName="opacity" values="1;0.3;1" dur="2s" repeatCount="indefinite"/>
+            </rect>
+            <rect x="28" y="50" width="60" height="4" fill="#E5DDD4" rx="1"/>
+            <rect x="92" y="50" width="20" height="4" fill="#F5B342" rx="2"/>
+            <rect x="28" y="60" width="60" height="4" fill="#E5DDD4" rx="1"/>
+            <rect x="92" y="60" width="20" height="4" fill="#4CAF50" rx="2"/>
+            <rect x="28" y="70" width="60" height="4" fill="#E5DDD4" rx="1"/>
+            <rect x="92" y="70" width="20" height="4" fill="#4285F4" rx="2"/>
+            <!-- headset icon -->
+            <g transform="translate(7,32)">
+              <path d="M4,8 Q4,0 12,0 Q20,0 20,8 L20,14" fill="none" stroke="#E87A2E" stroke-width="1.5"/>
+              <rect x="2" y="10" width="5" height="8" fill="#E87A2E" rx="1"/>
+              <rect x="17" y="10" width="5" height="8" fill="#E87A2E" rx="1"/>
+            </g>
+          </svg>
+        </div>
+        <h4>Help-desk lead</h4>
+        <p>Skims a hundred customer queries each morning and decides which need urgent attention.</p>
+      </div>
+
+      <div class="persona">
+        <div class="persona-svg">
+          <!-- Claims handler -->
+          <svg viewBox="0 0 140 120" xmlns="http://www.w3.org/2000/svg">
+            <!-- folders -->
+            <rect x="20" y="32" width="44" height="50" fill="#F5B342" stroke="#D06A20" stroke-width="1.5" rx="3"/>
+            <rect x="20" y="28" width="18" height="6" fill="#F5B342" stroke="#D06A20" stroke-width="1.5" rx="2"/>
+            <line x1="26" y1="44" x2="58" y2="44" stroke="#FFF" stroke-width="1.5"/>
+            <line x1="26" y1="52" x2="52" y2="52" stroke="#FFF" stroke-width="1.5"/>
+            <line x1="26" y1="60" x2="58" y2="60" stroke="#FFF" stroke-width="1.5"/>
+            <line x1="26" y1="68" x2="48" y2="68" stroke="#FFF" stroke-width="1.5"/>
+
+            <rect x="76" y="38" width="44" height="50" fill="#E87A2E" stroke="#D06A20" stroke-width="1.5" rx="3"/>
+            <rect x="76" y="34" width="18" height="6" fill="#E87A2E" stroke="#D06A20" stroke-width="1.5" rx="2"/>
+            <line x1="82" y1="50" x2="114" y2="50" stroke="#FFF" stroke-width="1.5"/>
+            <line x1="82" y1="58" x2="108" y2="58" stroke="#FFF" stroke-width="1.5"/>
+            <line x1="82" y1="66" x2="114" y2="66" stroke="#FFF" stroke-width="1.5"/>
+            <line x1="82" y1="74" x2="104" y2="74" stroke="#FFF" stroke-width="1.5"/>
+
+            <!-- stamp icon -->
+            <g transform="translate(50,4)">
+              <circle cx="20" cy="14" r="11" fill="none" stroke="#4CAF50" stroke-width="2"/>
+              <path d="M14,14 L18,18 L26,10" fill="none" stroke="#4CAF50" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                <animate attributeName="stroke-dashoffset" values="20;0" dur="2s" repeatCount="indefinite"/>
+              </path>
+            </g>
+          </svg>
+        </div>
+        <h4>Claims handler</h4>
+        <p>Sorts insurance submissions into categories — auto, home, health — for the right specialist.</p>
+      </div>
+
+      <div class="persona">
+        <div class="persona-svg">
+          <!-- Bank routing -->
+          <svg viewBox="0 0 140 120" xmlns="http://www.w3.org/2000/svg">
+            <!-- bank building -->
+            <rect x="50" y="20" width="40" height="40" fill="#FFF" stroke="#2B2D42" stroke-width="2"/>
+            <polygon points="46,20 70,8 94,20" fill="#E87A2E" stroke="#2B2D42" stroke-width="2"/>
+            <rect x="56" y="30" width="4" height="20" fill="#2B2D42"/>
+            <rect x="64" y="30" width="4" height="20" fill="#2B2D42"/>
+            <rect x="72" y="30" width="4" height="20" fill="#2B2D42"/>
+            <rect x="80" y="30" width="4" height="20" fill="#2B2D42"/>
+            <rect x="46" y="58" width="48" height="4" fill="#2B2D42"/>
+            <!-- routes -->
+            <path d="M70,62 L70,82" stroke="#E87A2E" stroke-width="2" stroke-dasharray="3 2"/>
+            <path d="M70,82 L26,100" stroke="#E87A2E" stroke-width="2" stroke-dasharray="3 2" fill="none"/>
+            <path d="M70,82 L70,100" stroke="#E87A2E" stroke-width="2" stroke-dasharray="3 2"/>
+            <path d="M70,82 L114,100" stroke="#E87A2E" stroke-width="2" stroke-dasharray="3 2" fill="none"/>
+            <!-- departments -->
+            <circle cx="22" cy="104" r="10" fill="#E8F0FE" stroke="#4285F4" stroke-width="1.5"/>
+            <text x="22" y="107" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="6.5" font-weight="700" fill="#4285F4">CARD</text>
+            <circle cx="70" cy="104" r="10" fill="#E8F5E9" stroke="#4CAF50" stroke-width="1.5"/>
+            <text x="70" y="107" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="6.5" font-weight="700" fill="#4CAF50">LOAN</text>
+            <circle cx="118" cy="104" r="10" fill="#FCEAE8" stroke="#E74C3C" stroke-width="1.5"/>
+            <text x="118" y="107" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="6.5" font-weight="700" fill="#E74C3C">FRAUD</text>
+          </svg>
+        </div>
+        <h4>Bank operations</h4>
+        <p>Routes thousands of complaints daily to the correct department — cards, loans, fraud, accounts.</p>
+      </div>
+
+      <div class="persona">
+        <div class="persona-svg">
+          <!-- CV reviewer -->
+          <svg viewBox="0 0 140 120" xmlns="http://www.w3.org/2000/svg">
+            <!-- CV stack -->
+            <rect x="22" y="32" width="44" height="58" fill="#F5943E" opacity=".4" stroke="#E87A2E" stroke-width="1" rx="3" transform="rotate(-6 44 60)"/>
+            <rect x="32" y="26" width="44" height="58" fill="#F5943E" opacity=".6" stroke="#E87A2E" stroke-width="1.2" rx="3" transform="rotate(3 54 54)"/>
+            <rect x="28" y="22" width="48" height="62" fill="#FFF" stroke="#E87A2E" stroke-width="2" rx="3"/>
+            <!-- avatar -->
+            <circle cx="44" cy="36" r="6" fill="#E87A2E"/>
+            <path d="M36,48 Q36,40 44,40 Q52,40 52,48" fill="#E87A2E"/>
+            <!-- text lines -->
+            <line x1="56" y1="34" x2="72" y2="34" stroke="#E5DDD4" stroke-width="1.5"/>
+            <line x1="56" y1="40" x2="70" y2="40" stroke="#E5DDD4" stroke-width="1.5"/>
+            <line x1="34" y1="56" x2="70" y2="56" stroke="#E5DDD4" stroke-width="1.5"/>
+            <line x1="34" y1="62" x2="68" y2="62" stroke="#E5DDD4" stroke-width="1.5"/>
+            <line x1="34" y1="68" x2="70" y2="68" stroke="#E5DDD4" stroke-width="1.5"/>
+            <line x1="34" y1="74" x2="60" y2="74" stroke="#E5DDD4" stroke-width="1.5"/>
+
+            <!-- magnifier scanning -->
+            <g transform="translate(82,46)">
+              <circle r="14" fill="none" stroke="#2B2D42" stroke-width="2.5"/>
+              <line x1="10" y1="10" x2="22" y2="22" stroke="#2B2D42" stroke-width="3" stroke-linecap="round"/>
+              <animateTransform attributeName="transform" type="translate" values="82,46;92,56;82,46" dur="3s" repeatCount="indefinite"/>
+            </g>
+          </svg>
+        </div>
+        <h4>Talent partner</h4>
+        <p>Scans a stack of CVs and decides which deserve a deeper read — junior, mid, or senior.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── SECTION 3: What Classification Really Means ─── -->
+<section class="alt">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-label"><span class="step">3</span>What "classification" really means</div>
+      <h2 class="section-title">It's just <em>putting text into buckets</em>.</h2>
+      <p class="section-sub">No magic. Classification is the act of taking one piece of text and dropping it into one of a few pre-defined categories. Watch the four steps below.</p>
+    </div>
+
+    <div class="stage reveal">
+      <div class="stage-canvas">
+        <svg viewBox="0 0 800 450" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="bgLight" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#FFF"/>
+              <stop offset="100%" stop-color="#F9F5F0"/>
+            </linearGradient>
+            <marker id="arrowOrange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+              <path d="M0,0 L10,5 L0,10 z" fill="#E87A2E"/>
+            </marker>
+          </defs>
+          <rect width="800" height="450" fill="url(#bgLight)" rx="8"/>
+
+          <!-- STEP 1: incoming text bubble -->
+          <g>
+            <rect x="40" y="180" width="200" height="100" fill="#FFF" stroke="#E87A2E" stroke-width="2" rx="10"/>
+            <text x="55" y="208" font-family="Plus Jakarta Sans, sans-serif" font-size="13" font-weight="700" fill="#2B2D42">Customer message:</text>
+            <text x="55" y="232" font-family="Plus Jakarta Sans, sans-serif" font-size="12" font-style="italic" fill="#6B6D7B">"My card was charged</text>
+            <text x="55" y="250" font-family="Plus Jakarta Sans, sans-serif" font-size="12" font-style="italic" fill="#6B6D7B">twice and I want a</text>
+            <text x="55" y="268" font-family="Plus Jakarta Sans, sans-serif" font-size="12" font-style="italic" fill="#6B6D7B">refund immediately."</text>
+            <circle cx="220" cy="200" r="10" fill="#E87A2E">
+              <animate attributeName="r" values="10;13;10" dur="2s" repeatCount="indefinite"/>
+            </circle>
+            <text x="220" y="204" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="10" font-weight="800" fill="#FFF">1</text>
+          </g>
+
+          <!-- Arrow 1 to brain -->
+          <line x1="248" y1="230" x2="335" y2="230" stroke="#E87A2E" stroke-width="2.5" stroke-dasharray="6 4" marker-end="url(#arrowOrange)">
+            <animate attributeName="stroke-dashoffset" values="20;0" dur="1.5s" repeatCount="indefinite"/>
+          </line>
+
+          <!-- STEP 2: AI brain analyzing -->
+          <g transform="translate(345,170)">
+            <rect width="120" height="120" fill="#FFF" stroke="#2B2D42" stroke-width="2" rx="14"/>
+            <!-- AI brain -->
+            <g transform="translate(60,60)">
+              <circle r="36" fill="none" stroke="#E87A2E" stroke-width="1.5" stroke-dasharray="3 3">
+                <animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="10s" repeatCount="indefinite"/>
+              </circle>
+              <path d="M-15,-10 Q-15,-22 -5,-22 Q0,-22 0,-15 M0,-15 Q0,-22 5,-22 Q15,-22 15,-10 Q22,-6 22,3 Q22,16 13,21 Q5,24 0,24 Q-5,24 -13,21 Q-22,16 -22,3 Q-22,-6 -15,-10 Z" fill="rgba(232,122,46,0.1)" stroke="#E87A2E" stroke-width="2" stroke-linejoin="round"/>
+              <circle cx="-7" cy="-5" r="2" fill="#E87A2E"/>
+              <circle cx="7" cy="-5" r="2" fill="#E87A2E"/>
+              <path d="M-7,8 Q0,12 7,8" fill="none" stroke="#E87A2E" stroke-width="2" stroke-linecap="round"/>
+            </g>
+            <circle cx="115" cy="10" r="10" fill="#E87A2E">
+              <animate attributeName="r" values="10;13;10" dur="2s" begin="0.5s" repeatCount="indefinite"/>
+            </circle>
+            <text x="115" y="14" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="10" font-weight="800" fill="#FFF">2</text>
+          </g>
+
+          <!-- STEP 3: decision -->
+          <g>
+            <line x1="475" y1="230" x2="540" y2="230" stroke="#E87A2E" stroke-width="2.5" stroke-dasharray="6 4" marker-end="url(#arrowOrange)">
+              <animate attributeName="stroke-dashoffset" values="20;0" dur="1.5s" begin="0.5s" repeatCount="indefinite"/>
+            </line>
+            <text x="500" y="220" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="11" font-weight="700" fill="#E87A2E">decide</text>
+          </g>
+
+          <!-- STEP 4: buckets -->
+          <g transform="translate(560,90)">
+            <!-- Bucket A: Complaint (selected/highlighted) -->
+            <g>
+              <rect x="0" y="0" width="180" height="80" fill="#FCEAE8" stroke="#E74C3C" stroke-width="3" rx="10">
+                <animate attributeName="stroke-width" values="2;4;2" dur="1.6s" begin="1s" repeatCount="indefinite"/>
+              </rect>
+              <text x="20" y="32" font-family="Plus Jakarta Sans" font-size="13" font-weight="700" fill="#E74C3C">COMPLAINT</text>
+              <text x="20" y="56" font-family="Plus Jakarta Sans" font-size="11" fill="#6B6D7B">Routed to: refunds team</text>
+              <!-- Check mark -->
+              <g transform="translate(150,40)">
+                <circle r="14" fill="#4CAF50">
+                  <animate attributeName="opacity" values="0;1" dur="0.4s" begin="1.5s" fill="freeze"/>
+                </circle>
+                <path d="M-7,0 L-2,5 L7,-5" fill="none" stroke="#FFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                  <animate attributeName="opacity" values="0;1" dur="0.4s" begin="1.6s" fill="freeze"/>
+                </path>
+              </g>
+              <circle cx="-10" cy="-10" r="11" fill="#E87A2E"/>
+              <text x="-10" y="-6" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="10" font-weight="800" fill="#FFF">3</text>
+            </g>
+            <!-- Bucket B: Question -->
+            <g transform="translate(0,100)">
+              <rect x="0" y="0" width="180" height="55" fill="#FFF" stroke="#E5DDD4" stroke-width="2" rx="10" stroke-dasharray="6 4"/>
+              <text x="20" y="22" font-family="Plus Jakarta Sans" font-size="12" font-weight="600" fill="#9597A6">QUESTION</text>
+              <text x="20" y="42" font-family="Plus Jakarta Sans" font-size="10" fill="#9597A6">not this one</text>
+            </g>
+            <!-- Bucket C: Feedback -->
+            <g transform="translate(0,170)">
+              <rect x="0" y="0" width="180" height="55" fill="#FFF" stroke="#E5DDD4" stroke-width="2" rx="10" stroke-dasharray="6 4"/>
+              <text x="20" y="22" font-family="Plus Jakarta Sans" font-size="12" font-weight="600" fill="#9597A6">FEEDBACK</text>
+              <text x="20" y="42" font-family="Plus Jakarta Sans" font-size="10" fill="#9597A6">not this one</text>
+            </g>
+          </g>
+
+          <!-- Labels at bottom -->
+          <text x="140" y="320" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="11" font-weight="700" fill="#E87A2E">INPUT</text>
+          <text x="405" y="320" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="11" font-weight="700" fill="#E87A2E">ANALYSE</text>
+          <text x="660" y="320" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="11" font-weight="700" fill="#E87A2E">OUTPUT</text>
+        </svg>
+      </div>
+
+      <div class="step-strip">
+        <div class="step-pill"><div class="step-num">1</div><div class="step-title">Input</div><div class="step-desc">A piece of text arrives — could be an email, a query, a CV.</div></div>
+        <div class="step-pill"><div class="step-num">2</div><div class="step-title">Analyse</div><div class="step-desc">The AI reads it and looks for patterns it has seen before.</div></div>
+        <div class="step-pill"><div class="step-num">3</div><div class="step-title">Decide</div><div class="step-desc">It picks the single best-matching bucket from the list you defined.</div></div>
+        <div class="step-pill"><div class="step-num">4</div><div class="step-title">Output</div><div class="step-desc">A simple label — that label routes the work to the right place.</div></div>
+      </div>
+    </div>
+
+    <div style="margin-top:1.6rem;text-align:center;font-size:.88rem;color:var(--text-secondary);max-width:660px;margin-left:auto;margin-right:auto;line-height:1.7" class="reveal">
+      <em style="font-style:normal;color:var(--navy);font-weight:600">"Is this email a complaint, a question, or feedback?"</em> · <em style="font-style:normal;color:var(--navy);font-weight:600">"Which of our four products does this query relate to?"</em> · <em style="font-style:normal;color:var(--navy);font-weight:600">"Is this CV junior, mid-level, or senior?"</em> — all classification problems.
+    </div>
+  </div>
+</section>
+
+<!-- ─── SECTION 4: OLD vs NEW way ─── -->
+<section>
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-label"><span class="step">4</span>The shortcut · Few-shot learning</div>
+      <h2 class="section-title">A decade ago this took weeks.<br><em>Today it takes five examples.</em></h2>
+      <p class="section-sub">Generative AI compresses an enormous amount of model-training work into a simple pattern: just show it a handful of labelled examples.</p>
+    </div>
+
+    <div class="compare reveal">
+      <!-- OLD WAY -->
+      <div class="compare-card old">
+        <span class="compare-tag">The old way · 2015-style</span>
+        <h4>Train a custom model from scratch</h4>
+        <div class="compare-svg">
+          <svg viewBox="0 0 320 160" xmlns="http://www.w3.org/2000/svg">
+            <!-- A wall of tiny labeled items -->
+            <g>
+              <!-- generate a grid of dots representing thousands of labels -->
+              <g fill="#9597A6">
+                <circle cx="20" cy="20" r="3"/><circle cx="40" cy="20" r="3"/><circle cx="60" cy="20" r="3"/><circle cx="80" cy="20" r="3"/><circle cx="100" cy="20" r="3"/><circle cx="120" cy="20" r="3"/><circle cx="140" cy="20" r="3"/>
+                <circle cx="20" cy="40" r="3"/><circle cx="40" cy="40" r="3"/><circle cx="60" cy="40" r="3"/><circle cx="80" cy="40" r="3"/><circle cx="100" cy="40" r="3"/><circle cx="120" cy="40" r="3"/><circle cx="140" cy="40" r="3"/>
+                <circle cx="20" cy="60" r="3"/><circle cx="40" cy="60" r="3"/><circle cx="60" cy="60" r="3"/><circle cx="80" cy="60" r="3"/><circle cx="100" cy="60" r="3"/><circle cx="120" cy="60" r="3"/><circle cx="140" cy="60" r="3"/>
+                <circle cx="20" cy="80" r="3"/><circle cx="40" cy="80" r="3"/><circle cx="60" cy="80" r="3"/><circle cx="80" cy="80" r="3"/><circle cx="100" cy="80" r="3"/><circle cx="120" cy="80" r="3"/><circle cx="140" cy="80" r="3"/>
+                <circle cx="20" cy="100" r="3"/><circle cx="40" cy="100" r="3"/><circle cx="60" cy="100" r="3"/><circle cx="80" cy="100" r="3"/><circle cx="100" cy="100" r="3"/><circle cx="120" cy="100" r="3"/><circle cx="140" cy="100" r="3"/>
+                <circle cx="20" cy="120" r="3"/><circle cx="40" cy="120" r="3"/><circle cx="60" cy="120" r="3"/><circle cx="80" cy="120" r="3"/><circle cx="100" cy="120" r="3"/><circle cx="120" cy="120" r="3"/><circle cx="140" cy="120" r="3"/>
+                <circle cx="20" cy="140" r="3"/><circle cx="40" cy="140" r="3"/><circle cx="60" cy="140" r="3"/><circle cx="80" cy="140" r="3"/><circle cx="100" cy="140" r="3"/><circle cx="120" cy="140" r="3"/><circle cx="140" cy="140" r="3"/>
+              </g>
+              <text x="80" y="158" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="10" fill="#9597A6">10,000+ labeled examples</text>
+            </g>
+            <!-- arrow -->
+            <path d="M170,80 L210,80" stroke="#9597A6" stroke-width="2" marker-end="url(#arrowOld)" fill="none"/>
+            <defs>
+              <marker id="arrowOld" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                <path d="M0,0 L10,5 L0,10 z" fill="#9597A6"/>
+              </marker>
+            </defs>
+            <!-- model gears -->
+            <g transform="translate(245,80)">
+              <circle cx="0" cy="0" r="28" fill="#FFF" stroke="#9597A6" stroke-width="2"/>
+              <g>
+                <circle cx="-10" cy="-6" r="9" fill="#9597A6"/>
+                <circle cx="10" cy="6" r="6" fill="#9597A6"/>
+              </g>
+              <animateTransform attributeName="transform" type="rotate" from="0 245 80" to="360 245 80" dur="4s" repeatCount="indefinite" additive="sum"/>
+            </g>
+            <text x="245" y="135" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="10" fill="#9597A6">Custom model</text>
+          </svg>
+        </div>
+        <div class="compare-stats">
+          <div class="compare-stat"><div class="compare-stat-val">10K+</div><div class="compare-stat-lbl">Labels</div></div>
+          <div class="compare-stat"><div class="compare-stat-val">2-4w</div><div class="compare-stat-lbl">Time</div></div>
+          <div class="compare-stat"><div class="compare-stat-val">High</div><div class="compare-stat-lbl">Cost</div></div>
+        </div>
+      </div>
+
+      <!-- NEW WAY -->
+      <div class="compare-card new">
+        <span class="compare-tag">The new way · Generative AI</span>
+        <h4>Show 5 examples, ask for a label</h4>
+        <div class="compare-svg">
+          <svg viewBox="0 0 320 160" xmlns="http://www.w3.org/2000/svg">
+            <!-- 5 labeled examples -->
+            <g transform="translate(10,12)">
+              <rect width="120" height="20" fill="#FCEAE8" stroke="#E74C3C" stroke-width="1.2" rx="3"/>
+              <text x="6" y="14" font-family="Plus Jakarta Sans" font-size="9" fill="#2B2D42">"refund please" </text>
+              <text x="88" y="14" font-family="Plus Jakarta Sans" font-size="9" fill="#E74C3C" font-weight="700">→ comp.</text>
+            </g>
+            <g transform="translate(10,38)">
+              <rect width="120" height="20" fill="#E8F0FE" stroke="#4285F4" stroke-width="1.2" rx="3"/>
+              <text x="6" y="14" font-family="Plus Jakarta Sans" font-size="9" fill="#2B2D42">"how do I login?"</text>
+              <text x="88" y="14" font-family="Plus Jakarta Sans" font-size="9" fill="#4285F4" font-weight="700">→ ques.</text>
+            </g>
+            <g transform="translate(10,64)">
+              <rect width="120" height="20" fill="#E8F5E9" stroke="#4CAF50" stroke-width="1.2" rx="3"/>
+              <text x="6" y="14" font-family="Plus Jakarta Sans" font-size="9" fill="#2B2D42">"great app!"</text>
+              <text x="88" y="14" font-family="Plus Jakarta Sans" font-size="9" fill="#4CAF50" font-weight="700">→ feedb.</text>
+            </g>
+            <g transform="translate(10,90)">
+              <rect width="120" height="20" fill="#FCEAE8" stroke="#E74C3C" stroke-width="1.2" rx="3"/>
+              <text x="6" y="14" font-family="Plus Jakarta Sans" font-size="9" fill="#2B2D42">"awful service"</text>
+              <text x="88" y="14" font-family="Plus Jakarta Sans" font-size="9" fill="#E74C3C" font-weight="700">→ comp.</text>
+            </g>
+            <g transform="translate(10,116)">
+              <rect width="120" height="20" fill="#E8F0FE" stroke="#4285F4" stroke-width="1.2" rx="3"/>
+              <text x="6" y="14" font-family="Plus Jakarta Sans" font-size="9" fill="#2B2D42">"is there a fee?"</text>
+              <text x="88" y="14" font-family="Plus Jakarta Sans" font-size="9" fill="#4285F4" font-weight="700">→ ques.</text>
+            </g>
+            <text x="70" y="152" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="10" fill="#E87A2E" font-weight="700">5 examples</text>
+
+            <!-- arrow -->
+            <path d="M150,80 L190,80" stroke="#E87A2E" stroke-width="2" marker-end="url(#arrowNew)" fill="none">
+              <animate attributeName="stroke-dasharray" values="0,40;40,0" dur="1.4s" repeatCount="indefinite"/>
+            </path>
+            <defs>
+              <marker id="arrowNew" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+                <path d="M0,0 L10,5 L0,10 z" fill="#E87A2E"/>
+              </marker>
+            </defs>
+            <!-- LLM box -->
+            <g transform="translate(220,55)">
+              <rect width="80" height="50" fill="#FFF" stroke="#E87A2E" stroke-width="2" rx="8"/>
+              <g transform="translate(40,25)">
+                <circle r="14" fill="rgba(232,122,46,0.15)" stroke="#E87A2E" stroke-width="1.5"/>
+                <text y="3" text-anchor="middle" font-family="DM Serif Display" font-size="13" fill="#E87A2E" font-weight="700">AI</text>
+              </g>
+              <text x="40" y="124" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="10" fill="#E87A2E" font-weight="700">ready</text>
+            </g>
+            <!-- sparkle -->
+            <g transform="translate(260,40)">
+              <path d="M0,-6 L1.5,-1.5 L6,0 L1.5,1.5 L0,6 L-1.5,1.5 L-6,0 L-1.5,-1.5 Z" fill="#F5B342">
+                <animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="3s" repeatCount="indefinite"/>
+                <animate attributeName="opacity" values="0.4;1;0.4" dur="2s" repeatCount="indefinite"/>
+              </path>
+            </g>
+          </svg>
+        </div>
+        <div class="compare-stats">
+          <div class="compare-stat"><div class="compare-stat-val">5</div><div class="compare-stat-lbl">Examples</div></div>
+          <div class="compare-stat"><div class="compare-stat-val">5 min</div><div class="compare-stat-lbl">Time</div></div>
+          <div class="compare-stat"><div class="compare-stat-val">Low</div><div class="compare-stat-lbl">Cost</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── SECTION 5: Definition - Few-shot ─── -->
+<section class="alt">
+  <div class="container">
+    <div class="def-card reveal">
+      <span class="def-tag">📘 Definition</span>
+      <h3><em>Few-shot</em> classification</h3>
+      <p>A pattern where you give an AI tool a handful of example input/output pairs — five to ten is usually enough — and then ask it to apply the same classification to new inputs. It works astonishingly well for tasks that would have required days of model training a decade ago.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ─── SECTION 6: Few-shot in action (step by step) ─── -->
+<section>
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-label"><span class="step">5</span>Few-shot in action</div>
+      <h2 class="section-title">Watch it work, <em>step by step</em>.</h2>
+      <p class="section-sub">Here's the exact recipe — what you show the AI, what arrives next, and what comes back.</p>
+    </div>
+
+    <div class="fewshot-stage reveal">
+      <div class="fs-row">
+        <div class="fs-num">1</div>
+        <div class="fs-body">
+          <h5>Show 5 labelled examples</h5>
+          <p style="font-size:.85rem;color:var(--text-secondary);margin-top:.2rem">You write a short list of "input → label" pairs. That's the whole training step.</p>
+          <div class="fs-examples">
+            <div class="fs-ex">"My card was charged twice" <span class="fs-arrow">→</span> <span class="fs-label complaint">complaint</span></div>
+            <div class="fs-ex">"How do I reset my PIN?" <span class="fs-arrow">→</span> <span class="fs-label question">question</span></div>
+            <div class="fs-ex">"Love the new app design" <span class="fs-arrow">→</span> <span class="fs-label feedback">feedback</span></div>
+            <div class="fs-ex">"Why is your IVR so slow?" <span class="fs-arrow">→</span> <span class="fs-label complaint">complaint</span></div>
+            <div class="fs-ex">"What time does support open?" <span class="fs-arrow">→</span> <span class="fs-label question">question</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="fs-row brain">
+        <div class="fs-num">2</div>
+        <div class="fs-body">
+          <h5>The AI infers the pattern</h5>
+          <div class="fs-brain">
+            <svg viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="25" cy="25" r="22" fill="rgba(43,45,66,0.06)" stroke="#2B2D42" stroke-width="1.5" stroke-dasharray="3 3">
+                <animateTransform attributeName="transform" type="rotate" from="0 25 25" to="360 25 25" dur="12s" repeatCount="indefinite"/>
+              </circle>
+              <path d="M16,18 Q16,11 22,11 Q25,11 25,15 M25,15 Q25,11 28,11 Q34,11 34,18 Q38,21 38,27 Q38,35 32,38 Q28,40 25,40 Q22,40 18,38 Q12,35 12,27 Q12,21 16,18 Z" fill="rgba(232,122,46,0.15)" stroke="#E87A2E" stroke-width="1.8" stroke-linejoin="round"/>
+              <circle cx="21" cy="23" r="1.5" fill="#E87A2E"/>
+              <circle cx="29" cy="23" r="1.5" fill="#E87A2E"/>
+            </svg>
+            <p>"I see — angry/frustrated language tends to be <strong style="color:var(--red)">complaint</strong>, anything ending in '?' or asking 'how/when/what' is a <strong style="color:var(--blue)">question</strong>, and praise is <strong style="color:var(--green)">feedback</strong>."</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="fs-row">
+        <div class="fs-num">3</div>
+        <div class="fs-body">
+          <h5>A brand-new message arrives</h5>
+          <p style="font-size:.85rem;color:var(--text-secondary);margin-top:.2rem">Something the AI has <em>never</em> seen before.</p>
+          <div class="fs-input" style="margin-top:.6rem">"I tried to add a beneficiary in the app for thirty minutes and it just keeps timing out — this is incredibly frustrating."</div>
+        </div>
+      </div>
+
+      <div class="fs-row success">
+        <div class="fs-num">4</div>
+        <div class="fs-body">
+          <h5>The AI returns a clean label</h5>
+          <div class="fs-result">
+            <span class="fs-result-tag">✓ complaint</span>
+            <p>Routed automatically to the digital-banking complaints queue. Total time: under one second.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── SECTION 7: Confidence Threshold idea ─── -->
+<section class="alt">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-label"><span class="step">6</span>The safety net · Confidence thresholds</div>
+      <h2 class="section-title">But what if the AI <em>isn't sure?</em></h2>
+      <p class="section-sub">The single most important guardrail in any automated decision system — and the one that almost never appears in the demo.</p>
+    </div>
+
+    <div class="conf-section">
+      <div class="conf-viz reveal">
+        <div style="font-size:.78rem;font-weight:700;color:var(--text-muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.8rem">AI's confidence on each query</div>
+
+        <div class="conf-item high">
+          <div class="conf-q">"My card was double-charged for the same hotel booking."</div>
+          <div class="conf-bar-wrap">
+            <div class="conf-bar"><div class="conf-bar-fill"></div></div>
+            <div class="conf-route">96% · auto-route</div>
+          </div>
+        </div>
+
+        <div class="conf-item mid">
+          <div class="conf-q">"What's the daily ATM limit for premium accounts?"</div>
+          <div class="conf-bar-wrap">
+            <div class="conf-bar"><div class="conf-bar-fill"></div></div>
+            <div class="conf-route">88% · auto-route</div>
+          </div>
+        </div>
+
+        <div class="threshold-line"><span>Threshold: 85%</span></div>
+
+        <div class="conf-item low">
+          <div class="conf-q">"Hi I want to know about the thing my husband set up last year — the new one."</div>
+          <div class="conf-bar-wrap">
+            <div class="conf-bar"><div class="conf-bar-fill"></div></div>
+            <div class="conf-route">52% · human review</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="conf-explain reveal">
+        <h3>If the AI is less than <em>85% sure</em>, a human looks at it.</h3>
+        <p>That's the entire safety idea. Most queries are clear and the AI handles them in milliseconds. The unclear ones — vague, garbled, multi-topic, emotional — get routed to a person who can ask follow-ups.</p>
+        <ul>
+          <li>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            High-confidence cases auto-resolve, freeing human attention.
+          </li>
+          <li>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Low-confidence cases get human judgment, where it actually matters.
+          </li>
+          <li>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            You get speed where it's safe — and care where it's needed.
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── SECTION 8: Definition - Confidence Threshold ─── -->
+<section>
+  <div class="container">
+    <div class="def-card reveal">
+      <span class="def-tag">📘 Definition</span>
+      <h3><em>Confidence</em> threshold</h3>
+      <p>A rule that says "if the system is less than X percent sure of its answer, route it to a human." A confidence threshold is the most important guardrail in any automated decision system, and it almost never appears in the demo. It always appears in the production version.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ─── SECTION 9: Full pipeline in action ─── -->
+<section class="dark">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-label"><span class="step">7</span>Putting it together</div>
+      <h2 class="section-title">The complete banking-triage pipeline.</h2>
+      <p class="section-sub">From one customer message to the right human, the right department, or the right automatic response — all in under a second.</p>
+    </div>
+
+    <div class="stage reveal">
+      <div class="stage-canvas" style="background:linear-gradient(135deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02))">
+        <svg viewBox="0 0 900 360" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <marker id="arrowW" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+              <path d="M0,0 L10,5 L0,10 z" fill="#F5943E"/>
+            </marker>
+            <marker id="arrowR" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+              <path d="M0,0 L10,5 L0,10 z" fill="#E74C3C"/>
+            </marker>
+            <marker id="arrowG" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+              <path d="M0,0 L10,5 L0,10 z" fill="#4CAF50"/>
+            </marker>
+          </defs>
+
+          <!-- 1. Customer message -->
+          <g>
+            <rect x="20" y="150" width="150" height="60" fill="#FFF" stroke="#F5943E" stroke-width="2" rx="10"/>
+            <text x="35" y="175" font-family="Plus Jakarta Sans" font-size="11" font-weight="700" fill="#2B2D42">Customer query</text>
+            <text x="35" y="195" font-family="Plus Jakarta Sans" font-size="10" fill="#6B6D7B">incoming...</text>
+            <circle cx="160" cy="160" r="9" fill="#F5943E"/>
+            <text x="160" y="164" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="9" font-weight="800" fill="#FFF">1</text>
+          </g>
+
+          <line x1="172" y1="180" x2="220" y2="180" stroke="#F5943E" stroke-width="2.5" stroke-dasharray="6 3" marker-end="url(#arrowW)">
+            <animate attributeName="stroke-dashoffset" values="20;0" dur="1.4s" repeatCount="indefinite"/>
+          </line>
+
+          <!-- 2. AI Classifier -->
+          <g>
+            <rect x="225" y="135" width="160" height="90" fill="rgba(232,122,46,0.1)" stroke="#E87A2E" stroke-width="2" rx="10"/>
+            <text x="305" y="158" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="11" font-weight="700" fill="#F5943E">FEW-SHOT CLASSIFIER</text>
+            <g transform="translate(305,188)">
+              <circle r="20" fill="rgba(255,255,255,0.08)" stroke="#F5943E" stroke-width="1.5" stroke-dasharray="3 2">
+                <animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="8s" repeatCount="indefinite"/>
+              </circle>
+              <text y="4" text-anchor="middle" font-family="DM Serif Display" font-size="14" fill="#F5943E" font-weight="700">AI</text>
+            </g>
+            <circle cx="375" cy="145" r="9" fill="#F5943E"/>
+            <text x="375" y="149" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="9" font-weight="800" fill="#FFF">2</text>
+          </g>
+
+          <line x1="388" y1="180" x2="440" y2="180" stroke="#F5943E" stroke-width="2.5" stroke-dasharray="6 3" marker-end="url(#arrowW)">
+            <animate attributeName="stroke-dashoffset" values="20;0" dur="1.4s" begin="0.4s" repeatCount="indefinite"/>
+          </line>
+
+          <!-- 3. Confidence gate -->
+          <g>
+            <polygon points="445,180 495,140 545,180 495,220" fill="rgba(245,179,66,0.18)" stroke="#F5B342" stroke-width="2"/>
+            <text x="495" y="176" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="10" font-weight="700" fill="#F5B342">CONFIDENT?</text>
+            <text x="495" y="190" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="9" fill="rgba(255,255,255,0.6)">≥ 85%</text>
+            <circle cx="540" cy="148" r="9" fill="#F5B342"/>
+            <text x="540" y="152" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="9" font-weight="800" fill="#FFF">3</text>
+          </g>
+
+          <!-- YES branch up to auto-route -->
+          <path d="M545,160 Q620,120 660,90" stroke="#4CAF50" stroke-width="2.5" stroke-dasharray="6 3" marker-end="url(#arrowG)" fill="none">
+            <animate attributeName="stroke-dashoffset" values="20;0" dur="1.4s" begin="0.8s" repeatCount="indefinite"/>
+          </path>
+          <text x="588" y="120" font-family="Plus Jakarta Sans" font-size="11" font-weight="700" fill="#4CAF50">YES</text>
+
+          <!-- NO branch down to human -->
+          <path d="M545,200 Q620,240 660,270" stroke="#E74C3C" stroke-width="2.5" stroke-dasharray="6 3" marker-end="url(#arrowR)" fill="none">
+            <animate attributeName="stroke-dashoffset" values="20;0" dur="1.4s" begin="0.8s" repeatCount="indefinite"/>
+          </path>
+          <text x="588" y="248" font-family="Plus Jakarta Sans" font-size="11" font-weight="700" fill="#E74C3C">NO</text>
+
+          <!-- 4a Auto-route -->
+          <g>
+            <rect x="665" y="40" width="200" height="105" fill="rgba(76,175,80,0.12)" stroke="#4CAF50" stroke-width="2" rx="10"/>
+            <text x="765" y="62" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="11" font-weight="700" fill="#4CAF50">AUTO-ROUTED</text>
+            <!-- mini bucket icons -->
+            <g transform="translate(680,75)">
+              <rect width="40" height="40" fill="#4CAF50" opacity="0.2" rx="4"/>
+              <text x="20" y="24" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="8" font-weight="700" fill="#4CAF50">CARDS</text>
+            </g>
+            <g transform="translate(730,75)">
+              <rect width="40" height="40" fill="#4CAF50" opacity="0.2" rx="4"/>
+              <text x="20" y="24" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="8" font-weight="700" fill="#4CAF50">LOANS</text>
+            </g>
+            <g transform="translate(780,75)">
+              <rect width="40" height="40" fill="#4CAF50" opacity="0.2" rx="4"/>
+              <text x="20" y="24" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="8" font-weight="700" fill="#4CAF50">FRAUD</text>
+            </g>
+            <g transform="translate(830,75)">
+              <rect width="25" height="40" fill="#4CAF50" opacity="0.2" rx="4"/>
+              <text x="12.5" y="20" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="8" font-weight="700" fill="#4CAF50">A/C</text>
+            </g>
+            <text x="765" y="135" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="10" fill="rgba(255,255,255,0.7)">~ 75% of all queries</text>
+            <circle cx="858" cy="50" r="9" fill="#4CAF50"/>
+            <text x="858" y="54" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="9" font-weight="800" fill="#FFF">4</text>
+          </g>
+
+          <!-- 4b Human reviewer -->
+          <g>
+            <rect x="665" y="225" width="200" height="105" fill="rgba(231,76,60,0.12)" stroke="#E74C3C" stroke-width="2" rx="10"/>
+            <text x="765" y="248" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="11" font-weight="700" fill="#E74C3C">HUMAN REVIEW</text>
+            <!-- person icon -->
+            <g transform="translate(745,270)">
+              <circle cx="20" cy="14" r="8" fill="#E74C3C"/>
+              <path d="M2,40 Q2,24 20,24 Q38,24 38,40" fill="#E74C3C"/>
+            </g>
+            <text x="765" y="322" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="10" fill="rgba(255,255,255,0.7)">~ 25% — the tricky ones</text>
+            <circle cx="858" cy="235" r="9" fill="#E74C3C"/>
+            <text x="858" y="239" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="9" font-weight="800" fill="#FFF">4</text>
+          </g>
+        </svg>
+      </div>
+
+      <div class="step-strip">
+        <div class="step-pill"><div class="step-num">1</div><div class="step-title">Customer query</div><div class="step-desc">Arrives via app, web form, or call transcript.</div></div>
+        <div class="step-pill"><div class="step-num">2</div><div class="step-title">AI classifies</div><div class="step-desc">Few-shot examples teach it your four departments.</div></div>
+        <div class="step-pill"><div class="step-num">3</div><div class="step-title">Confidence check</div><div class="step-desc">Below 85%? The case is flagged for a person.</div></div>
+        <div class="step-pill"><div class="step-num">4</div><div class="step-title">Right destination</div><div class="step-desc">Either auto-routed in milliseconds, or queued for human review.</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── SECTION 10: Takeaways ─── -->
+<section>
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-label"><span class="step">★</span>Key takeaways</div>
+      <h2 class="section-title">What to <em>remember</em>.</h2>
+    </div>
+
+    <div class="takeaways reveal">
+      <div class="take">
+        <div class="take-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M3 6h18M3 12h18M3 18h12" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+        </div>
+        <h5>Most professional reading is sorting</h5>
+        <p>Not deep analysis — just deciding where something belongs. That's where AI earns its keep.</p>
+      </div>
+      <div class="take">
+        <div class="take-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="2.2"/><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <h5>Five examples can replace a model</h5>
+        <p>Few-shot classification is the no-code shortcut. The skill is in choosing those examples well.</p>
+      </div>
+      <div class="take">
+        <div class="take-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 2L3 7v6c0 5 4 9 9 9s9-4 9-9V7l-9-5z" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/><path d="M9 12l2 2 4-4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <h5>Always add a confidence threshold</h5>
+        <p>The single most important guardrail. If the AI isn't sure, a human should look at it. Always.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── FOOTER ─── -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-copy">© 2026 MokshPath · AI-Native Summer Series</div>
+    <div class="footer-tag">Lesson 01 · From answering to <em>organising</em></div>
+  </div>
+</footer>
+
+<script>
+// IntersectionObserver-triggered fade-in for .reveal elements
+const io = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      e.target.classList.add('in');
+      io.unobserve(e.target);
+    }
+  });
+}, { threshold: 0.12 });
+document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+// Cycle through step-pills to show "active" state
+document.querySelectorAll('.step-strip').forEach(strip => {
+  const pills = strip.querySelectorAll('.step-pill');
+  if (!pills.length) return;
+  let i = 0;
+  setInterval(() => {
+    pills.forEach(p => p.classList.remove('active'));
+    pills[i].classList.add('active');
+    i = (i + 1) % pills.length;
+  }, 1800);
+});
+</script>
+</body>
+</html>
