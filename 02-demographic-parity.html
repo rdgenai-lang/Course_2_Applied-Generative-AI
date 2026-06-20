@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Demographic Parity — MokshPath</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{--orange:#E87A2E;--orange-dark:#D06A20;--orange-light:#F5943E;--orange-glow:rgba(232,122,46,0.12);--navy:#2B2D42;--navy-dark:#1A1B2E;--bg:#F3EDE7;--bg-card:#FFFFFF;--bg-light:#F9F5F0;--text-primary:#2B2D42;--text-secondary:#6B6D7B;--text-muted:#9597A6;--border:#E5DDD4;--green:#4CAF50;--red:#E84A4A;--yellow:#F5C16C;--blue:#5B8DEF;--shadow-sm:0 2px 8px rgba(43,45,66,0.06);--shadow-md:0 8px 24px rgba(43,45,66,0.08);--shadow-lg:0 16px 48px rgba(43,45,66,0.12);--radius:14px}
+html{scroll-behavior:smooth}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text-primary);overflow-x:hidden;-webkit-font-smoothing:antialiased;min-height:100vh}
+
+.top-bar{background:var(--navy-dark);padding:.45rem 2rem;display:flex;justify-content:center;gap:2rem}
+.top-bar a{color:rgba(255,255,255,0.85);font-size:.75rem;font-weight:500;text-decoration:none;letter-spacing:.02em}
+.nav{position:sticky;top:0;z-index:100;background:var(--bg-card);border-bottom:1px solid var(--border);padding:0 2rem;height:74px;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--shadow-sm)}
+.nav-logo{display:flex;align-items:center;gap:.7rem;text-decoration:none}
+.nav-logo-icon{width:42px;height:42px}
+.nav-logo-text{display:flex;flex-direction:column;line-height:1.15}
+.nav-logo-name{font-family:'DM Serif Display',serif;font-size:1.25rem;color:var(--navy)}.nav-logo-name span{color:var(--orange)}
+.nav-logo-tag{font-size:.62rem;color:var(--text-muted);font-weight:500;letter-spacing:.02em}
+.nav-mascot{height:60px;width:auto;animation:floatGentle 3.5s ease-in-out infinite;filter:drop-shadow(0 4px 12px rgba(232,122,46,0.18))}
+
+.hero{padding:3rem 2rem 2rem;text-align:center;max-width:900px;margin:0 auto}
+.hero-badge{display:inline-flex;align-items:center;gap:.45rem;padding:.4rem 1rem;border-radius:50px;background:var(--orange-glow);color:var(--orange);font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:1rem}
+.hero-badge .dot{width:7px;height:7px;border-radius:50%;background:var(--orange);animation:pulse 2s infinite}
+.hero h1{font-family:'DM Serif Display',serif;font-size:clamp(2rem,4vw,2.9rem);line-height:1.15;color:var(--navy);margin-bottom:.8rem}
+.hero h1 em{font-style:normal;color:var(--orange)}
+.hero-sub{font-size:1rem;color:var(--text-secondary);line-height:1.65;max-width:640px;margin:0 auto}
+
+.stage-wrap{max-width:1080px;margin:1.5rem auto 3rem;padding:0 2rem}
+.stage{background:var(--bg-card);border-radius:var(--radius);box-shadow:var(--shadow-md);border:1px solid var(--border);overflow:hidden}
+.stage-progress{display:flex;background:var(--bg-light);border-bottom:1px solid var(--border);padding:.65rem 1.2rem;gap:.4rem;align-items:center}
+.progress-dot{width:9px;height:9px;border-radius:50%;background:var(--border);transition:all .35s}
+.progress-dot.active{background:var(--orange);transform:scale(1.25);box-shadow:0 0 0 4px var(--orange-glow)}
+.progress-dot.done{background:var(--orange-light)}
+.progress-step-label{margin-left:auto;font-size:.72rem;font-weight:700;color:var(--text-muted);letter-spacing:.08em;text-transform:uppercase}
+.progress-step-label .num{color:var(--orange)}
+
+.stage-canvas{position:relative;height:430px;background:linear-gradient(180deg,#FBF7F2 0%,#F9F5F0 100%);overflow:hidden}
+.scene{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:0;visibility:hidden;transition:opacity .55s ease}
+.scene.active{opacity:1;visibility:visible}
+.scene svg{max-width:100%;max-height:100%}
+
+.stage-caption{padding:1.5rem 2rem 1.8rem;border-top:1px solid var(--border);background:var(--bg-card);min-height:130px}
+.caption-title{font-family:'DM Serif Display',serif;font-size:1.4rem;color:var(--navy);margin-bottom:.4rem}
+.caption-text{font-size:.95rem;color:var(--text-secondary);line-height:1.65}
+
+.stage-controls{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.5rem;background:var(--bg-light);border-top:1px solid var(--border)}
+.btn{display:inline-flex;align-items:center;gap:.4rem;padding:.6rem 1.2rem;border-radius:8px;font-size:.85rem;font-weight:600;border:none;cursor:pointer;font-family:inherit;transition:all .2s}
+.btn-fill{background:var(--orange);color:#fff}.btn-fill:hover:not(:disabled){background:var(--orange-dark);transform:translateY(-1px);box-shadow:0 4px 14px rgba(232,122,46,0.3)}.btn-fill:disabled{opacity:.35;cursor:not-allowed}
+.btn-ghost{background:transparent;border:1.5px solid var(--border);color:var(--text-primary)}.btn-ghost:hover:not(:disabled){border-color:var(--orange);color:var(--orange)}.btn-ghost:disabled{opacity:.35;cursor:not-allowed}
+.btn-play{background:var(--navy-dark);color:#fff}.btn-play:hover{background:var(--navy)}
+.step-counter{font-size:.8rem;color:var(--text-muted);font-weight:600}.step-counter span{color:var(--orange);font-weight:800}
+
+.takeaway{max-width:1080px;margin:0 auto 4rem;padding:0 2rem}
+.takeaway-card{background:linear-gradient(135deg,var(--navy-dark),var(--navy));color:#fff;border-radius:var(--radius);padding:2.2rem 2.5rem;position:relative;overflow:hidden}
+.takeaway-card::before{content:'';position:absolute;top:-50px;right:-50px;width:180px;height:180px;border-radius:50%;background:rgba(232,122,46,0.1)}
+.takeaway-label{font-size:.7rem;font-weight:700;color:var(--orange-light);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.6rem;position:relative}
+.takeaway-card h2{font-family:'DM Serif Display',serif;font-size:1.6rem;margin-bottom:.7rem;position:relative}
+.takeaway-card p{color:rgba(255,255,255,0.78);line-height:1.7;font-size:.95rem;position:relative;max-width:760px}
+
+footer{text-align:center;padding:1.5rem;color:var(--text-muted);font-size:.78rem;border-top:1px solid var(--border)}
+
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.4)}}
+@keyframes floatGentle{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes popIn{from{opacity:0;transform:scale(0.4)}to{opacity:1;transform:scale(1)}}
+@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes drop{0%{opacity:0;transform:translateY(-50px)}60%{opacity:1;transform:translateY(8px)}100%{opacity:1;transform:translateY(0)}}
+@keyframes growBar{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+@keyframes drift{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes drawLine{from{stroke-dashoffset:300}to{stroke-dashoffset:0}}
+
+.scene.active .anim-1{animation:popIn .55s ease both}
+.scene.active .anim-2{animation:popIn .55s ease .15s both}
+.scene.active .anim-3{animation:popIn .55s ease .3s both}
+.scene.active .anim-4{animation:popIn .55s ease .45s both}
+.scene.active .anim-5{animation:popIn .55s ease .6s both}
+.scene.active .anim-6{animation:popIn .55s ease .75s both}
+.scene.active .slide-up{animation:slideUp .55s ease both}
+.scene.active .drop-1{animation:drop .6s ease .1s both}
+.scene.active .drop-2{animation:drop .6s ease .25s both}
+.scene.active .drop-3{animation:drop .6s ease .4s both}
+.scene.active .drop-4{animation:drop .6s ease .55s both}
+.scene.active .grow-1{animation:growBar .7s ease .2s both;transform-origin:bottom}
+.scene.active .grow-2{animation:growBar .7s ease .4s both;transform-origin:bottom}
+.scene.active .grow-3{animation:growBar .7s ease .6s both;transform-origin:bottom}
+.scene.active .grow-4{animation:growBar .7s ease .8s both;transform-origin:bottom}
+
+@media (max-width:680px){
+.nav{padding:0 1rem;height:60px}.nav-mascot{height:46px}.nav-logo-name{font-size:1.05rem}.nav-logo-tag{font-size:.55rem}
+.hero{padding:2rem 1rem 1rem}.stage-wrap{padding:0 1rem;margin:1rem auto 2rem}
+.stage-canvas{height:340px}.stage-caption{padding:1.2rem 1.2rem 1.4rem}
+.stage-controls{padding:.8rem 1rem;flex-wrap:wrap;gap:.6rem}
+.takeaway{padding:0 1rem;margin-bottom:2.5rem}.takeaway-card{padding:1.6rem}
+.btn{padding:.55rem .9rem;font-size:.8rem}
+}
+</style>
+</head>
+<body>
+
+<div class="top-bar"><a href="#">Request a Demo</a><a href="#">FAQs</a><a href="#">Help Center</a></div>
+
+<nav class="nav">
+  <a href="#" class="nav-logo">
+    <svg class="nav-logo-icon" viewBox="0 0 42 42" fill="none"><circle cx="21" cy="14" r="6" fill="#E87A2E"/><path d="M21 20c-6 0-10 3-10 7 0 2 1 3 2 4l2-3c1-1.5 2.5-2 3-2h6c.5 0 2 .5 3 2l2 3c1-1 2-2 2-4 0-4-4-7-10-7z" fill="#E87A2E"/><path d="M11 31c0 0 2 4 10 4s10-4 10-4" stroke="#E87A2E" stroke-width="1.5" stroke-linecap="round"/><ellipse cx="21" cy="38" rx="8" ry="2" fill="#E87A2E" opacity=".15"/><circle cx="21" cy="14" r="3" fill="#FFF" opacity=".3"/></svg>
+    <div class="nav-logo-text"><span class="nav-logo-name">Moksh<span>Path</span></span><span class="nav-logo-tag">Guided Path to True Learning</span></div>
+  </a>
+  <img src="hero.svg" alt="MokshPath Mascot" class="nav-mascot">
+</nav>
+
+<section class="hero">
+  <div class="hero-badge"><span class="dot"></span> Fairness Criterion · 1 of 3</div>
+  <h1><em>Demographic Parity</em></h1>
+  <p class="hero-sub">Across different groups — gender, age bracket, region, language — does the system produce favourable outcomes at roughly equal <em>rates</em>? Let's watch a bank's loan-approval AI to see what this means.</p>
+</section>
+
+<div class="stage-wrap">
+  <div class="stage">
+    <div class="stage-progress">
+      <span class="progress-dot active"></span>
+      <span class="progress-dot"></span>
+      <span class="progress-dot"></span>
+      <span class="progress-dot"></span>
+      <span class="progress-dot"></span>
+      <span class="progress-dot"></span>
+      <span class="progress-step-label">Step <span class="num" id="stepNum">1</span>/6</span>
+    </div>
+
+    <div class="stage-canvas" id="canvas">
+
+      <!-- ── Scene 1: Meet four groups ── -->
+      <div class="scene active" data-scene="1">
+        <svg viewBox="0 0 700 380" width="100%" height="100%">
+          <text class="anim-1" x="350" y="50" text-anchor="middle" font-family="DM Serif Display" font-size="20" fill="#2B2D42">Four groups of applicants apply for a loan</text>
+          <!-- Group A -->
+          <g class="anim-2">
+            <rect x="50" y="100" width="130" height="220" rx="14" fill="#FFF" stroke="#E87A2E" stroke-width="2.5"/>
+            <circle cx="115" cy="150" r="20" fill="#E87A2E"/>
+            <rect x="95" y="172" width="40" height="34" rx="6" fill="#E87A2E" opacity=".7"/>
+            <circle cx="90" cy="220" r="14" fill="#F5943E"/>
+            <rect x="76" y="234" width="28" height="22" rx="4" fill="#F5943E" opacity=".7"/>
+            <circle cx="140" cy="220" r="14" fill="#F5943E"/>
+            <rect x="126" y="234" width="28" height="22" rx="4" fill="#F5943E" opacity=".7"/>
+            <text x="115" y="290" text-anchor="middle" font-family="DM Serif Display" font-size="15" fill="#2B2D42">Group A</text>
+            <text x="115" y="308" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="600" font-size="11" fill="#9597A6">100 applicants</text>
+          </g>
+          <!-- Group B -->
+          <g class="anim-3">
+            <rect x="200" y="100" width="130" height="220" rx="14" fill="#FFF" stroke="#5B8DEF" stroke-width="2.5"/>
+            <circle cx="265" cy="150" r="20" fill="#5B8DEF"/>
+            <rect x="245" y="172" width="40" height="34" rx="6" fill="#5B8DEF" opacity=".7"/>
+            <circle cx="240" cy="220" r="14" fill="#7AA5F2"/>
+            <rect x="226" y="234" width="28" height="22" rx="4" fill="#7AA5F2" opacity=".7"/>
+            <circle cx="290" cy="220" r="14" fill="#7AA5F2"/>
+            <rect x="276" y="234" width="28" height="22" rx="4" fill="#7AA5F2" opacity=".7"/>
+            <text x="265" y="290" text-anchor="middle" font-family="DM Serif Display" font-size="15" fill="#2B2D42">Group B</text>
+            <text x="265" y="308" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="600" font-size="11" fill="#9597A6">100 applicants</text>
+          </g>
+          <!-- Group C -->
+          <g class="anim-4">
+            <rect x="370" y="100" width="130" height="220" rx="14" fill="#FFF" stroke="#4CAF50" stroke-width="2.5"/>
+            <circle cx="435" cy="150" r="20" fill="#4CAF50"/>
+            <rect x="415" y="172" width="40" height="34" rx="6" fill="#4CAF50" opacity=".7"/>
+            <circle cx="410" cy="220" r="14" fill="#7DCB7F"/>
+            <rect x="396" y="234" width="28" height="22" rx="4" fill="#7DCB7F" opacity=".7"/>
+            <circle cx="460" cy="220" r="14" fill="#7DCB7F"/>
+            <rect x="446" y="234" width="28" height="22" rx="4" fill="#7DCB7F" opacity=".7"/>
+            <text x="435" y="290" text-anchor="middle" font-family="DM Serif Display" font-size="15" fill="#2B2D42">Group C</text>
+            <text x="435" y="308" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="600" font-size="11" fill="#9597A6">100 applicants</text>
+          </g>
+          <!-- Group D -->
+          <g class="anim-5">
+            <rect x="540" y="100" width="130" height="220" rx="14" fill="#FFF" stroke="#F5C16C" stroke-width="2.5"/>
+            <circle cx="605" cy="150" r="20" fill="#E0A350"/>
+            <rect x="585" y="172" width="40" height="34" rx="6" fill="#E0A350" opacity=".7"/>
+            <circle cx="580" cy="220" r="14" fill="#F5C16C"/>
+            <rect x="566" y="234" width="28" height="22" rx="4" fill="#F5C16C" opacity=".7"/>
+            <circle cx="630" cy="220" r="14" fill="#F5C16C"/>
+            <rect x="616" y="234" width="28" height="22" rx="4" fill="#F5C16C" opacity=".7"/>
+            <text x="605" y="290" text-anchor="middle" font-family="DM Serif Display" font-size="15" fill="#2B2D42">Group D</text>
+            <text x="605" y="308" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="600" font-size="11" fill="#9597A6">100 applicants</text>
+          </g>
+          <text class="anim-6" x="350" y="355" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="600" font-size="12" fill="#9597A6">Same number of people. Same starting line.</text>
+        </svg>
+      </div>
+
+      <!-- ── Scene 2: AI makes decisions ── -->
+      <div class="scene" data-scene="2">
+        <svg viewBox="0 0 700 380" width="100%" height="100%">
+          <!-- AI box -->
+          <g class="anim-1">
+            <rect x="270" y="40" width="160" height="80" rx="10" fill="#1A1B2E"/>
+            <circle cx="350" cy="80" r="22" fill="#E87A2E"/>
+            <circle cx="350" cy="80" r="10" fill="#FFF"/>
+            <text x="350" y="138" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="700" font-size="11" fill="#2B2D42">LOAN APPROVAL AI</text>
+          </g>
+          <!-- 4 columns of "decisions falling" -->
+          <!-- Group A -->
+          <g>
+            <text class="anim-2" x="100" y="170" text-anchor="middle" font-family="DM Serif Display" font-size="14" fill="#E87A2E">Group A</text>
+            <g class="drop-1"><circle cx="80" cy="195" r="8" fill="#4CAF50"/><text x="80" y="199" text-anchor="middle" font-size="10" fill="#FFF" font-weight="700">✓</text></g>
+            <g class="drop-2"><circle cx="100" cy="195" r="8" fill="#4CAF50"/><text x="100" y="199" text-anchor="middle" font-size="10" fill="#FFF" font-weight="700">✓</text></g>
+            <g class="drop-3"><circle cx="120" cy="195" r="8" fill="#4CAF50"/><text x="120" y="199" text-anchor="middle" font-size="10" fill="#FFF" font-weight="700">✓</text></g>
+            <g class="drop-1"><circle cx="80" cy="220" r="8" fill="#4CAF50"/><text x="80" y="224" text-anchor="middle" font-size="10" fill="#FFF" font-weight="700">✓</text></g>
+            <g class="drop-2"><circle cx="100" cy="220" r="8" fill="#4CAF50"/><text x="100" y="224" text-anchor="middle" font-size="10" fill="#FFF" font-weight="700">✓</text></g>
+            <g class="drop-3"><circle cx="120" cy="220" r="8" fill="#4CAF50"/><text x="120" y="224" text-anchor="middle" font-size="10" fill="#FFF" font-weight="700">✓</text></g>
+            <g class="drop-4"><circle cx="80" cy="245" r="8" fill="#4CAF50"/><text x="80" y="249" text-anchor="middle" font-size="10" fill="#FFF" font-weight="700">✓</text></g>
+            <g class="drop-4"><circle cx="100" cy="245" r="8" fill="#E84A4A"/><text x="100" y="249" text-anchor="middle" font-size="10" fill="#FFF" font-weight="700">✗</text></g>
+            <g class="drop-4"><circle cx="120" cy="245" r="8" fill="#E84A4A"/><text x="120" y="249" text-anchor="middle" font-size="10" fill="#FFF" font-weight="700">✗</text></g>
+            <text x="100" y="290" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="800" font-size="20" fill="#4CAF50">70%</text>
+            <text x="100" y="310" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="600" font-size="10" fill="#9597A6">approved</text>
+          </g>
+          <!-- Group B -->
+          <g>
+            <text class="anim-2" x="265" y="170" text-anchor="middle" font-family="DM Serif Display" font-size="14" fill="#5B8DEF">Group B</text>
+            <g class="drop-1"><circle cx="245" cy="195" r="8" fill="#4CAF50"/><text x="245" y="199" text-anchor="middle" font-size="10" fill="#FFF" font-weight="700">✓</text></g>
+            <g class="drop-2"><circle cx="265" cy="195" r="8" fill="#4CAF50"/><text x="265" y="199" text-anchor="middle" font-size="10" fill="#FFF" font-weight="700">✓</text></g>
+            <g class="drop-3"><circle cx="285" cy="195" r="8" fill="#4CAF50"/><text x="285" y="199" text-anchor="middle" font-size="10" fill="#FFF" font-weight="700">✓</text></g>
+            <g class="drop-1"><circle cx="245" cy="220" r="8" fill="#4CAF50"/><text x="245" y="224" text-anchor="middle" font-size="10" fill="#FFF" font-weight="700">✓</text></g>
+            <g class="drop-2"><circle cx="265" cy="220" r="8" fill="#4CAF50"/><text x="265" y="224" text-anchor="middle" font-size="10" fill="#FFF" font-weight="700">✓</text></g>
+            <g class="drop-3"><circle cx="285" cy="220" r="8" fill="#E84A4A"/><text x="285" y="224" text-anchor="middle" font-size="10" fill="#FFF" font-weight="700">✗</text></g>
+            <g class="drop-4"><circle cx="245" cy="245" r="8" fill="#E84A4A"/><text x="245" y="249" text-anchor="middle" font-size="10" fill="#FFF" font-weight="700">✗</text></g>
+            <g class="drop-4"><circle cx="265" cy="245" r="8" fill="#E84A4A"/><text x="265" y="249" text-anchor="middle" font-size="10" fill="#FFF" font-weight="700">✗</text></g>
+            <g class="drop-4"><circle cx="285" cy="245" r="8" fill="#E84A4A"/><text x="285" y="249" text-anchor="middle" font-size="10" fill="#FFF" font-weight="700">✗</text></g>
+            <text x="265" y="290" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="800" font-size="20" fill="#E0A350">50%</text>
+            <text x="265" y="310" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="600" font-size="10" fill="#9597A6">approved</text>
+          </g>
+          <!-- Group C -->
+          <g>
+            <text class="anim-2" x="435" y="170" text-anchor="middle" font-family="DM Serif Display" font-size="14" fill="#4CAF50">Group C</text>
+            <g class="drop-1"><circle cx="415" cy="195" r="8" fill="#4CAF50"/><text x="415" y="199" text-anchor="middle" font-size="10" fill="#FFF" font-weight="700">✓</text></g>
+            <g class="drop-2"><circle cx="435" cy="195" r="8" fill="#4CAF50"/><text x="435" y="199" text-anchor="middle" font-size="10" fill="#FFF" font-weight="700">✓</text></g>
+            <g class="drop-3"><circle cx="455" cy="195" r="8" fill="#4CAF50"/><text x="455" y="199" text-anchor="middle" font-size="10" fill="#FFF" font-weight="700">✓</text></g>
+            <g class="drop-1"><circle cx="415" cy="220" r="8" fill="#4CAF50"/><text x="415" y="224" text-anchor="middle" font-size="10" fill="#FFF" font-weight="700">✓</text></g>
+            <g class="drop-2"><circle cx="435" cy="220" r="8" fill="#4CAF50"/><text x="435" y="224" text-anchor="middle" font-size="10" fill="#FFF" font-weight="700">✓</text></g>
+            <g class="drop-3"><circle cx="455" cy="220" r="8" fill="#E84A4A"/><text x="455" y="224" text-anchor="middle" font-size="10" fill="#FFF" font-weight="700">✗</text></g>
+            <g class="drop-4"><circle cx="415" cy="245" r="8" fill="#E84A4A"/><text x="415" y="249" text-anchor="middle" font-size="10" fill="#FFF" font-weight="700">✗</text></g>
+            <g class="drop-4"><circle cx="435" cy="245" r="8" fill="#E84A4A"/><text x="435" y="249" text-anchor="middle" font-size="10" fill="#FFF" font-weight="700">✗</text></g>
+            <g class="drop-4"><circle cx="455" cy="245" r="8" fill="#E84A4A"/><text x="455" y="249" text-anchor="middle" font-size="10" fill="#FFF" font-weight="700">✗</text></g>
+            <text x="435" y="290" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="800" font-size="20" fill="#E0A350">50%</text>
+            <text x="435" y="310" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="600" font-size="10" fill="#9597A6">approved</text>
+          </g>
+          <!-- Group D -->
+          <g>
+            <text class="anim-2" x="605" y="170" text-anchor="middle" font-family="DM Serif Display" font-size="14" fill="#E0A350">Group D</text>
+            <g class="drop-1"><circle cx="585" cy="195" r="8" fill="#4CAF50"/><text x="585" y="199" text-anchor="middle" font-size="10" fill="#FFF" font-weight="700">✓</text></g>
+            <g class="drop-2"><circle cx="605" cy="195" r="8" fill="#4CAF50"/><text x="605" y="199" text-anchor="middle" font-size="10" fill="#FFF" font-weight="700">✓</text></g>
+            <g class="drop-3"><circle cx="625" cy="195" r="8" fill="#E84A4A"/><text x="625" y="199" text-anchor="middle" font-size="10" fill="#FFF" font-weight="700">✗</text></g>
+            <g class="drop-1"><circle cx="585" cy="220" r="8" fill="#E84A4A"/><text x="585" y="224" text-anchor="middle" font-size="10" fill="#FFF" font-weight="700">✗</text></g>
+            <g class="drop-2"><circle cx="605" cy="220" r="8" fill="#E84A4A"/><text x="605" y="224" text-anchor="middle" font-size="10" fill="#FFF" font-weight="700">✗</text></g>
+            <g class="drop-3"><circle cx="625" cy="220" r="8" fill="#E84A4A"/><text x="625" y="224" text-anchor="middle" font-size="10" fill="#FFF" font-weight="700">✗</text></g>
+            <g class="drop-4"><circle cx="585" cy="245" r="8" fill="#E84A4A"/><text x="585" y="249" text-anchor="middle" font-size="10" fill="#FFF" font-weight="700">✗</text></g>
+            <g class="drop-4"><circle cx="605" cy="245" r="8" fill="#E84A4A"/><text x="605" y="249" text-anchor="middle" font-size="10" fill="#FFF" font-weight="700">✗</text></g>
+            <g class="drop-4"><circle cx="625" cy="245" r="8" fill="#E84A4A"/><text x="625" y="249" text-anchor="middle" font-size="10" fill="#FFF" font-weight="700">✗</text></g>
+            <text x="605" y="290" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="800" font-size="20" fill="#E84A4A">20%</text>
+            <text x="605" y="310" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="600" font-size="10" fill="#9597A6">approved</text>
+          </g>
+          <text x="350" y="350" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="600" font-size="12" fill="#9597A6">✓ = approved · ✗ = denied</text>
+        </svg>
+      </div>
+
+      <!-- ── Scene 3: Plot the bars ── -->
+      <div class="scene" data-scene="3">
+        <svg viewBox="0 0 700 380" width="100%" height="100%">
+          <text class="anim-1" x="350" y="40" text-anchor="middle" font-family="DM Serif Display" font-size="20" fill="#2B2D42">Approval rate by group</text>
+          <!-- Y axis -->
+          <line x1="80" y1="80" x2="80" y2="300" stroke="#9597A6" stroke-width="1.5"/>
+          <line x1="80" y1="300" x2="640" y2="300" stroke="#9597A6" stroke-width="1.5"/>
+          <!-- Grid + 100% reference -->
+          <line x1="80" y1="80" x2="640" y2="80" stroke="#E5DDD4" stroke-dasharray="3 3"/>
+          <text x="73" y="84" text-anchor="end" font-family="Plus Jakarta Sans" font-weight="600" font-size="10" fill="#9597A6">100%</text>
+          <line x1="80" y1="190" x2="640" y2="190" stroke="#E5DDD4" stroke-dasharray="3 3"/>
+          <text x="73" y="194" text-anchor="end" font-family="Plus Jakarta Sans" font-weight="600" font-size="10" fill="#9597A6">50%</text>
+          <text x="73" y="304" text-anchor="end" font-family="Plus Jakarta Sans" font-weight="600" font-size="10" fill="#9597A6">0%</text>
+          <!-- Bars (heights: 70%=154px, 50%=110px, 50%=110px, 20%=44px) -->
+          <!-- A: 70% -->
+          <rect class="grow-1" x="135" y="146" width="60" height="154" fill="#E87A2E" rx="4"/>
+          <text class="anim-2" x="165" y="138" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="800" font-size="16" fill="#E87A2E">70%</text>
+          <text x="165" y="318" text-anchor="middle" font-family="DM Serif Display" font-size="13" fill="#2B2D42">A</text>
+          <!-- B: 50% -->
+          <rect class="grow-2" x="245" y="190" width="60" height="110" fill="#5B8DEF" rx="4"/>
+          <text class="anim-3" x="275" y="182" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="800" font-size="16" fill="#5B8DEF">50%</text>
+          <text x="275" y="318" text-anchor="middle" font-family="DM Serif Display" font-size="13" fill="#2B2D42">B</text>
+          <!-- C: 50% -->
+          <rect class="grow-3" x="355" y="190" width="60" height="110" fill="#4CAF50" rx="4"/>
+          <text class="anim-4" x="385" y="182" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="800" font-size="16" fill="#4CAF50">50%</text>
+          <text x="385" y="318" text-anchor="middle" font-family="DM Serif Display" font-size="13" fill="#2B2D42">C</text>
+          <!-- D: 20% -->
+          <rect class="grow-4" x="465" y="256" width="60" height="44" fill="#E84A4A" rx="4"/>
+          <text class="anim-5" x="495" y="248" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="800" font-size="16" fill="#E84A4A">20%</text>
+          <text x="495" y="318" text-anchor="middle" font-family="DM Serif Display" font-size="13" fill="#2B2D42">D</text>
+          <text x="350" y="350" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="600" font-size="12" fill="#9597A6">Same input, very different output rates.</text>
+        </svg>
+      </div>
+
+      <!-- ── Scene 4: The gap ── -->
+      <div class="scene" data-scene="4">
+        <svg viewBox="0 0 700 380" width="100%" height="100%">
+          <text class="anim-1" x="350" y="40" text-anchor="middle" font-family="DM Serif Display" font-size="20" fill="#2B2D42">The gap between groups: <tspan fill="#E84A4A">50 percentage points</tspan></text>
+          <!-- A bar (70%) -->
+          <rect class="grow-1" x="135" y="146" width="60" height="154" fill="#E87A2E" rx="4" opacity=".35"/>
+          <text x="165" y="138" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="800" font-size="16" fill="#E87A2E">70%</text>
+          <text x="165" y="318" text-anchor="middle" font-family="DM Serif Display" font-size="13" fill="#2B2D42">A</text>
+          <!-- B -->
+          <rect class="grow-2" x="245" y="190" width="60" height="110" fill="#5B8DEF" rx="4" opacity=".35"/>
+          <text x="275" y="182" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="800" font-size="16" fill="#5B8DEF">50%</text>
+          <text x="275" y="318" text-anchor="middle" font-family="DM Serif Display" font-size="13" fill="#2B2D42">B</text>
+          <!-- C -->
+          <rect class="grow-3" x="355" y="190" width="60" height="110" fill="#4CAF50" rx="4" opacity=".35"/>
+          <text x="385" y="182" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="800" font-size="16" fill="#4CAF50">50%</text>
+          <text x="385" y="318" text-anchor="middle" font-family="DM Serif Display" font-size="13" fill="#2B2D42">C</text>
+          <!-- D -->
+          <rect class="grow-4" x="465" y="256" width="60" height="44" fill="#E84A4A" rx="4" opacity=".35"/>
+          <text x="495" y="248" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="800" font-size="16" fill="#E84A4A">20%</text>
+          <text x="495" y="318" text-anchor="middle" font-family="DM Serif Display" font-size="13" fill="#2B2D42">D</text>
+          <!-- Axes -->
+          <line x1="80" y1="80" x2="80" y2="300" stroke="#9597A6" stroke-width="1.5"/>
+          <line x1="80" y1="300" x2="640" y2="300" stroke="#9597A6" stroke-width="1.5"/>
+          <!-- Gap indicator -->
+          <g class="anim-2">
+            <line x1="165" y1="146" x2="495" y2="146" stroke="#E84A4A" stroke-width="2" stroke-dasharray="4 4"/>
+            <line x1="165" y1="256" x2="495" y2="256" stroke="#E84A4A" stroke-width="2" stroke-dasharray="4 4"/>
+            <line x1="580" y1="146" x2="580" y2="256" stroke="#E84A4A" stroke-width="3" marker-start="url(#arDn)" marker-end="url(#arUp)"/>
+            <rect x="595" y="186" width="60" height="34" rx="6" fill="#E84A4A"/>
+            <text x="625" y="208" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="800" font-size="14" fill="#FFF">50 pts</text>
+          </g>
+          <defs>
+            <marker id="arUp" markerWidth="10" markerHeight="10" refX="5" refY="7" orient="auto"><path d="M0 7 L5 0 L10 7 Z" fill="#E84A4A"/></marker>
+            <marker id="arDn" markerWidth="10" markerHeight="10" refX="5" refY="3" orient="auto"><path d="M0 3 L5 10 L10 3 Z" fill="#E84A4A"/></marker>
+          </defs>
+          <text class="anim-3" x="350" y="348" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="600" font-size="13" fill="#E84A4A">Group D is approved at less than a third of Group A's rate.</text>
+        </svg>
+      </div>
+
+      <!-- ── Scene 5: Demographic parity = equal rates ── -->
+      <div class="scene" data-scene="5">
+        <svg viewBox="0 0 700 380" width="100%" height="100%">
+          <text class="anim-1" x="350" y="40" text-anchor="middle" font-family="DM Serif Display" font-size="20" fill="#2B2D42"><tspan fill="#E87A2E">Demographic parity</tspan> asks for this:</text>
+          <!-- All bars at the same height ~ 55% -->
+          <line x1="80" y1="80" x2="80" y2="300" stroke="#9597A6" stroke-width="1.5"/>
+          <line x1="80" y1="300" x2="640" y2="300" stroke="#9597A6" stroke-width="1.5"/>
+          <line x1="80" y1="179" x2="640" y2="179" stroke="#E87A2E" stroke-width="2" stroke-dasharray="6 4"/>
+          <text x="650" y="183" font-family="Plus Jakarta Sans" font-weight="700" font-size="11" fill="#E87A2E">target</text>
+          <rect class="grow-1" x="135" y="179" width="60" height="121" fill="#E87A2E" rx="4"/>
+          <text x="165" y="171" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="800" font-size="16" fill="#E87A2E">55%</text>
+          <text x="165" y="318" text-anchor="middle" font-family="DM Serif Display" font-size="13" fill="#2B2D42">A</text>
+          <rect class="grow-2" x="245" y="179" width="60" height="121" fill="#5B8DEF" rx="4"/>
+          <text x="275" y="171" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="800" font-size="16" fill="#5B8DEF">55%</text>
+          <text x="275" y="318" text-anchor="middle" font-family="DM Serif Display" font-size="13" fill="#2B2D42">B</text>
+          <rect class="grow-3" x="355" y="179" width="60" height="121" fill="#4CAF50" rx="4"/>
+          <text x="385" y="171" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="800" font-size="16" fill="#4CAF50">55%</text>
+          <text x="385" y="318" text-anchor="middle" font-family="DM Serif Display" font-size="13" fill="#2B2D42">C</text>
+          <rect class="grow-4" x="465" y="179" width="60" height="121" fill="#E0A350" rx="4"/>
+          <text x="495" y="171" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="800" font-size="16" fill="#E0A350">55%</text>
+          <text x="495" y="318" text-anchor="middle" font-family="DM Serif Display" font-size="13" fill="#2B2D42">D</text>
+          <!-- Checkmark -->
+          <g class="anim-5">
+            <circle cx="600" cy="120" r="22" fill="#4CAF50"/>
+            <path d="M590 120 L597 127 L610 113" stroke="#FFF" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          </g>
+          <text class="anim-5" x="350" y="350" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="600" font-size="13" fill="#4CAF50">Roughly equal favourable-outcome rates across all four groups.</text>
+        </svg>
+      </div>
+
+      <!-- ── Scene 6: Caveat ── -->
+      <div class="scene" data-scene="6">
+        <svg viewBox="0 0 700 380" width="100%" height="100%">
+          <text class="anim-1" x="350" y="50" text-anchor="middle" font-family="DM Serif Display" font-size="20" fill="#2B2D42">Useful — but not the only answer.</text>
+          <!-- Two scenarios side by side -->
+          <g class="anim-2">
+            <rect x="60" y="90" width="280" height="220" rx="12" fill="#FFF" stroke="#4CAF50" stroke-width="2.5"/>
+            <text x="200" y="125" text-anchor="middle" font-family="DM Serif Display" font-size="15" fill="#4CAF50">When it fits</text>
+            <line x1="90" y1="140" x2="310" y2="140" stroke="#E5DDD4"/>
+            <g transform="translate(85 165)">
+              <circle cx="0" cy="0" r="6" fill="#4CAF50"/>
+              <text x="14" y="4" font-family="Plus Jakarta Sans" font-weight="600" font-size="12" fill="#2B2D42">Hiring screens</text>
+            </g>
+            <g transform="translate(85 195)">
+              <circle cx="0" cy="0" r="6" fill="#4CAF50"/>
+              <text x="14" y="4" font-family="Plus Jakarta Sans" font-weight="600" font-size="12" fill="#2B2D42">Ad delivery for housing</text>
+            </g>
+            <g transform="translate(85 225)">
+              <circle cx="0" cy="0" r="6" fill="#4CAF50"/>
+              <text x="14" y="4" font-family="Plus Jakarta Sans" font-weight="600" font-size="12" fill="#2B2D42">Outreach campaigns</text>
+            </g>
+            <g transform="translate(85 255)">
+              <circle cx="0" cy="0" r="6" fill="#4CAF50"/>
+              <text x="14" y="4" font-family="Plus Jakarta Sans" font-weight="600" font-size="12" fill="#2B2D42">Access to opportunity</text>
+            </g>
+            <text x="200" y="288" text-anchor="middle" font-family="Plus Jakarta Sans" font-style="italic" font-size="10" fill="#9597A6">Where equal access is the goal</text>
+          </g>
+          <g class="anim-3">
+            <rect x="360" y="90" width="280" height="220" rx="12" fill="#FFF" stroke="#E84A4A" stroke-width="2.5"/>
+            <text x="500" y="125" text-anchor="middle" font-family="DM Serif Display" font-size="15" fill="#E84A4A">When it doesn't</text>
+            <line x1="390" y1="140" x2="610" y2="140" stroke="#E5DDD4"/>
+            <g transform="translate(385 165)">
+              <circle cx="0" cy="0" r="6" fill="#E84A4A"/>
+              <text x="14" y="4" font-family="Plus Jakarta Sans" font-weight="600" font-size="12" fill="#2B2D42">Medical diagnosis</text>
+            </g>
+            <g transform="translate(385 195)">
+              <circle cx="0" cy="0" r="6" fill="#E84A4A"/>
+              <text x="14" y="4" font-family="Plus Jakarta Sans" font-weight="600" font-size="12" fill="#2B2D42">Fraud detection</text>
+            </g>
+            <g transform="translate(385 225)">
+              <circle cx="0" cy="0" r="6" fill="#E84A4A"/>
+              <text x="14" y="4" font-family="Plus Jakarta Sans" font-weight="600" font-size="12" fill="#2B2D42">Base rates genuinely differ</text>
+            </g>
+            <g transform="translate(385 255)">
+              <circle cx="0" cy="0" r="6" fill="#E84A4A"/>
+              <text x="14" y="4" font-family="Plus Jakarta Sans" font-weight="600" font-size="12" fill="#2B2D42">Forcing parity hides truth</text>
+            </g>
+            <text x="500" y="288" text-anchor="middle" font-family="Plus Jakarta Sans" font-style="italic" font-size="10" fill="#9597A6">Where accuracy is the goal</text>
+          </g>
+          <text class="anim-4" x="350" y="345" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="600" font-size="12" fill="#9597A6">It's the most common fairness criterion — but never the only one to consider.</text>
+        </svg>
+      </div>
+
+    </div>
+
+    <div class="stage-caption" id="caption">
+      <div class="caption-title" id="capTitle">Four groups walk into a bank</div>
+      <div class="caption-text" id="capText">Picture four equal-sized groups of loan applicants — say, by gender, age bracket, region, or any protected attribute. One hundred people in each. They all submit applications to the same AI. The question we're about to ask is simple but pointed.</div>
+    </div>
+
+    <div class="stage-controls">
+      <button class="btn btn-ghost" id="prevBtn" disabled>← Previous</button>
+      <div class="step-counter">Scene <span id="counter">1</span> of 6</div>
+      <div style="display:flex;gap:.5rem">
+        <button class="btn btn-play" id="playBtn">▶ Auto-play</button>
+        <button class="btn btn-fill" id="nextBtn">Next →</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="takeaway">
+  <div class="takeaway-card">
+    <div class="takeaway-label">Definition</div>
+    <h2>Demographic Parity</h2>
+    <p>A fairness criterion that asks: across different groups (gender, age bracket, region, language), does the system produce favourable outcomes at roughly equal <strong>rates</strong>? It is not the only fairness criterion, and it is not appropriate for every situation, but it is the one most often referred to.</p>
+  </div>
+</div>
+
+<footer>&copy; 2026 MokshPath — Guided Path to True Learning</footer>
+
+<script>
+const scenes = [
+  {title:"Four groups walk into a bank", text:"Picture four equal-sized groups of loan applicants — say, by gender, age bracket, region, or any protected attribute. One hundred people in each. They all submit applications to the same AI. The question we're about to ask is simple but pointed."},
+  {title:"The AI decides", text:"Each applicant gets a green ✓ (approved) or a red ✗ (denied). The system doesn't <em>see</em> group labels in any explicit sense — but the outcomes still land. And when we count them up, the rates don't look the same."},
+  {title:"Read the rates", text:"Group A: 70% approved. Groups B and C: 50% each. Group D: just 20%. These are the <em>favourable-outcome rates</em>. Same product, same applicants in number, very different probabilities depending on which group you happen to be in."},
+  {title:"That's the gap", text:"Fifty percentage points separate the best-treated group from the worst-treated one. Group D members are approved at less than a third of Group A's rate. That gap — whether anyone designed it or not — is what a fairness audit looks for first."},
+  {title:"Demographic parity asks for this", text:"Equalise the rates. Every group's chance of a favourable outcome should be roughly the same. It doesn't say everyone must be approved — it says no group should be systematically over- or under-served by the model."},
+  {title:"Right tool, right situation", text:"Demographic parity fits well when equal <em>access</em> is the goal — hiring screens, housing ads, outreach. It fits poorly when accuracy depends on real, non-discriminatory differences (e.g. medical diagnosis). It's the most-referenced criterion, never the only one."}
+];
+
+let current = 0;
+let autoplay = null;
+const sceneEls = document.querySelectorAll('.scene');
+const dots = document.querySelectorAll('.progress-dot');
+const capTitle = document.getElementById('capTitle');
+const capText = document.getElementById('capText');
+const counter = document.getElementById('counter');
+const stepNum = document.getElementById('stepNum');
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+const playBtn = document.getElementById('playBtn');
+
+function goTo(idx){
+  current = Math.max(0, Math.min(scenes.length-1, idx));
+  sceneEls.forEach((el,i) => el.classList.toggle('active', i===current));
+  dots.forEach((d,i) => {
+    d.classList.remove('active','done');
+    if(i===current) d.classList.add('active');
+    else if(i<current) d.classList.add('done');
+  });
+  capTitle.textContent = scenes[current].title;
+  capText.innerHTML = scenes[current].text;
+  counter.textContent = current+1;
+  stepNum.textContent = current+1;
+  prevBtn.disabled = current===0;
+  nextBtn.disabled = current===scenes.length-1;
+  if(current===scenes.length-1 && autoplay){ stopAuto(); }
+}
+prevBtn.addEventListener('click', () => { stopAuto(); goTo(current-1); });
+nextBtn.addEventListener('click', () => { stopAuto(); goTo(current+1); });
+function startAuto(){ playBtn.textContent='⏸ Pause'; autoplay = setInterval(() => { if(current >= scenes.length-1){ stopAuto(); return; } goTo(current+1); }, 4500); }
+function stopAuto(){ if(autoplay){ clearInterval(autoplay); autoplay=null; playBtn.textContent='▶ Auto-play'; } }
+playBtn.addEventListener('click', () => { autoplay ? stopAuto() : startAuto(); });
+document.addEventListener('keydown', (e) => { if(e.key==='ArrowRight') nextBtn.click(); if(e.key==='ArrowLeft') prevBtn.click(); });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Why Fairness Audits Matter — MokshPath</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{--orange:#E87A2E;--orange-dark:#D06A20;--orange-light:#F5943E;--orange-glow:rgba(232,122,46,0.12);--navy:#2B2D42;--navy-dark:#1A1B2E;--bg:#F3EDE7;--bg-card:#FFFFFF;--bg-light:#F9F5F0;--text-primary:#2B2D42;--text-secondary:#6B6D7B;--text-muted:#9597A6;--border:#E5DDD4;--green:#4CAF50;--red:#E84A4A;--yellow:#F5C16C;--shadow-sm:0 2px 8px rgba(43,45,66,0.06);--shadow-md:0 8px 24px rgba(43,45,66,0.08);--shadow-lg:0 16px 48px rgba(43,45,66,0.12);--radius:14px}
+html{scroll-behavior:smooth}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text-primary);overflow-x:hidden;-webkit-font-smoothing:antialiased;min-height:100vh}
+
+/* ── Top bar & nav ── */
+.top-bar{background:var(--navy-dark);padding:.45rem 2rem;display:flex;justify-content:center;gap:2rem}
+.top-bar a{color:rgba(255,255,255,0.85);font-size:.75rem;font-weight:500;text-decoration:none;letter-spacing:.02em}
+.nav{position:sticky;top:0;z-index:100;background:var(--bg-card);border-bottom:1px solid var(--border);padding:0 2rem;height:74px;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--shadow-sm)}
+.nav-logo{display:flex;align-items:center;gap:.7rem;text-decoration:none}
+.nav-logo-icon{width:42px;height:42px}
+.nav-logo-text{display:flex;flex-direction:column;line-height:1.15}
+.nav-logo-name{font-family:'DM Serif Display',serif;font-size:1.25rem;color:var(--navy)}.nav-logo-name span{color:var(--orange)}
+.nav-logo-tag{font-size:.62rem;color:var(--text-muted);font-weight:500;letter-spacing:.02em}
+.nav-mascot{height:60px;width:auto;animation:floatGentle 3.5s ease-in-out infinite;filter:drop-shadow(0 4px 12px rgba(232,122,46,0.18))}
+
+/* ── Hero ── */
+.hero{padding:3rem 2rem 2rem;text-align:center;max-width:900px;margin:0 auto}
+.hero-badge{display:inline-flex;align-items:center;gap:.45rem;padding:.4rem 1rem;border-radius:50px;background:var(--orange-glow);color:var(--orange);font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:1rem}
+.hero-badge .dot{width:7px;height:7px;border-radius:50%;background:var(--orange);animation:pulse 2s infinite}
+.hero h1{font-family:'DM Serif Display',serif;font-size:clamp(2rem,4vw,2.9rem);line-height:1.15;color:var(--navy);margin-bottom:.8rem}
+.hero h1 em{font-style:normal;color:var(--orange)}
+.hero-sub{font-size:1rem;color:var(--text-secondary);line-height:1.65;max-width:640px;margin:0 auto}
+
+/* ── Stage ── */
+.stage-wrap{max-width:1080px;margin:1.5rem auto 3rem;padding:0 2rem}
+.stage{background:var(--bg-card);border-radius:var(--radius);box-shadow:var(--shadow-md);border:1px solid var(--border);overflow:hidden}
+.stage-progress{display:flex;background:var(--bg-light);border-bottom:1px solid var(--border);padding:.65rem 1.2rem;gap:.4rem;align-items:center}
+.progress-dot{width:9px;height:9px;border-radius:50%;background:var(--border);transition:all .35s}
+.progress-dot.active{background:var(--orange);transform:scale(1.25);box-shadow:0 0 0 4px var(--orange-glow)}
+.progress-dot.done{background:var(--orange-light)}
+.progress-step-label{margin-left:auto;font-size:.72rem;font-weight:700;color:var(--text-muted);letter-spacing:.08em;text-transform:uppercase}
+.progress-step-label .num{color:var(--orange)}
+
+.stage-canvas{position:relative;height:430px;background:linear-gradient(180deg,#FBF7F2 0%,#F9F5F0 100%);overflow:hidden}
+.scene{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:0;visibility:hidden;transition:opacity .55s ease}
+.scene.active{opacity:1;visibility:visible}
+.scene svg{max-width:100%;max-height:100%}
+
+.stage-caption{padding:1.5rem 2rem 1.8rem;border-top:1px solid var(--border);background:var(--bg-card);min-height:130px}
+.caption-title{font-family:'DM Serif Display',serif;font-size:1.4rem;color:var(--navy);margin-bottom:.4rem}
+.caption-text{font-size:.95rem;color:var(--text-secondary);line-height:1.65}
+
+.stage-controls{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.5rem;background:var(--bg-light);border-top:1px solid var(--border)}
+.btn{display:inline-flex;align-items:center;gap:.4rem;padding:.6rem 1.2rem;border-radius:8px;font-size:.85rem;font-weight:600;border:none;cursor:pointer;font-family:inherit;transition:all .2s}
+.btn-fill{background:var(--orange);color:#fff}
+.btn-fill:hover:not(:disabled){background:var(--orange-dark);transform:translateY(-1px);box-shadow:0 4px 14px rgba(232,122,46,0.3)}
+.btn-fill:disabled{opacity:.35;cursor:not-allowed}
+.btn-ghost{background:transparent;border:1.5px solid var(--border);color:var(--text-primary)}
+.btn-ghost:hover:not(:disabled){border-color:var(--orange);color:var(--orange)}
+.btn-ghost:disabled{opacity:.35;cursor:not-allowed}
+.btn-play{background:var(--navy-dark);color:#fff}.btn-play:hover{background:var(--navy)}
+
+.step-counter{font-size:.8rem;color:var(--text-muted);font-weight:600}
+.step-counter span{color:var(--orange);font-weight:800}
+
+/* ── Takeaway card ── */
+.takeaway{max-width:1080px;margin:0 auto 4rem;padding:0 2rem}
+.takeaway-card{background:linear-gradient(135deg,var(--navy-dark),var(--navy));color:#fff;border-radius:var(--radius);padding:2.2rem 2.5rem;position:relative;overflow:hidden}
+.takeaway-card::before{content:'';position:absolute;top:-50px;right:-50px;width:180px;height:180px;border-radius:50%;background:rgba(232,122,46,0.1)}
+.takeaway-label{font-size:.7rem;font-weight:700;color:var(--orange-light);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.6rem;position:relative}
+.takeaway-card h2{font-family:'DM Serif Display',serif;font-size:1.6rem;margin-bottom:.7rem;position:relative}
+.takeaway-card p{color:rgba(255,255,255,0.78);line-height:1.7;font-size:.95rem;position:relative;max-width:760px}
+
+footer{text-align:center;padding:1.5rem;color:var(--text-muted);font-size:.78rem;border-top:1px solid var(--border)}
+
+/* ── Animations ── */
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.4)}}
+@keyframes floatGentle{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes slideInLeft{from{opacity:0;transform:translateX(-40px)}to{opacity:1;transform:translateX(0)}}
+@keyframes slideInRight{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:translateX(0)}}
+@keyframes popIn{from{opacity:0;transform:scale(0.4)}to{opacity:1;transform:scale(1)}}
+@keyframes drift{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-3px)}75%{transform:translateX(3px)}}
+@keyframes glow{0%,100%{filter:drop-shadow(0 0 0 rgba(232,74,74,0))}50%{filter:drop-shadow(0 0 14px rgba(232,74,74,0.55))}}
+@keyframes drawLine{from{stroke-dashoffset:200}to{stroke-dashoffset:0}}
+@keyframes spin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+
+.scene.active .anim-1{animation:popIn .55s ease both}
+.scene.active .anim-2{animation:popIn .55s ease .15s both}
+.scene.active .anim-3{animation:popIn .55s ease .3s both}
+.scene.active .anim-4{animation:popIn .55s ease .45s both}
+.scene.active .anim-5{animation:popIn .55s ease .6s both}
+.scene.active .slide-l{animation:slideInLeft .6s ease both}
+.scene.active .slide-r{animation:slideInRight .6s ease both}
+.scene.active .shake-it{animation:shake .35s ease infinite .8s,popIn .5s ease both}
+.scene.active .glow-it{animation:glow 1.8s ease-in-out infinite,popIn .5s ease both}
+.float-it{animation:drift 3s ease-in-out infinite}
+
+@media (max-width:680px){
+.nav{padding:0 1rem;height:60px}.nav-mascot{height:46px}.nav-logo-name{font-size:1.05rem}.nav-logo-tag{font-size:.55rem}
+.hero{padding:2rem 1rem 1rem}.stage-wrap{padding:0 1rem;margin:1rem auto 2rem}
+.stage-canvas{height:340px}.stage-caption{padding:1.2rem 1.2rem 1.4rem}
+.stage-controls{padding:.8rem 1rem;flex-wrap:wrap;gap:.6rem}
+.takeaway{padding:0 1rem;margin-bottom:2.5rem}.takeaway-card{padding:1.6rem}
+.btn{padding:.55rem .9rem;font-size:.8rem}
+}
+</style>
+</head>
+<body>
+
+<div class="top-bar"><a href="#">Request a Demo</a><a href="#">FAQs</a><a href="#">Help Center</a></div>
+
+<nav class="nav">
+  <a href="#" class="nav-logo">
+    <svg class="nav-logo-icon" viewBox="0 0 42 42" fill="none"><circle cx="21" cy="14" r="6" fill="#E87A2E"/><path d="M21 20c-6 0-10 3-10 7 0 2 1 3 2 4l2-3c1-1.5 2.5-2 3-2h6c.5 0 2 .5 3 2l2 3c1-1 2-2 2-4 0-4-4-7-10-7z" fill="#E87A2E"/><path d="M11 31c0 0 2 4 10 4s10-4 10-4" stroke="#E87A2E" stroke-width="1.5" stroke-linecap="round"/><ellipse cx="21" cy="38" rx="8" ry="2" fill="#E87A2E" opacity=".15"/><circle cx="21" cy="14" r="3" fill="#FFF" opacity=".3"/></svg>
+    <div class="nav-logo-text"><span class="nav-logo-name">Moksh<span>Path</span></span><span class="nav-logo-tag">Guided Path to True Learning</span></div>
+  </a>
+  <img src="hero.svg" alt="MokshPath Mascot" class="nav-mascot">
+</nav>
+
+<section class="hero">
+  <div class="hero-badge"><span class="dot"></span> Module · Responsible AI</div>
+  <h1>Why <em>Fairness Audits</em> Matter in AI Work</h1>
+  <p class="hero-sub">There is a specific moment in every AI deployment when you discover whether it treats different people equally. The reliable way to avoid being blindsided is to look for that moment yourself — deliberately, before deployment. Watch the story below to see why.</p>
+</section>
+
+<div class="stage-wrap">
+  <div class="stage">
+    <div class="stage-progress">
+      <span class="progress-dot active"></span>
+      <span class="progress-dot"></span>
+      <span class="progress-dot"></span>
+      <span class="progress-dot"></span>
+      <span class="progress-dot"></span>
+      <span class="progress-dot"></span>
+      <span class="progress-step-label">Step <span class="num" id="stepNum">1</span>/6</span>
+    </div>
+
+    <div class="stage-canvas" id="canvas">
+
+      <!-- ── Scene 1: Meet the AI ── -->
+      <div class="scene active" data-scene="1">
+        <svg viewBox="0 0 700 380" width="100%" height="100%">
+          <!-- Computer screen -->
+          <rect class="anim-1" x="240" y="80" width="220" height="160" rx="10" fill="#FFF" stroke="#2B2D42" stroke-width="2.5"/>
+          <rect class="anim-1" x="250" y="90" width="200" height="130" rx="4" fill="#1A1B2E"/>
+          <!-- Stand -->
+          <rect class="anim-1" x="335" y="240" width="30" height="22" fill="#2B2D42"/>
+          <rect class="anim-1" x="295" y="262" width="110" height="6" rx="3" fill="#2B2D42"/>
+          <!-- AI Brain inside screen -->
+          <g class="anim-2">
+            <circle cx="350" cy="155" r="38" fill="none" stroke="#E87A2E" stroke-width="2.5"/>
+            <circle cx="350" cy="155" r="26" fill="none" stroke="#F5943E" stroke-width="2"/>
+            <circle cx="350" cy="155" r="14" fill="#E87A2E"/>
+            <circle cx="350" cy="155" r="6" fill="#FFF"/>
+            <!-- orbiting dots -->
+            <circle cx="312" cy="155" r="3" fill="#F5943E"><animate attributeName="cx" values="312;388;312" dur="3s" repeatCount="indefinite"/></circle>
+            <circle cx="388" cy="155" r="3" fill="#F5943E"><animate attributeName="cx" values="388;312;388" dur="3s" repeatCount="indefinite"/></circle>
+          </g>
+          <!-- AI label -->
+          <rect class="anim-3" x="290" y="195" width="120" height="20" rx="10" fill="#E87A2E"/>
+          <text class="anim-3" x="350" y="209" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="700" font-size="11" fill="#FFF">AI SYSTEM</text>
+          <!-- Surrounding people - happy/neutral -->
+          <g class="anim-4">
+            <circle cx="120" cy="170" r="22" fill="#F5C16C"/>
+            <rect x="98" y="195" width="44" height="40" rx="8" fill="#E87A2E"/>
+            <path d="M110 168 Q120 174 130 168" stroke="#2B2D42" stroke-width="2" fill="none" stroke-linecap="round"/>
+            <circle cx="114" cy="165" r="1.8" fill="#2B2D42"/><circle cx="126" cy="165" r="1.8" fill="#2B2D42"/>
+          </g>
+          <g class="anim-5">
+            <circle cx="580" cy="170" r="22" fill="#4CAF50"/>
+            <rect x="558" y="195" width="44" height="40" rx="8" fill="#2B2D42"/>
+            <path d="M570 168 Q580 174 590 168" stroke="#2B2D42" stroke-width="2" fill="none" stroke-linecap="round"/>
+            <circle cx="574" cy="165" r="1.8" fill="#FFF"/><circle cx="586" cy="165" r="1.8" fill="#FFF"/>
+          </g>
+          <!-- Deployment arrow -->
+          <text class="anim-5" x="350" y="320" text-anchor="middle" font-family="DM Serif Display" font-size="20" fill="#2B2D42">Just deployed. Looks fine.</text>
+        </svg>
+      </div>
+
+      <!-- ── Scene 2: The unwanted discovery ── -->
+      <div class="scene" data-scene="2">
+        <svg viewBox="0 0 700 380" width="100%" height="100%">
+          <!-- AI in middle, still smiling -->
+          <g class="anim-1">
+            <rect x="290" y="140" width="120" height="90" rx="8" fill="#FFF" stroke="#2B2D42" stroke-width="2.5"/>
+            <circle cx="350" cy="185" r="22" fill="#E87A2E"/>
+            <circle cx="350" cy="185" r="10" fill="#FFF"/>
+          </g>
+          <!-- 4 angry discoverers approaching -->
+          <!-- Journalist (top-left) -->
+          <g class="slide-l" style="animation-delay:.1s">
+            <circle cx="100" cy="80" r="20" fill="#F5C16C"/>
+            <rect x="80" y="100" width="40" height="36" rx="6" fill="#2B2D42"/>
+            <rect x="124" y="108" width="22" height="14" rx="2" fill="#FFF" stroke="#2B2D42" stroke-width="1.5"/>
+            <circle cx="135" cy="115" r="3" fill="#E84A4A"/>
+            <text x="100" y="160" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="700" font-size="11" fill="#2B2D42">Journalist</text>
+            <path d="M120 95 L260 165" stroke="#E84A4A" stroke-width="2" stroke-dasharray="4 4" opacity=".6"/>
+          </g>
+          <!-- Regulator (top-right) -->
+          <g class="slide-r" style="animation-delay:.25s">
+            <circle cx="600" cy="80" r="20" fill="#F5C16C"/>
+            <rect x="580" y="100" width="40" height="36" rx="6" fill="#1A1B2E"/>
+            <rect x="556" y="108" width="20" height="22" rx="2" fill="#E87A2E" stroke="#2B2D42" stroke-width="1.5"/>
+            <path d="M560 114 h12 M560 119 h12 M560 124 h8" stroke="#FFF" stroke-width="1.2"/>
+            <text x="600" y="160" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="700" font-size="11" fill="#2B2D42">Regulator</text>
+            <path d="M580 95 L440 165" stroke="#E84A4A" stroke-width="2" stroke-dasharray="4 4" opacity=".6"/>
+          </g>
+          <!-- Lawyer (bottom-left) -->
+          <g class="slide-l" style="animation-delay:.4s">
+            <circle cx="100" cy="300" r="20" fill="#F5C16C"/>
+            <rect x="80" y="320" width="40" height="36" rx="6" fill="#5C3A20"/>
+            <rect x="122" y="328" width="20" height="14" rx="2" fill="#8B5E3C" stroke="#2B2D42" stroke-width="1.5"/>
+            <text x="100" y="285" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="700" font-size="11" fill="#2B2D42">Lawyer</text>
+            <path d="M120 305 L260 215" stroke="#E84A4A" stroke-width="2" stroke-dasharray="4 4" opacity=".6"/>
+          </g>
+          <!-- Customer (bottom-right) -->
+          <g class="slide-r" style="animation-delay:.55s">
+            <circle cx="600" cy="300" r="20" fill="#F5C16C"/>
+            <rect x="580" y="320" width="40" height="36" rx="6" fill="#E84A4A"/>
+            <path d="M590 75 L590 78 M610 75 L610 78" stroke="#2B2D42" stroke-width="2"/>
+            <path d="M590 308 Q600 302 610 308" stroke="#2B2D42" stroke-width="2" fill="none" stroke-linecap="round"/>
+            <text x="600" y="285" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="700" font-size="11" fill="#2B2D42">Customer</text>
+            <path d="M580 305 L440 215" stroke="#E84A4A" stroke-width="2" stroke-dasharray="4 4" opacity=".6"/>
+          </g>
+          <!-- Magnifying glass on the AI -->
+          <g class="glow-it" style="animation-delay:.7s">
+            <circle cx="380" cy="175" r="26" fill="none" stroke="#E84A4A" stroke-width="3.5"/>
+            <line x1="398" y1="193" x2="418" y2="213" stroke="#E84A4A" stroke-width="5" stroke-linecap="round"/>
+          </g>
+        </svg>
+      </div>
+
+      <!-- ── Scene 3: The fallout ── -->
+      <div class="scene" data-scene="3">
+        <svg viewBox="0 0 700 380" width="100%" height="100%">
+          <!-- Newspaper -->
+          <g class="anim-1">
+            <rect x="60" y="80" width="180" height="220" fill="#FFF" stroke="#2B2D42" stroke-width="2.5" transform="rotate(-6 150 190)"/>
+            <g transform="rotate(-6 150 190)">
+              <rect x="75" y="95" width="150" height="20" fill="#1A1B2E"/>
+              <text x="150" y="110" text-anchor="middle" font-family="DM Serif Display" font-size="11" fill="#FFF">BREAKING NEWS</text>
+              <text x="150" y="138" text-anchor="middle" font-family="DM Serif Display" font-size="13" fill="#E84A4A">"AI BIAS</text>
+              <text x="150" y="155" text-anchor="middle" font-family="DM Serif Display" font-size="13" fill="#E84A4A">SCANDAL"</text>
+              <rect x="80" y="170" width="140" height="3" fill="#9597A6"/>
+              <rect x="80" y="180" width="140" height="3" fill="#9597A6"/>
+              <rect x="80" y="190" width="110" height="3" fill="#9597A6"/>
+              <rect x="80" y="210" width="60" height="55" fill="#E5DDD4"/>
+              <rect x="148" y="210" width="72" height="3" fill="#9597A6"/>
+              <rect x="148" y="220" width="72" height="3" fill="#9597A6"/>
+              <rect x="148" y="230" width="72" height="3" fill="#9597A6"/>
+              <rect x="148" y="240" width="60" height="3" fill="#9597A6"/>
+            </g>
+          </g>
+          <!-- Gavel / Lawsuit document -->
+          <g class="anim-2">
+            <rect x="280" y="100" width="140" height="180" fill="#FFF" stroke="#2B2D42" stroke-width="2.5" rx="4"/>
+            <rect x="295" y="115" width="60" height="6" fill="#1A1B2E"/>
+            <text x="350" y="148" text-anchor="middle" font-family="DM Serif Display" font-size="15" fill="#2B2D42">LAWSUIT</text>
+            <rect x="295" y="160" width="110" height="2" fill="#9597A6"/>
+            <rect x="295" y="170" width="110" height="2" fill="#9597A6"/>
+            <rect x="295" y="180" width="80" height="2" fill="#9597A6"/>
+            <rect x="295" y="200" width="110" height="2" fill="#9597A6"/>
+            <rect x="295" y="210" width="110" height="2" fill="#9597A6"/>
+            <text x="350" y="245" text-anchor="middle" font-family="DM Serif Display" font-size="11" fill="#E84A4A">Class Action</text>
+            <circle cx="380" cy="265" r="10" fill="#E84A4A"/>
+            <text x="380" y="269" text-anchor="middle" font-family="DM Serif Display" font-size="10" fill="#FFF">⚖</text>
+          </g>
+          <!-- Falling stock chart -->
+          <g class="anim-3">
+            <rect x="460" y="80" width="180" height="220" fill="#FFF" stroke="#2B2D42" stroke-width="2.5" rx="6"/>
+            <text x="550" y="105" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="700" font-size="11" fill="#2B2D42">TRUST</text>
+            <polyline points="475,135 510,150 540,170 575,195 615,250" fill="none" stroke="#E84A4A" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+            <polygon points="615,250 605,245 610,255" fill="#E84A4A"/>
+            <text x="630" y="255" text-anchor="end" font-family="Plus Jakarta Sans" font-weight="800" font-size="13" fill="#E84A4A">−68%</text>
+            <line x1="475" y1="280" x2="625" y2="280" stroke="#E5DDD4"/>
+            <line x1="475" y1="135" x2="475" y2="280" stroke="#E5DDD4"/>
+          </g>
+          <!-- Sweat drops above representing panic -->
+          <g class="anim-4">
+            <text x="350" y="55" text-anchor="middle" font-family="DM Serif Display" font-size="22" fill="#E84A4A">The headlines. The lawsuits. The trust.</text>
+          </g>
+        </svg>
+      </div>
+
+      <!-- ── Scene 4: The three pillars ── -->
+      <div class="scene" data-scene="4">
+        <svg viewBox="0 0 700 380" width="100%" height="100%">
+          <text class="anim-1" x="350" y="50" text-anchor="middle" font-family="DM Serif Display" font-size="22" fill="#2B2D42">The audit lives in <tspan fill="#E87A2E">three things</tspan></text>
+          <!-- Pillar 1: Who could be harmed -->
+          <g class="anim-2">
+            <rect x="80" y="100" width="160" height="220" rx="12" fill="#FFF" stroke="#E87A2E" stroke-width="2.5"/>
+            <circle cx="160" cy="155" r="32" fill="#E87A2E" opacity=".12"/>
+            <g transform="translate(160 155)">
+              <circle cx="-12" cy="-5" r="9" fill="#E87A2E"/>
+              <circle cx="12" cy="-5" r="9" fill="#F5943E"/>
+              <circle cx="0" cy="10" r="9" fill="#F5C16C"/>
+            </g>
+            <text x="160" y="220" text-anchor="middle" font-family="DM Serif Display" font-size="14" fill="#2B2D42">1. WHO</text>
+            <text x="160" y="245" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="600" font-size="11" fill="#6B6D7B">could be harmed</text>
+            <text x="160" y="280" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="10" fill="#9597A6">A clear definition of</text>
+            <text x="160" y="294" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="10" fill="#9597A6">the affected groups.</text>
+          </g>
+          <!-- Pillar 2: Test cases -->
+          <g class="anim-3">
+            <rect x="270" y="100" width="160" height="220" rx="12" fill="#FFF" stroke="#E87A2E" stroke-width="2.5"/>
+            <g transform="translate(350 155)">
+              <rect x="-30" y="-22" width="60" height="44" rx="4" fill="#FFF" stroke="#E87A2E" stroke-width="2"/>
+              <rect x="-22" y="-14" width="44" height="3" fill="#E87A2E"/>
+              <rect x="-22" y="-7" width="34" height="3" fill="#F5943E"/>
+              <rect x="-22" y="0" width="44" height="3" fill="#F5943E"/>
+              <rect x="-22" y="7" width="26" height="3" fill="#F5C16C"/>
+              <circle cx="22" cy="-14" r="4" fill="#4CAF50"/>
+            </g>
+            <text x="350" y="220" text-anchor="middle" font-family="DM Serif Display" font-size="14" fill="#2B2D42">2. TESTS</text>
+            <text x="350" y="245" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="600" font-size="11" fill="#6B6D7B">that exercise the risk</text>
+            <text x="350" y="280" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="10" fill="#9597A6">Test cases designed</text>
+            <text x="350" y="294" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="10" fill="#9597A6">to expose the harm.</text>
+          </g>
+          <!-- Pillar 3: Honest documentation -->
+          <g class="anim-4">
+            <rect x="460" y="100" width="160" height="220" rx="12" fill="#FFF" stroke="#E87A2E" stroke-width="2.5"/>
+            <g transform="translate(540 155)">
+              <rect x="-26" y="-26" width="52" height="50" rx="4" fill="#FFF" stroke="#E87A2E" stroke-width="2"/>
+              <rect x="-19" y="-18" width="38" height="2.5" fill="#E87A2E"/>
+              <rect x="-19" y="-11" width="38" height="2.5" fill="#9597A6"/>
+              <rect x="-19" y="-4" width="30" height="2.5" fill="#9597A6"/>
+              <rect x="-19" y="3" width="38" height="2.5" fill="#9597A6"/>
+              <rect x="-19" y="10" width="26" height="2.5" fill="#9597A6"/>
+              <circle cx="16" cy="-23" r="3" fill="#4CAF50"/>
+              <path d="M14 -23 L15.5 -21.5 L18 -24.5" stroke="#FFF" stroke-width="1" fill="none"/>
+            </g>
+            <text x="540" y="220" text-anchor="middle" font-family="DM Serif Display" font-size="14" fill="#2B2D42">3. HONESTY</text>
+            <text x="540" y="245" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="600" font-size="11" fill="#6B6D7B">about what you find</text>
+            <text x="540" y="280" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="10" fill="#9597A6">Documentation that</text>
+            <text x="540" y="294" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="10" fill="#9597A6">doesn't hide the result.</text>
+          </g>
+          <text class="anim-5" x="350" y="350" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="600" font-size="11" fill="#9597A6">No Python required. Just clear intent.</text>
+        </svg>
+      </div>
+
+      <!-- ── Scene 5: Audit first ── -->
+      <div class="scene" data-scene="5">
+        <svg viewBox="0 0 700 380" width="100%" height="100%">
+          <text class="anim-1" x="350" y="40" text-anchor="middle" font-family="DM Serif Display" font-size="20" fill="#2B2D42">Look <tspan fill="#E87A2E">before</tspan> the world looks for you</text>
+          <!-- Timeline: Build → Audit → Deploy -->
+          <line class="anim-2" x1="80" y1="200" x2="620" y2="200" stroke="#E5DDD4" stroke-width="3" stroke-linecap="round"/>
+          <!-- Step: Build -->
+          <g class="anim-2">
+            <circle cx="130" cy="200" r="32" fill="#FFF" stroke="#E87A2E" stroke-width="3"/>
+            <g transform="translate(130 200)">
+              <rect x="-12" y="-10" width="24" height="20" rx="3" fill="none" stroke="#E87A2E" stroke-width="2"/>
+              <path d="M-7 -3 L-2 2 L7 -7" stroke="#E87A2E" stroke-width="2" fill="none" stroke-linecap="round"/>
+            </g>
+            <text x="130" y="260" text-anchor="middle" font-family="DM Serif Display" font-size="14" fill="#2B2D42">Build</text>
+          </g>
+          <!-- Step: Audit (highlighted) -->
+          <g class="anim-3">
+            <circle cx="350" cy="200" r="44" fill="#E87A2E"/>
+            <circle cx="350" cy="200" r="56" fill="none" stroke="#E87A2E" stroke-width="2" opacity=".3"><animate attributeName="r" values="44;60;44" dur="2.5s" repeatCount="indefinite"/><animate attributeName="opacity" values=".5;0;.5" dur="2.5s" repeatCount="indefinite"/></circle>
+            <g transform="translate(350 200)">
+              <circle cx="-6" cy="-4" r="10" fill="none" stroke="#FFF" stroke-width="2.5"/>
+              <line x1="2" y1="3" x2="11" y2="12" stroke="#FFF" stroke-width="3" stroke-linecap="round"/>
+            </g>
+            <text x="350" y="270" text-anchor="middle" font-family="DM Serif Display" font-size="16" fill="#E87A2E">AUDIT</text>
+            <text x="350" y="290" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="600" font-size="11" fill="#6B6D7B">deliberate &amp; structural</text>
+          </g>
+          <!-- Step: Deploy -->
+          <g class="anim-4">
+            <circle cx="570" cy="200" r="32" fill="#FFF" stroke="#4CAF50" stroke-width="3"/>
+            <g transform="translate(570 200)">
+              <path d="M-12 0 L-5 -8 L-2 -5 L8 -15" stroke="#4CAF50" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M8 -15 L12 -15 L12 -11" stroke="#4CAF50" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+            </g>
+            <text x="570" y="260" text-anchor="middle" font-family="DM Serif Display" font-size="14" fill="#2B2D42">Deploy</text>
+          </g>
+          <!-- Arrows -->
+          <g class="anim-5">
+            <path d="M170 200 L300 200" stroke="#E87A2E" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#ar1)"/>
+            <path d="M400 200 L530 200" stroke="#4CAF50" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#ar2)"/>
+          </g>
+          <defs>
+            <marker id="ar1" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="#E87A2E"/></marker>
+            <marker id="ar2" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="#4CAF50"/></marker>
+          </defs>
+          <text class="anim-5" x="350" y="340" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="600" font-size="12" fill="#9597A6">The sophistication matters less than the seriousness of intent.</text>
+        </svg>
+      </div>
+
+      <!-- ── Scene 6: Trust earned ── -->
+      <div class="scene" data-scene="6">
+        <svg viewBox="0 0 700 380" width="100%" height="100%">
+          <!-- Sun rays / glow -->
+          <g class="anim-1">
+            <circle cx="350" cy="190" r="120" fill="#E87A2E" opacity=".08"/>
+            <circle cx="350" cy="190" r="80" fill="#E87A2E" opacity=".12"/>
+          </g>
+          <!-- AI with checkmark badge -->
+          <g class="anim-2">
+            <rect x="290" y="135" width="120" height="100" rx="10" fill="#FFF" stroke="#2B2D42" stroke-width="2.5"/>
+            <circle cx="350" cy="185" r="26" fill="#E87A2E"/>
+            <circle cx="350" cy="185" r="12" fill="#FFF"/>
+            <!-- Badge -->
+            <circle cx="410" cy="155" r="22" fill="#4CAF50" stroke="#FFF" stroke-width="3"/>
+            <path d="M400 155 L407 162 L420 148" stroke="#FFF" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          </g>
+          <text class="anim-3" x="350" y="265" text-anchor="middle" font-family="DM Serif Display" font-size="20" fill="#2B2D42">Audited. Documented. Deployed.</text>
+          <!-- Happy people -->
+          <g class="anim-4">
+            <circle cx="140" cy="200" r="20" fill="#F5C16C"/>
+            <rect x="120" y="220" width="40" height="34" rx="6" fill="#E87A2E"/>
+            <path d="M130 198 Q140 207 150 198" stroke="#2B2D42" stroke-width="2" fill="none" stroke-linecap="round"/>
+            <circle cx="134" cy="196" r="1.6" fill="#2B2D42"/><circle cx="146" cy="196" r="1.6" fill="#2B2D42"/>
+          </g>
+          <g class="anim-4">
+            <circle cx="560" cy="200" r="20" fill="#4CAF50"/>
+            <rect x="540" y="220" width="40" height="34" rx="6" fill="#2B2D42"/>
+            <path d="M550 198 Q560 207 570 198" stroke="#FFF" stroke-width="2" fill="none" stroke-linecap="round"/>
+            <circle cx="554" cy="196" r="1.6" fill="#FFF"/><circle cx="566" cy="196" r="1.6" fill="#FFF"/>
+          </g>
+          <text class="anim-5" x="350" y="335" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="700" font-size="13" fill="#E87A2E">You discovered it first. That's the whole point.</text>
+        </svg>
+      </div>
+
+    </div>
+
+    <div class="stage-caption" id="caption">
+      <div class="caption-title" id="capTitle">Meet your AI system</div>
+      <div class="caption-text" id="capText">Imagine an AI you just shipped. It looks like it works. People use it. On the surface, nothing's wrong — yet. The question hovering over every deployment is: <em>does it treat everyone the same?</em></div>
+    </div>
+
+    <div class="stage-controls">
+      <button class="btn btn-ghost" id="prevBtn" disabled>← Previous</button>
+      <div class="step-counter">Scene <span id="counter">1</span> of 6</div>
+      <div style="display:flex;gap:.5rem">
+        <button class="btn btn-play" id="playBtn">▶ Auto-play</button>
+        <button class="btn btn-fill" id="nextBtn">Next →</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="takeaway">
+  <div class="takeaway-card">
+    <div class="takeaway-label">The Big Idea</div>
+    <h2>Find the moment yourself.</h2>
+    <p>Bias auditing is, despite its technical reputation, a discipline that lives in three things: a clear definition of who could be harmed, a set of test cases that exercise that risk, and the willingness to document what you find honestly. You can do all three without a single line of Python. The technical sophistication of your audit matters far less than the seriousness of your intent.</p>
+  </div>
+</div>
+
+<footer>&copy; 2026 MokshPath — Guided Path to True Learning</footer>
+
+<script>
+const scenes = [
+  {title:"Meet your AI system", text:"Imagine an AI you just shipped. It looks like it works. People use it. On the surface, nothing's wrong — yet. The question hovering over every deployment is: <em>does it treat everyone the same?</em>"},
+  {title:"The discovery you didn't choose", text:"It's rarely the team itself that notices first. It's a journalist, a regulator, a class-action lawyer, or a furious customer. By the time they hold up the magnifying glass, the moment of discovery has already been taken out of your hands."},
+  {title:"The fallout follows fast", text:"Headlines. Lawsuits. A trust curve that drops faster than any engineering team can patch. The damage isn't just reputational — it's the loss of the chance to fix it quietly, on your own terms."},
+  {title:"What an audit actually is", text:"Bias auditing is not, despite its reputation, a deeply technical discipline. It lives in three things: <strong>WHO</strong> could be harmed, <strong>TESTS</strong> that exercise that risk, and <strong>HONESTY</strong> in what you write down. All three can be done without code."},
+  {title:"Audit before you deploy", text:"The reliable way to avoid a public discovery is to make a private one first — deliberately, structurally, on purpose. An audit between &quot;build&quot; and &quot;deploy&quot; is the cheapest insurance an AI team can buy."},
+  {title:"You discovered it first", text:"That's the whole point. When you're the one who finds the gap, you control the remedy, the timing, and the narrative. Trust isn't built by perfection — it's built by being the first to notice, and the first to act."}
+];
+
+let current = 0;
+let autoplay = null;
+
+const sceneEls = document.querySelectorAll('.scene');
+const dots = document.querySelectorAll('.progress-dot');
+const capTitle = document.getElementById('capTitle');
+const capText = document.getElementById('capText');
+const counter = document.getElementById('counter');
+const stepNum = document.getElementById('stepNum');
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+const playBtn = document.getElementById('playBtn');
+
+function goTo(idx){
+  current = Math.max(0, Math.min(scenes.length-1, idx));
+  sceneEls.forEach((el,i) => el.classList.toggle('active', i===current));
+  dots.forEach((d,i) => {
+    d.classList.remove('active','done');
+    if(i===current) d.classList.add('active');
+    else if(i<current) d.classList.add('done');
+  });
+  capTitle.textContent = scenes[current].title;
+  capText.innerHTML = scenes[current].text;
+  counter.textContent = current+1;
+  stepNum.textContent = current+1;
+  prevBtn.disabled = current===0;
+  nextBtn.disabled = current===scenes.length-1;
+  if(current===scenes.length-1 && autoplay){ stopAuto(); }
+}
+
+prevBtn.addEventListener('click', () => { stopAuto(); goTo(current-1); });
+nextBtn.addEventListener('click', () => { stopAuto(); goTo(current+1); });
+
+function startAuto(){
+  playBtn.textContent='⏸ Pause';
+  autoplay = setInterval(() => {
+    if(current >= scenes.length-1){ stopAuto(); return; }
+    goTo(current+1);
+  }, 4200);
+}
+function stopAuto(){
+  if(autoplay){ clearInterval(autoplay); autoplay=null; playBtn.textContent='▶ Auto-play'; }
+}
+playBtn.addEventListener('click', () => { autoplay ? stopAuto() : startAuto(); });
+
+document.addEventListener('keydown', (e) => {
+  if(e.key==='ArrowRight') nextBtn.click();
+  if(e.key==='ArrowLeft') prevBtn.click();
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Equalised Odds — MokshPath</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{--orange:#E87A2E;--orange-dark:#D06A20;--orange-light:#F5943E;--orange-glow:rgba(232,122,46,0.12);--navy:#2B2D42;--navy-dark:#1A1B2E;--bg:#F3EDE7;--bg-card:#FFFFFF;--bg-light:#F9F5F0;--text-primary:#2B2D42;--text-secondary:#6B6D7B;--text-muted:#9597A6;--border:#E5DDD4;--green:#4CAF50;--red:#E84A4A;--yellow:#F5C16C;--blue:#5B8DEF;--shadow-sm:0 2px 8px rgba(43,45,66,0.06);--shadow-md:0 8px 24px rgba(43,45,66,0.08);--shadow-lg:0 16px 48px rgba(43,45,66,0.12);--radius:14px}
+html{scroll-behavior:smooth}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text-primary);overflow-x:hidden;-webkit-font-smoothing:antialiased;min-height:100vh}
+
+.top-bar{background:var(--navy-dark);padding:.45rem 2rem;display:flex;justify-content:center;gap:2rem}
+.top-bar a{color:rgba(255,255,255,0.85);font-size:.75rem;font-weight:500;text-decoration:none;letter-spacing:.02em}
+.nav{position:sticky;top:0;z-index:100;background:var(--bg-card);border-bottom:1px solid var(--border);padding:0 2rem;height:74px;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--shadow-sm)}
+.nav-logo{display:flex;align-items:center;gap:.7rem;text-decoration:none}
+.nav-logo-icon{width:42px;height:42px}
+.nav-logo-text{display:flex;flex-direction:column;line-height:1.15}
+.nav-logo-name{font-family:'DM Serif Display',serif;font-size:1.25rem;color:var(--navy)}.nav-logo-name span{color:var(--orange)}
+.nav-logo-tag{font-size:.62rem;color:var(--text-muted);font-weight:500;letter-spacing:.02em}
+.nav-mascot{height:60px;width:auto;animation:floatGentle 3.5s ease-in-out infinite;filter:drop-shadow(0 4px 12px rgba(232,122,46,0.18))}
+
+.hero{padding:3rem 2rem 2rem;text-align:center;max-width:900px;margin:0 auto}
+.hero-badge{display:inline-flex;align-items:center;gap:.45rem;padding:.4rem 1rem;border-radius:50px;background:var(--orange-glow);color:var(--orange);font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:1rem}
+.hero-badge .dot{width:7px;height:7px;border-radius:50%;background:var(--orange);animation:pulse 2s infinite}
+.hero h1{font-family:'DM Serif Display',serif;font-size:clamp(2rem,4vw,2.9rem);line-height:1.15;color:var(--navy);margin-bottom:.8rem}
+.hero h1 em{font-style:normal;color:var(--orange)}
+.hero-sub{font-size:1rem;color:var(--text-secondary);line-height:1.65;max-width:640px;margin:0 auto}
+
+.stage-wrap{max-width:1080px;margin:1.5rem auto 3rem;padding:0 2rem}
+.stage{background:var(--bg-card);border-radius:var(--radius);box-shadow:var(--shadow-md);border:1px solid var(--border);overflow:hidden}
+.stage-progress{display:flex;background:var(--bg-light);border-bottom:1px solid var(--border);padding:.65rem 1.2rem;gap:.4rem;align-items:center}
+.progress-dot{width:9px;height:9px;border-radius:50%;background:var(--border);transition:all .35s}
+.progress-dot.active{background:var(--orange);transform:scale(1.25);box-shadow:0 0 0 4px var(--orange-glow)}
+.progress-dot.done{background:var(--orange-light)}
+.progress-step-label{margin-left:auto;font-size:.72rem;font-weight:700;color:var(--text-muted);letter-spacing:.08em;text-transform:uppercase}
+.progress-step-label .num{color:var(--orange)}
+
+.stage-canvas{position:relative;height:430px;background:linear-gradient(180deg,#FBF7F2 0%,#F9F5F0 100%);overflow:hidden}
+.scene{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:0;visibility:hidden;transition:opacity .55s ease}
+.scene.active{opacity:1;visibility:visible}
+.scene svg{max-width:100%;max-height:100%}
+
+.stage-caption{padding:1.5rem 2rem 1.8rem;border-top:1px solid var(--border);background:var(--bg-card);min-height:130px}
+.caption-title{font-family:'DM Serif Display',serif;font-size:1.4rem;color:var(--navy);margin-bottom:.4rem}
+.caption-text{font-size:.95rem;color:var(--text-secondary);line-height:1.65}
+
+.stage-controls{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.5rem;background:var(--bg-light);border-top:1px solid var(--border)}
+.btn{display:inline-flex;align-items:center;gap:.4rem;padding:.6rem 1.2rem;border-radius:8px;font-size:.85rem;font-weight:600;border:none;cursor:pointer;font-family:inherit;transition:all .2s}
+.btn-fill{background:var(--orange);color:#fff}.btn-fill:hover:not(:disabled){background:var(--orange-dark);transform:translateY(-1px);box-shadow:0 4px 14px rgba(232,122,46,0.3)}.btn-fill:disabled{opacity:.35;cursor:not-allowed}
+.btn-ghost{background:transparent;border:1.5px solid var(--border);color:var(--text-primary)}.btn-ghost:hover:not(:disabled){border-color:var(--orange);color:var(--orange)}.btn-ghost:disabled{opacity:.35;cursor:not-allowed}
+.btn-play{background:var(--navy-dark);color:#fff}.btn-play:hover{background:var(--navy)}
+.step-counter{font-size:.8rem;color:var(--text-muted);font-weight:600}.step-counter span{color:var(--orange);font-weight:800}
+
+.takeaway{max-width:1080px;margin:0 auto 4rem;padding:0 2rem}
+.takeaway-card{background:linear-gradient(135deg,var(--navy-dark),var(--navy));color:#fff;border-radius:var(--radius);padding:2.2rem 2.5rem;position:relative;overflow:hidden}
+.takeaway-card::before{content:'';position:absolute;top:-50px;right:-50px;width:180px;height:180px;border-radius:50%;background:rgba(232,122,46,0.1)}
+.takeaway-label{font-size:.7rem;font-weight:700;color:var(--orange-light);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.6rem;position:relative}
+.takeaway-card h2{font-family:'DM Serif Display',serif;font-size:1.6rem;margin-bottom:.7rem;position:relative}
+.takeaway-card p{color:rgba(255,255,255,0.78);line-height:1.7;font-size:.95rem;position:relative;max-width:760px}
+
+footer{text-align:center;padding:1.5rem;color:var(--text-muted);font-size:.78rem;border-top:1px solid var(--border)}
+
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.4)}}
+@keyframes floatGentle{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes popIn{from{opacity:0;transform:scale(0.4)}to{opacity:1;transform:scale(1)}}
+@keyframes slideInLeft{from{opacity:0;transform:translateX(-30px)}to{opacity:1;transform:translateX(0)}}
+@keyframes slideInRight{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:translateX(0)}}
+@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes wobble{0%,100%{transform:rotate(0)}25%{transform:rotate(-3deg)}75%{transform:rotate(3deg)}}
+@keyframes glow{0%,100%{filter:drop-shadow(0 0 0 transparent)}50%{filter:drop-shadow(0 0 12px rgba(232,74,74,0.55))}}
+
+.scene.active .anim-1{animation:popIn .55s ease both}
+.scene.active .anim-2{animation:popIn .55s ease .15s both}
+.scene.active .anim-3{animation:popIn .55s ease .3s both}
+.scene.active .anim-4{animation:popIn .55s ease .45s both}
+.scene.active .anim-5{animation:popIn .55s ease .6s both}
+.scene.active .anim-6{animation:popIn .55s ease .75s both}
+.scene.active .slide-l{animation:slideInLeft .55s ease both}
+.scene.active .slide-r{animation:slideInRight .55s ease both}
+.scene.active .slide-up{animation:slideUp .6s ease both}
+.scene.active .wobble-it{animation:wobble .6s ease infinite,popIn .5s ease both}
+.glow-red{animation:glow 2.2s ease-in-out infinite}
+
+@media (max-width:680px){
+.nav{padding:0 1rem;height:60px}.nav-mascot{height:46px}.nav-logo-name{font-size:1.05rem}.nav-logo-tag{font-size:.55rem}
+.hero{padding:2rem 1rem 1rem}.stage-wrap{padding:0 1rem;margin:1rem auto 2rem}
+.stage-canvas{height:340px}.stage-caption{padding:1.2rem 1.2rem 1.4rem}
+.stage-controls{padding:.8rem 1rem;flex-wrap:wrap;gap:.6rem}
+.takeaway{padding:0 1rem;margin-bottom:2.5rem}.takeaway-card{padding:1.6rem}
+.btn{padding:.55rem .9rem;font-size:.8rem}
+}
+</style>
+</head>
+<body>
+
+<div class="top-bar"><a href="#">Request a Demo</a><a href="#">FAQs</a><a href="#">Help Center</a></div>
+
+<nav class="nav">
+  <a href="#" class="nav-logo">
+    <svg class="nav-logo-icon" viewBox="0 0 42 42" fill="none"><circle cx="21" cy="14" r="6" fill="#E87A2E"/><path d="M21 20c-6 0-10 3-10 7 0 2 1 3 2 4l2-3c1-1.5 2.5-2 3-2h6c.5 0 2 .5 3 2l2 3c1-1 2-2 2-4 0-4-4-7-10-7z" fill="#E87A2E"/><path d="M11 31c0 0 2 4 10 4s10-4 10-4" stroke="#E87A2E" stroke-width="1.5" stroke-linecap="round"/><ellipse cx="21" cy="38" rx="8" ry="2" fill="#E87A2E" opacity=".15"/><circle cx="21" cy="14" r="3" fill="#FFF" opacity=".3"/></svg>
+    <div class="nav-logo-text"><span class="nav-logo-name">Moksh<span>Path</span></span><span class="nav-logo-tag">Guided Path to True Learning</span></div>
+  </a>
+  <img src="hero.svg" alt="MokshPath Mascot" class="nav-mascot">
+</nav>
+
+<section class="hero">
+  <div class="hero-badge"><span class="dot"></span> Fairness Criterion · 2 of 3</div>
+  <h1><em>Equalised Odds</em></h1>
+  <p class="hero-sub">Demographic parity asks "are outcomes equal?" Equalised odds asks a subtler, sharper question: "are the <em>mistakes</em> equal?" Let's watch a disease-screening AI to see why mistake-equality often matters more.</p>
+</section>
+
+<div class="stage-wrap">
+  <div class="stage">
+    <div class="stage-progress">
+      <span class="progress-dot active"></span>
+      <span class="progress-dot"></span>
+      <span class="progress-dot"></span>
+      <span class="progress-dot"></span>
+      <span class="progress-dot"></span>
+      <span class="progress-dot"></span>
+      <span class="progress-step-label">Step <span class="num" id="stepNum">1</span>/6</span>
+    </div>
+
+    <div class="stage-canvas" id="canvas">
+
+      <!-- ── Scene 1: Two kinds of mistakes ── -->
+      <div class="scene active" data-scene="1">
+        <svg viewBox="0 0 700 380" width="100%" height="100%">
+          <text class="anim-1" x="350" y="40" text-anchor="middle" font-family="DM Serif Display" font-size="20" fill="#2B2D42">An AI can be wrong in <tspan fill="#E84A4A">two different ways</tspan></text>
+          <!-- False Positive box -->
+          <g class="slide-l">
+            <rect x="60" y="85" width="280" height="220" rx="12" fill="#FFF" stroke="#F5943E" stroke-width="2.5"/>
+            <text x="200" y="118" text-anchor="middle" font-family="DM Serif Display" font-size="15" fill="#F5943E">FALSE POSITIVE</text>
+            <!-- Healthy person -->
+            <circle cx="120" cy="175" r="22" fill="#4CAF50"/>
+            <rect x="100" y="197" width="40" height="34" rx="6" fill="#4CAF50"/>
+            <path d="M110 173 Q120 180 130 173" stroke="#FFF" stroke-width="2" fill="none" stroke-linecap="round"/>
+            <text x="120" y="252" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="700" font-size="11" fill="#2B2D42">Actually healthy</text>
+            <!-- Arrow -->
+            <path d="M155 215 L195 215" stroke="#F5943E" stroke-width="2" marker-end="url(#a1)"/>
+            <!-- AI prediction -->
+            <rect x="210" y="195" width="100" height="40" rx="6" fill="#F5943E"/>
+            <text x="260" y="219" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="700" font-size="11" fill="#FFF">"You're sick"</text>
+            <text x="200" y="285" text-anchor="middle" font-family="Plus Jakarta Sans" font-style="italic" font-size="11" fill="#9597A6">A "false alarm" — worry,</text>
+            <text x="200" y="298" text-anchor="middle" font-family="Plus Jakarta Sans" font-style="italic" font-size="11" fill="#9597A6">extra tests, lost time.</text>
+          </g>
+          <!-- False Negative box -->
+          <g class="slide-r">
+            <rect x="360" y="85" width="280" height="220" rx="12" fill="#FFF" stroke="#E84A4A" stroke-width="2.5"/>
+            <text x="500" y="118" text-anchor="middle" font-family="DM Serif Display" font-size="15" fill="#E84A4A">FALSE NEGATIVE</text>
+            <!-- Sick person -->
+            <circle cx="420" cy="175" r="22" fill="#E84A4A"/>
+            <rect x="400" y="197" width="40" height="34" rx="6" fill="#E84A4A"/>
+            <path d="M410 175 Q420 169 430 175" stroke="#FFF" stroke-width="2" fill="none" stroke-linecap="round"/>
+            <text x="420" y="252" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="700" font-size="11" fill="#2B2D42">Actually sick</text>
+            <!-- Arrow -->
+            <path d="M455 215 L495 215" stroke="#E84A4A" stroke-width="2" marker-end="url(#a2)"/>
+            <!-- AI prediction -->
+            <rect x="510" y="195" width="100" height="40" rx="6" fill="#E84A4A"/>
+            <text x="560" y="219" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="700" font-size="11" fill="#FFF">"You're fine"</text>
+            <text x="500" y="285" text-anchor="middle" font-family="Plus Jakarta Sans" font-style="italic" font-size="11" fill="#9597A6">A missed diagnosis —</text>
+            <text x="500" y="298" text-anchor="middle" font-family="Plus Jakarta Sans" font-style="italic" font-size="11" fill="#9597A6">illness goes untreated.</text>
+          </g>
+          <defs>
+            <marker id="a1" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="#F5943E"/></marker>
+            <marker id="a2" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="#E84A4A"/></marker>
+          </defs>
+          <text class="anim-4" x="350" y="345" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="600" font-size="12" fill="#9597A6">Different errors. Different consequences. Both worth measuring.</text>
+        </svg>
+      </div>
+
+      <!-- ── Scene 2: Confusion matrix ── -->
+      <div class="scene" data-scene="2">
+        <svg viewBox="0 0 700 380" width="100%" height="100%">
+          <text class="anim-1" x="350" y="40" text-anchor="middle" font-family="DM Serif Display" font-size="20" fill="#2B2D42">The <tspan fill="#E87A2E">confusion matrix</tspan> — every prediction lands in one cell</text>
+          <!-- Outer matrix -->
+          <!-- Column labels -->
+          <text class="anim-2" x="450" y="105" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="700" font-size="11" fill="#6B6D7B">AI PREDICTED →</text>
+          <text class="anim-2" x="350" y="135" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="700" font-size="12" fill="#2B2D42">Healthy</text>
+          <text class="anim-2" x="550" y="135" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="700" font-size="12" fill="#2B2D42">Sick</text>
+          <!-- Row labels -->
+          <text class="anim-3" x="195" y="190" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="700" font-size="11" fill="#6B6D7B" transform="rotate(-90 195 190)">ACTUAL ↓</text>
+          <text class="anim-3" x="245" y="205" text-anchor="end" font-family="Plus Jakarta Sans" font-weight="700" font-size="12" fill="#2B2D42">Healthy</text>
+          <text class="anim-3" x="245" y="295" text-anchor="end" font-family="Plus Jakarta Sans" font-weight="700" font-size="12" fill="#2B2D42">Sick</text>
+          <!-- Cells -->
+          <g class="anim-4">
+            <rect x="260" y="150" width="180" height="90" rx="6" fill="#E8F5E9" stroke="#4CAF50" stroke-width="2"/>
+            <text x="350" y="185" text-anchor="middle" font-family="DM Serif Display" font-size="14" fill="#4CAF50">True Negative</text>
+            <text x="350" y="208" text-anchor="middle" font-family="Plus Jakarta Sans" font-style="italic" font-size="11" fill="#388E3C">healthy → "healthy"</text>
+            <text x="350" y="225" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="800" font-size="13" fill="#388E3C">✓ correct</text>
+          </g>
+          <g class="anim-4" style="animation-delay:.5s">
+            <rect x="460" y="150" width="180" height="90" rx="6" fill="#FFF4E5" stroke="#F5943E" stroke-width="2"/>
+            <text x="550" y="185" text-anchor="middle" font-family="DM Serif Display" font-size="14" fill="#F5943E">False Positive</text>
+            <text x="550" y="208" text-anchor="middle" font-family="Plus Jakarta Sans" font-style="italic" font-size="11" fill="#D06A20">healthy → "sick"</text>
+            <text x="550" y="225" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="800" font-size="13" fill="#D06A20">⚠ false alarm</text>
+          </g>
+          <g class="anim-4" style="animation-delay:.65s">
+            <rect x="260" y="245" width="180" height="90" rx="6" fill="#FDECEC" stroke="#E84A4A" stroke-width="2"/>
+            <text x="350" y="280" text-anchor="middle" font-family="DM Serif Display" font-size="14" fill="#E84A4A">False Negative</text>
+            <text x="350" y="303" text-anchor="middle" font-family="Plus Jakarta Sans" font-style="italic" font-size="11" fill="#C62828">sick → "healthy"</text>
+            <text x="350" y="320" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="800" font-size="13" fill="#C62828">✗ missed!</text>
+          </g>
+          <g class="anim-4" style="animation-delay:.8s">
+            <rect x="460" y="245" width="180" height="90" rx="6" fill="#E8F5E9" stroke="#4CAF50" stroke-width="2"/>
+            <text x="550" y="280" text-anchor="middle" font-family="DM Serif Display" font-size="14" fill="#4CAF50">True Positive</text>
+            <text x="550" y="303" text-anchor="middle" font-family="Plus Jakarta Sans" font-style="italic" font-size="11" fill="#388E3C">sick → "sick"</text>
+            <text x="550" y="320" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="800" font-size="13" fill="#388E3C">✓ caught</text>
+          </g>
+        </svg>
+      </div>
+
+      <!-- ── Scene 3: Compare groups ── -->
+      <div class="scene" data-scene="3">
+        <svg viewBox="0 0 700 380" width="100%" height="100%">
+          <text class="anim-1" x="350" y="38" text-anchor="middle" font-family="DM Serif Display" font-size="20" fill="#2B2D42">Now check the matrix <tspan fill="#E87A2E">for each group</tspan></text>
+          <!-- Group A matrix -->
+          <g class="slide-l">
+            <text x="170" y="72" text-anchor="middle" font-family="DM Serif Display" font-size="15" fill="#5B8DEF">Group A</text>
+            <!-- 2x2 grid -->
+            <rect x="100" y="90" width="70" height="60" fill="#E8F5E9" stroke="#4CAF50" stroke-width="1.5"/>
+            <text x="135" y="118" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="700" font-size="11" fill="#388E3C">TN</text>
+            <text x="135" y="138" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="800" font-size="14" fill="#388E3C">85</text>
+            <rect x="170" y="90" width="70" height="60" fill="#FFF4E5" stroke="#F5943E" stroke-width="1.5"/>
+            <text x="205" y="118" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="700" font-size="11" fill="#D06A20">FP</text>
+            <text x="205" y="138" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="800" font-size="14" fill="#D06A20">5</text>
+            <rect x="100" y="150" width="70" height="60" fill="#FDECEC" stroke="#E84A4A" stroke-width="1.5"/>
+            <text x="135" y="178" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="700" font-size="11" fill="#C62828">FN</text>
+            <text x="135" y="198" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="800" font-size="14" fill="#C62828">2</text>
+            <rect x="170" y="150" width="70" height="60" fill="#E8F5E9" stroke="#4CAF50" stroke-width="1.5"/>
+            <text x="205" y="178" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="700" font-size="11" fill="#388E3C">TP</text>
+            <text x="205" y="198" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="800" font-size="14" fill="#388E3C">8</text>
+            <!-- Rates -->
+            <text x="170" y="240" text-anchor="middle" font-family="DM Serif Display" font-size="12" fill="#2B2D42">Error rates</text>
+            <text x="170" y="262" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="700" font-size="12" fill="#D06A20">FPR: 6%</text>
+            <text x="170" y="280" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="700" font-size="12" fill="#C62828">FNR: 20%</text>
+          </g>
+          <!-- Group B matrix (worse error rates) -->
+          <g class="slide-r">
+            <text x="510" y="72" text-anchor="middle" font-family="DM Serif Display" font-size="15" fill="#E0A350">Group B</text>
+            <rect x="440" y="90" width="70" height="60" fill="#E8F5E9" stroke="#4CAF50" stroke-width="1.5"/>
+            <text x="475" y="118" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="700" font-size="11" fill="#388E3C">TN</text>
+            <text x="475" y="138" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="800" font-size="14" fill="#388E3C">72</text>
+            <rect x="510" y="90" width="70" height="60" fill="#FFF4E5" stroke="#F5943E" stroke-width="1.5"/>
+            <text x="545" y="118" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="700" font-size="11" fill="#D06A20">FP</text>
+            <text x="545" y="138" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="800" font-size="14" fill="#D06A20">18</text>
+            <rect x="440" y="150" width="70" height="60" fill="#FDECEC" stroke="#E84A4A" stroke-width="1.5"/>
+            <text x="475" y="178" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="700" font-size="11" fill="#C62828">FN</text>
+            <text x="475" y="198" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="800" font-size="14" fill="#C62828">5</text>
+            <rect x="510" y="150" width="70" height="60" fill="#E8F5E9" stroke="#4CAF50" stroke-width="1.5"/>
+            <text x="545" y="178" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="700" font-size="11" fill="#388E3C">TP</text>
+            <text x="545" y="198" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="800" font-size="14" fill="#388E3C">5</text>
+            <text x="510" y="240" text-anchor="middle" font-family="DM Serif Display" font-size="12" fill="#2B2D42">Error rates</text>
+            <text x="510" y="262" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="700" font-size="12" fill="#D06A20">FPR: 20%</text>
+            <text x="510" y="280" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="700" font-size="12" fill="#C62828">FNR: 50%</text>
+          </g>
+          <text class="anim-5" x="350" y="335" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="600" font-size="12" fill="#9597A6">Group B's people are 2.5× more likely to be missed when sick.</text>
+          <text class="anim-5" x="350" y="354" text-anchor="middle" font-family="Plus Jakarta Sans" font-style="italic" font-size="10" fill="#9597A6">(Numbers per 100 people in each group.)</text>
+        </svg>
+      </div>
+
+      <!-- ── Scene 4: The error gap visualised ── -->
+      <div class="scene" data-scene="4">
+        <svg viewBox="0 0 700 380" width="100%" height="100%">
+          <text class="anim-1" x="350" y="40" text-anchor="middle" font-family="DM Serif Display" font-size="20" fill="#2B2D42">Side-by-side: <tspan fill="#E84A4A">the error gap</tspan></text>
+          <!-- FPR comparison -->
+          <text class="anim-2" x="200" y="85" text-anchor="middle" font-family="DM Serif Display" font-size="14" fill="#D06A20">False Positive Rate</text>
+          <text class="anim-2" x="200" y="103" text-anchor="middle" font-family="Plus Jakarta Sans" font-style="italic" font-size="10" fill="#9597A6">(healthy people wrongly flagged sick)</text>
+          <!-- A bar: 6% -->
+          <rect class="anim-3" x="135" y="180" width="50" height="18" fill="#5B8DEF" rx="3"/>
+          <text class="anim-3" x="190" y="195" text-anchor="start" font-family="Plus Jakarta Sans" font-weight="800" font-size="12" fill="#5B8DEF">6%  (Group A)</text>
+          <!-- B bar: 20% -->
+          <rect class="anim-3" x="135" y="210" width="60" height="18" fill="#E0A350" rx="3"/>
+          <text class="anim-3" x="200" y="225" text-anchor="start" font-family="Plus Jakarta Sans" font-weight="800" font-size="12" fill="#E0A350">20%  (Group B)</text>
+          <!-- Gap bracket FPR -->
+          <text class="anim-4" x="200" y="260" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="700" font-size="13" fill="#E84A4A">↕ 14-point gap</text>
+
+          <!-- FNR comparison -->
+          <text class="anim-5" x="500" y="85" text-anchor="middle" font-family="DM Serif Display" font-size="14" fill="#C62828">False Negative Rate</text>
+          <text class="anim-5" x="500" y="103" text-anchor="middle" font-family="Plus Jakarta Sans" font-style="italic" font-size="10" fill="#9597A6">(sick people missed by the AI)</text>
+          <!-- A bar: 20% -->
+          <rect class="anim-6" x="430" y="180" width="60" height="18" fill="#5B8DEF" rx="3"/>
+          <text class="anim-6" x="495" y="195" text-anchor="start" font-family="Plus Jakarta Sans" font-weight="800" font-size="12" fill="#5B8DEF">20%  (Group A)</text>
+          <!-- B bar: 50% -->
+          <rect class="anim-6" x="430" y="210" width="135" height="18" fill="#E84A4A" rx="3"/>
+          <text class="anim-6" x="570" y="225" text-anchor="start" font-family="Plus Jakarta Sans" font-weight="800" font-size="12" fill="#E84A4A">50%  (Group B)</text>
+          <text class="anim-6" x="500" y="260" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="700" font-size="13" fill="#E84A4A">↕ 30-point gap</text>
+
+          <!-- Bottom warning -->
+          <g class="anim-6">
+            <rect x="120" y="295" width="460" height="50" rx="8" fill="#FDECEC" stroke="#E84A4A" stroke-width="1.5"/>
+            <text x="350" y="316" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="700" font-size="12" fill="#C62828">The model is more accurate for Group A than for Group B.</text>
+            <text x="350" y="333" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="11" fill="#6B6D7B">Same disease, same tool — unequal protection from error.</text>
+          </g>
+        </svg>
+      </div>
+
+      <!-- ── Scene 5: Equalised odds = equal errors ── -->
+      <div class="scene" data-scene="5">
+        <svg viewBox="0 0 700 380" width="100%" height="100%">
+          <text class="anim-1" x="350" y="40" text-anchor="middle" font-family="DM Serif Display" font-size="20" fill="#2B2D42"><tspan fill="#E87A2E">Equalised odds</tspan> asks for this:</text>
+          <!-- FPR -->
+          <text class="anim-2" x="200" y="80" text-anchor="middle" font-family="DM Serif Display" font-size="14" fill="#D06A20">False Positive Rate</text>
+          <rect class="anim-3" x="135" y="115" width="55" height="18" fill="#5B8DEF" rx="3"/>
+          <text x="195" y="130" font-family="Plus Jakarta Sans" font-weight="800" font-size="12" fill="#5B8DEF">10% A</text>
+          <rect class="anim-3" x="135" y="145" width="58" height="18" fill="#E0A350" rx="3"/>
+          <text x="198" y="160" font-family="Plus Jakarta Sans" font-weight="800" font-size="12" fill="#E0A350">11% B</text>
+          <g class="anim-4">
+            <circle cx="280" cy="140" r="18" fill="#4CAF50"/>
+            <path d="M270 140 L277 147 L290 132" stroke="#FFF" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          </g>
+          <!-- FNR -->
+          <text class="anim-5" x="500" y="80" text-anchor="middle" font-family="DM Serif Display" font-size="14" fill="#C62828">False Negative Rate</text>
+          <rect class="anim-3" x="430" y="115" width="80" height="18" fill="#5B8DEF" rx="3"/>
+          <text x="515" y="130" font-family="Plus Jakarta Sans" font-weight="800" font-size="12" fill="#5B8DEF">28% A</text>
+          <rect class="anim-3" x="430" y="145" width="84" height="18" fill="#E84A4A" rx="3"/>
+          <text x="519" y="160" font-family="Plus Jakarta Sans" font-weight="800" font-size="12" fill="#E84A4A">30% B</text>
+          <g class="anim-4">
+            <circle cx="600" cy="140" r="18" fill="#4CAF50"/>
+            <path d="M590 140 L597 147 L610 132" stroke="#FFF" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+          </g>
+          <!-- Summary -->
+          <g class="anim-6">
+            <rect x="120" y="200" width="460" height="135" rx="12" fill="#FFF" stroke="#E87A2E" stroke-width="2"/>
+            <text x="350" y="235" text-anchor="middle" font-family="DM Serif Display" font-size="16" fill="#E87A2E">Two equalities, not one</text>
+            <line x1="160" y1="248" x2="540" y2="248" stroke="#E5DDD4"/>
+            <text x="160" y="275" font-family="Plus Jakarta Sans" font-weight="700" font-size="12" fill="#D06A20">FPR(A) ≈ FPR(B)</text>
+            <text x="160" y="295" font-family="Plus Jakarta Sans" font-size="11" fill="#6B6D7B">→ Healthy people in each group bear equal false-alarm risk.</text>
+            <text x="160" y="316" font-family="Plus Jakarta Sans" font-weight="700" font-size="12" fill="#C62828">FNR(A) ≈ FNR(B)</text>
+            <text x="160" y="336" font-family="Plus Jakarta Sans" font-size="11" fill="#6B6D7B">→ Sick people in each group are missed at equal rates.</text>
+          </g>
+        </svg>
+      </div>
+
+      <!-- ── Scene 6: vs. demographic parity ── -->
+      <div class="scene" data-scene="6">
+        <svg viewBox="0 0 700 380" width="100%" height="100%">
+          <text class="anim-1" x="350" y="40" text-anchor="middle" font-family="DM Serif Display" font-size="20" fill="#2B2D42">Two questions. <tspan fill="#E87A2E">Different lenses.</tspan></text>
+          <!-- Demographic Parity card -->
+          <g class="slide-l">
+            <rect x="60" y="80" width="280" height="240" rx="12" fill="#FFF" stroke="#5B8DEF" stroke-width="2.5"/>
+            <text x="200" y="115" text-anchor="middle" font-family="DM Serif Display" font-size="15" fill="#5B8DEF">Demographic Parity</text>
+            <text x="200" y="135" text-anchor="middle" font-family="Plus Jakarta Sans" font-style="italic" font-size="11" fill="#6B6D7B">"are outcomes equal?"</text>
+            <line x1="90" y1="150" x2="310" y2="150" stroke="#E5DDD4"/>
+            <text x="200" y="178" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="700" font-size="12" fill="#2B2D42">Question</text>
+            <text x="200" y="195" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="11" fill="#6B6D7B">Do all groups get</text>
+            <text x="200" y="210" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="11" fill="#6B6D7B">approved at the same rate?</text>
+            <text x="200" y="245" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="700" font-size="12" fill="#2B2D42">Best for</text>
+            <text x="200" y="262" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="11" fill="#6B6D7B">Access questions —</text>
+            <text x="200" y="277" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="11" fill="#6B6D7B">hiring, ads, outreach.</text>
+            <text x="200" y="303" text-anchor="middle" font-family="Plus Jakarta Sans" font-style="italic" font-size="10" fill="#9597A6">Ignores who was right.</text>
+          </g>
+          <!-- Equalised Odds card -->
+          <g class="slide-r">
+            <rect x="360" y="80" width="280" height="240" rx="12" fill="#FFF" stroke="#E87A2E" stroke-width="2.5"/>
+            <text x="500" y="115" text-anchor="middle" font-family="DM Serif Display" font-size="15" fill="#E87A2E">Equalised Odds</text>
+            <text x="500" y="135" text-anchor="middle" font-family="Plus Jakarta Sans" font-style="italic" font-size="11" fill="#6B6D7B">"are mistakes equal?"</text>
+            <line x1="390" y1="150" x2="610" y2="150" stroke="#E5DDD4"/>
+            <text x="500" y="178" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="700" font-size="12" fill="#2B2D42">Question</text>
+            <text x="500" y="195" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="11" fill="#6B6D7B">Do all groups bear</text>
+            <text x="500" y="210" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="11" fill="#6B6D7B">equal error risk?</text>
+            <text x="500" y="245" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="700" font-size="12" fill="#2B2D42">Best for</text>
+            <text x="500" y="262" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="11" fill="#6B6D7B">Accuracy-critical work —</text>
+            <text x="500" y="277" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="11" fill="#6B6D7B">medical, fraud, justice.</text>
+            <text x="500" y="303" text-anchor="middle" font-family="Plus Jakarta Sans" font-style="italic" font-size="10" fill="#9597A6">Often the subtler, sharper test.</text>
+          </g>
+          <text class="anim-5" x="350" y="350" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="600" font-size="12" fill="#9597A6">Pick the criterion that matches the real harm you're guarding against.</text>
+        </svg>
+      </div>
+
+    </div>
+
+    <div class="stage-caption" id="caption">
+      <div class="caption-title" id="capTitle">Wrong in two different ways</div>
+      <div class="caption-text" id="capText">Every prediction an AI makes can be wrong in two directions. A "false positive" raises a false alarm — a healthy person told they're sick. A "false negative" misses what's there — a sick person told they're fine. These errors aren't the same, and their costs aren't the same.</div>
+    </div>
+
+    <div class="stage-controls">
+      <button class="btn btn-ghost" id="prevBtn" disabled>← Previous</button>
+      <div class="step-counter">Scene <span id="counter">1</span> of 6</div>
+      <div style="display:flex;gap:.5rem">
+        <button class="btn btn-play" id="playBtn">▶ Auto-play</button>
+        <button class="btn btn-fill" id="nextBtn">Next →</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="takeaway">
+  <div class="takeaway-card">
+    <div class="takeaway-label">Definition</div>
+    <h2>Equalised Odds</h2>
+    <p>A fairness criterion that asks: across different groups, are the system's false-positive and false-negative rates roughly equal? Where demographic parity asks "are outcomes equal?", equalised odds asks "are <strong>mistakes</strong> equal?" — a subtler and often more useful question.</p>
+  </div>
+</div>
+
+<footer>&copy; 2026 MokshPath — Guided Path to True Learning</footer>
+
+<script>
+const scenes = [
+  {title:"Wrong in two different ways", text:"Every prediction an AI makes can be wrong in two directions. A <strong>false positive</strong> raises a false alarm — a healthy person told they're sick. A <strong>false negative</strong> misses what's there — a sick person told they're fine. These errors aren't the same, and their costs aren't the same."},
+  {title:"Sort every prediction into one of four cells", text:"Combine what's true with what the AI said and you get four outcomes: true negatives and true positives (correct), false positives and false negatives (mistakes). This little 2×2 is the <strong>confusion matrix</strong>, and it's the whole foundation for thinking about errors."},
+  {title:"Now do it for each group separately", text:"Build a confusion matrix per group. Group A might look fine; Group B's mistakes pile up in the false-negative cell. Same model, very different reliability depending on which group you happen to be in."},
+  {title:"That's the error gap", text:"Healthy people in Group B face a much higher false-alarm rate. Sick people in Group B are missed at more than double Group A's rate. The model is, in a precise statistical sense, <em>less accurate</em> for one group than for the other."},
+  {title:"Equalised odds: make the errors equal", text:"Both the false-positive rate <em>and</em> the false-negative rate must be roughly equal across groups. Two equalities, both required. This is what makes it sharper than demographic parity — it doesn't just look at who got what, it looks at who got harmed by the model's mistakes."},
+  {title:"Two questions. Different lenses.", text:"Demographic parity asks about access; equalised odds asks about accuracy. In high-stakes domains where errors cause direct harm — medicine, fraud detection, criminal justice — equalised odds is usually the test that matters most."}
+];
+
+let current = 0;
+let autoplay = null;
+const sceneEls = document.querySelectorAll('.scene');
+const dots = document.querySelectorAll('.progress-dot');
+const capTitle = document.getElementById('capTitle');
+const capText = document.getElementById('capText');
+const counter = document.getElementById('counter');
+const stepNum = document.getElementById('stepNum');
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+const playBtn = document.getElementById('playBtn');
+
+function goTo(idx){
+  current = Math.max(0, Math.min(scenes.length-1, idx));
+  sceneEls.forEach((el,i) => el.classList.toggle('active', i===current));
+  dots.forEach((d,i) => {
+    d.classList.remove('active','done');
+    if(i===current) d.classList.add('active');
+    else if(i<current) d.classList.add('done');
+  });
+  capTitle.textContent = scenes[current].title;
+  capText.innerHTML = scenes[current].text;
+  counter.textContent = current+1;
+  stepNum.textContent = current+1;
+  prevBtn.disabled = current===0;
+  nextBtn.disabled = current===scenes.length-1;
+  if(current===scenes.length-1 && autoplay){ stopAuto(); }
+}
+prevBtn.addEventListener('click', () => { stopAuto(); goTo(current-1); });
+nextBtn.addEventListener('click', () => { stopAuto(); goTo(current+1); });
+function startAuto(){ playBtn.textContent='⏸ Pause'; autoplay = setInterval(() => { if(current >= scenes.length-1){ stopAuto(); return; } goTo(current+1); }, 4500); }
+function stopAuto(){ if(autoplay){ clearInterval(autoplay); autoplay=null; playBtn.textContent='▶ Auto-play'; } }
+playBtn.addEventListener('click', () => { autoplay ? stopAuto() : startAuto(); });
+document.addEventListener('keydown', (e) => { if(e.key==='ArrowRight') nextBtn.click(); if(e.key==='ArrowLeft') prevBtn.click(); });
+</script>
+
+</body>
+</html>

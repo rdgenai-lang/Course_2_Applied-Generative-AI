@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Disparate Impact — MokshPath</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{--orange:#E87A2E;--orange-dark:#D06A20;--orange-light:#F5943E;--orange-glow:rgba(232,122,46,0.12);--navy:#2B2D42;--navy-dark:#1A1B2E;--bg:#F3EDE7;--bg-card:#FFFFFF;--bg-light:#F9F5F0;--text-primary:#2B2D42;--text-secondary:#6B6D7B;--text-muted:#9597A6;--border:#E5DDD4;--green:#4CAF50;--red:#E84A4A;--yellow:#F5C16C;--blue:#5B8DEF;--shadow-sm:0 2px 8px rgba(43,45,66,0.06);--shadow-md:0 8px 24px rgba(43,45,66,0.08);--shadow-lg:0 16px 48px rgba(43,45,66,0.12);--radius:14px}
+html{scroll-behavior:smooth}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text-primary);overflow-x:hidden;-webkit-font-smoothing:antialiased;min-height:100vh}
+
+.top-bar{background:var(--navy-dark);padding:.45rem 2rem;display:flex;justify-content:center;gap:2rem}
+.top-bar a{color:rgba(255,255,255,0.85);font-size:.75rem;font-weight:500;text-decoration:none;letter-spacing:.02em}
+.nav{position:sticky;top:0;z-index:100;background:var(--bg-card);border-bottom:1px solid var(--border);padding:0 2rem;height:74px;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--shadow-sm)}
+.nav-logo{display:flex;align-items:center;gap:.7rem;text-decoration:none}
+.nav-logo-icon{width:42px;height:42px}
+.nav-logo-text{display:flex;flex-direction:column;line-height:1.15}
+.nav-logo-name{font-family:'DM Serif Display',serif;font-size:1.25rem;color:var(--navy)}.nav-logo-name span{color:var(--orange)}
+.nav-logo-tag{font-size:.62rem;color:var(--text-muted);font-weight:500;letter-spacing:.02em}
+.nav-mascot{height:60px;width:auto;animation:floatGentle 3.5s ease-in-out infinite;filter:drop-shadow(0 4px 12px rgba(232,122,46,0.18))}
+
+.hero{padding:3rem 2rem 2rem;text-align:center;max-width:900px;margin:0 auto}
+.hero-badge{display:inline-flex;align-items:center;gap:.45rem;padding:.4rem 1rem;border-radius:50px;background:var(--orange-glow);color:var(--orange);font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:1rem}
+.hero-badge .dot{width:7px;height:7px;border-radius:50%;background:var(--orange);animation:pulse 2s infinite}
+.hero h1{font-family:'DM Serif Display',serif;font-size:clamp(2rem,4vw,2.9rem);line-height:1.15;color:var(--navy);margin-bottom:.8rem}
+.hero h1 em{font-style:normal;color:var(--orange)}
+.hero-sub{font-size:1rem;color:var(--text-secondary);line-height:1.65;max-width:640px;margin:0 auto}
+
+.stage-wrap{max-width:1080px;margin:1.5rem auto 3rem;padding:0 2rem}
+.stage{background:var(--bg-card);border-radius:var(--radius);box-shadow:var(--shadow-md);border:1px solid var(--border);overflow:hidden}
+.stage-progress{display:flex;background:var(--bg-light);border-bottom:1px solid var(--border);padding:.65rem 1.2rem;gap:.4rem;align-items:center}
+.progress-dot{width:9px;height:9px;border-radius:50%;background:var(--border);transition:all .35s}
+.progress-dot.active{background:var(--orange);transform:scale(1.25);box-shadow:0 0 0 4px var(--orange-glow)}
+.progress-dot.done{background:var(--orange-light)}
+.progress-step-label{margin-left:auto;font-size:.72rem;font-weight:700;color:var(--text-muted);letter-spacing:.08em;text-transform:uppercase}
+.progress-step-label .num{color:var(--orange)}
+
+.stage-canvas{position:relative;height:430px;background:linear-gradient(180deg,#FBF7F2 0%,#F9F5F0 100%);overflow:hidden}
+.scene{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;opacity:0;visibility:hidden;transition:opacity .55s ease}
+.scene.active{opacity:1;visibility:visible}
+.scene svg{max-width:100%;max-height:100%}
+
+.stage-caption{padding:1.5rem 2rem 1.8rem;border-top:1px solid var(--border);background:var(--bg-card);min-height:130px}
+.caption-title{font-family:'DM Serif Display',serif;font-size:1.4rem;color:var(--navy);margin-bottom:.4rem}
+.caption-text{font-size:.95rem;color:var(--text-secondary);line-height:1.65}
+
+.stage-controls{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.5rem;background:var(--bg-light);border-top:1px solid var(--border)}
+.btn{display:inline-flex;align-items:center;gap:.4rem;padding:.6rem 1.2rem;border-radius:8px;font-size:.85rem;font-weight:600;border:none;cursor:pointer;font-family:inherit;transition:all .2s}
+.btn-fill{background:var(--orange);color:#fff}.btn-fill:hover:not(:disabled){background:var(--orange-dark);transform:translateY(-1px);box-shadow:0 4px 14px rgba(232,122,46,0.3)}.btn-fill:disabled{opacity:.35;cursor:not-allowed}
+.btn-ghost{background:transparent;border:1.5px solid var(--border);color:var(--text-primary)}.btn-ghost:hover:not(:disabled){border-color:var(--orange);color:var(--orange)}.btn-ghost:disabled{opacity:.35;cursor:not-allowed}
+.btn-play{background:var(--navy-dark);color:#fff}.btn-play:hover{background:var(--navy)}
+.step-counter{font-size:.8rem;color:var(--text-muted);font-weight:600}.step-counter span{color:var(--orange);font-weight:800}
+
+.takeaway{max-width:1080px;margin:0 auto 4rem;padding:0 2rem}
+.takeaway-card{background:linear-gradient(135deg,var(--navy-dark),var(--navy));color:#fff;border-radius:var(--radius);padding:2.2rem 2.5rem;position:relative;overflow:hidden}
+.takeaway-card::before{content:'';position:absolute;top:-50px;right:-50px;width:180px;height:180px;border-radius:50%;background:rgba(232,122,46,0.1)}
+.takeaway-label{font-size:.7rem;font-weight:700;color:var(--orange-light);letter-spacing:.1em;text-transform:uppercase;margin-bottom:.6rem;position:relative}
+.takeaway-card h2{font-family:'DM Serif Display',serif;font-size:1.6rem;margin-bottom:.7rem;position:relative}
+.takeaway-card p{color:rgba(255,255,255,0.78);line-height:1.7;font-size:.95rem;position:relative;max-width:760px}
+
+footer{text-align:center;padding:1.5rem;color:var(--text-muted);font-size:.78rem;border-top:1px solid var(--border)}
+
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.4)}}
+@keyframes floatGentle{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes popIn{from{opacity:0;transform:scale(0.4)}to{opacity:1;transform:scale(1)}}
+@keyframes slideInLeft{from{opacity:0;transform:translateX(-30px)}to{opacity:1;transform:translateX(0)}}
+@keyframes slideInRight{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:translateX(0)}}
+@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+@keyframes growBar{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+@keyframes wobble{0%,100%{transform:rotate(0)}25%{transform:rotate(-3deg)}75%{transform:rotate(3deg)}}
+@keyframes glow{0%,100%{filter:drop-shadow(0 0 0 transparent)}50%{filter:drop-shadow(0 0 12px rgba(232,74,74,0.55))}}
+@keyframes tipScale{0%,100%{transform:rotate(-6deg)}50%{transform:rotate(-10deg)}}
+
+.scene.active .anim-1{animation:popIn .55s ease both}
+.scene.active .anim-2{animation:popIn .55s ease .15s both}
+.scene.active .anim-3{animation:popIn .55s ease .3s both}
+.scene.active .anim-4{animation:popIn .55s ease .45s both}
+.scene.active .anim-5{animation:popIn .55s ease .6s both}
+.scene.active .anim-6{animation:popIn .55s ease .75s both}
+.scene.active .slide-l{animation:slideInLeft .55s ease both}
+.scene.active .slide-r{animation:slideInRight .55s ease both}
+.scene.active .slide-up{animation:slideUp .6s ease both}
+.scene.active .grow-1{animation:growBar .9s ease-out both;transform-origin:bottom}
+.scene.active .grow-2{animation:growBar .9s ease-out .25s both;transform-origin:bottom}
+.scene.active .wobble-it{animation:wobble .6s ease infinite,popIn .5s ease both}
+.scene.active .tip-it{animation:tipScale 3s ease-in-out infinite,popIn .6s ease both;transform-origin:300px 195px}
+.glow-red{animation:glow 2.2s ease-in-out infinite}
+
+@media (max-width:680px){
+.nav{padding:0 1rem;height:60px}.nav-mascot{height:46px}.nav-logo-name{font-size:1.05rem}.nav-logo-tag{font-size:.55rem}
+.hero{padding:2rem 1rem 1rem}.stage-wrap{padding:0 1rem;margin:1rem auto 2rem}
+.stage-canvas{height:340px}.stage-caption{padding:1.2rem 1.2rem 1.4rem}
+.stage-controls{padding:.8rem 1rem;flex-wrap:wrap;gap:.6rem}
+.takeaway{padding:0 1rem;margin-bottom:2.5rem}.takeaway-card{padding:1.6rem}
+.btn{padding:.55rem .9rem;font-size:.8rem}
+}
+</style>
+</head>
+<body>
+
+<div class="top-bar"><a href="#">Request a Demo</a><a href="#">FAQs</a><a href="#">Help Center</a></div>
+
+<nav class="nav">
+  <a href="#" class="nav-logo">
+    <svg class="nav-logo-icon" viewBox="0 0 42 42" fill="none"><circle cx="21" cy="14" r="6" fill="#E87A2E"/><path d="M21 20c-6 0-10 3-10 7 0 2 1 3 2 4l2-3c1-1.5 2.5-2 3-2h6c.5 0 2 .5 3 2l2 3c1-1 2-2 2-4 0-4-4-7-10-7z" fill="#E87A2E"/><path d="M11 31c0 0 2 4 10 4s10-4 10-4" stroke="#E87A2E" stroke-width="1.5" stroke-linecap="round"/><ellipse cx="21" cy="38" rx="8" ry="2" fill="#E87A2E" opacity=".15"/><circle cx="21" cy="14" r="3" fill="#FFF" opacity=".3"/></svg>
+    <div class="nav-logo-text"><span class="nav-logo-name">Moksh<span>Path</span></span><span class="nav-logo-tag">Guided Path to True Learning</span></div>
+  </a>
+  <img src="hero.svg" alt="MokshPath Mascot" class="nav-mascot">
+</nav>
+
+<section class="hero">
+  <div class="hero-badge"><span class="dot"></span> Legal &amp; Regulatory Lens · 3 of 3</div>
+  <h1><em>Disparate Impact</em></h1>
+  <p class="hero-sub">Demographic parity and equalised odds are statistical lenses. Disparate impact is the <em>legal</em> lens — the one a regulator will most likely use when they come knocking on your AI deployment.</p>
+</section>
+
+<div class="stage-wrap">
+  <div class="stage">
+    <div class="stage-progress">
+      <span class="progress-dot active"></span>
+      <span class="progress-dot"></span>
+      <span class="progress-dot"></span>
+      <span class="progress-dot"></span>
+      <span class="progress-dot"></span>
+      <span class="progress-dot"></span>
+      <span class="progress-step-label">Step <span class="num" id="stepNum">1</span>/6</span>
+    </div>
+
+    <div class="stage-canvas" id="canvas">
+
+      <!-- ── Scene 1: A neutral-looking rule ── -->
+      <div class="scene active" data-scene="1">
+        <svg viewBox="0 0 700 380" width="100%" height="100%">
+          <text class="anim-1" x="350" y="38" text-anchor="middle" font-family="DM Serif Display" font-size="20" fill="#2B2D42">It starts with a rule that looks <tspan fill="#4CAF50">perfectly fair</tspan></text>
+          <!-- Document/rule scroll -->
+          <g class="anim-2">
+            <rect x="200" y="75" width="300" height="220" rx="10" fill="#FFF" stroke="#E5DDD4" stroke-width="2"/>
+            <!-- Header band -->
+            <rect x="200" y="75" width="300" height="38" rx="10" fill="#2B2D42"/>
+            <rect x="200" y="100" width="300" height="13" fill="#2B2D42"/>
+            <text x="350" y="100" text-anchor="middle" font-family="DM Serif Display" font-size="15" fill="#F5943E">THE RULE</text>
+            <!-- Rule body lines -->
+            <text x="220" y="145" font-family="Plus Jakarta Sans" font-weight="700" font-size="12" fill="#2B2D42">Loan-approval criterion:</text>
+          </g>
+          <g class="anim-3">
+            <circle cx="228" cy="172" r="3" fill="#E87A2E"/>
+            <text x="240" y="176" font-family="Plus Jakarta Sans" font-size="12" fill="#6B6D7B">Credit score must be ≥ 680</text>
+            <circle cx="228" cy="196" r="3" fill="#E87A2E"/>
+            <text x="240" y="200" font-family="Plus Jakarta Sans" font-size="12" fill="#6B6D7B">Income must be ≥ $45,000/yr</text>
+            <circle cx="228" cy="220" r="3" fill="#E87A2E"/>
+            <text x="240" y="224" font-family="Plus Jakarta Sans" font-size="12" fill="#6B6D7B">Employment ≥ 2 years</text>
+            <circle cx="228" cy="244" r="3" fill="#E87A2E"/>
+            <text x="240" y="248" font-family="Plus Jakarta Sans" font-size="12" fill="#6B6D7B">ZIP code is in approved list</text>
+          </g>
+          <!-- Green stamp -->
+          <g class="anim-4" transform="translate(420 195) rotate(-12)">
+            <rect x="-46" y="-18" width="92" height="36" rx="4" fill="none" stroke="#4CAF50" stroke-width="2.5"/>
+            <text x="0" y="6" text-anchor="middle" font-family="DM Serif Display" font-size="14" fill="#4CAF50">NEUTRAL</text>
+          </g>
+          <!-- Footnote -->
+          <text class="anim-5" x="350" y="335" text-anchor="middle" font-family="Plus Jakarta Sans" font-style="italic" font-size="12" fill="#9597A6">No mention of race. No mention of gender. No mention of age.</text>
+          <text class="anim-5" x="350" y="352" text-anchor="middle" font-family="Plus Jakarta Sans" font-style="italic" font-size="12" fill="#9597A6">It applies to <tspan font-weight="700" fill="#2B2D42">everyone</tspan> the same way.</text>
+        </svg>
+      </div>
+
+      <!-- ── Scene 2: Apply uniformly to two groups ── -->
+      <div class="scene" data-scene="2">
+        <svg viewBox="0 0 700 380" width="100%" height="100%">
+          <text class="anim-1" x="350" y="35" text-anchor="middle" font-family="DM Serif Display" font-size="19" fill="#2B2D42">Apply the rule <tspan fill="#E87A2E">uniformly</tspan> to everyone</text>
+          <!-- Rule box at top -->
+          <g class="anim-2">
+            <rect x="270" y="55" width="160" height="50" rx="8" fill="#2B2D42"/>
+            <text x="350" y="80" text-anchor="middle" font-family="DM Serif Display" font-size="13" fill="#F5943E">THE RULE</text>
+            <text x="350" y="96" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="10" fill="#FFF">credit ≥ 680, income ≥ $45k…</text>
+          </g>
+          <!-- Splitting arrows -->
+          <path class="anim-3" d="M340 110 L180 165" stroke="#9597A6" stroke-width="2" fill="none" marker-end="url(#a-grey)" stroke-dasharray="4 4"/>
+          <path class="anim-3" d="M360 110 L520 165" stroke="#9597A6" stroke-width="2" fill="none" marker-end="url(#a-grey)" stroke-dasharray="4 4"/>
+          <!-- Group A panel -->
+          <g class="slide-l">
+            <rect x="60" y="170" width="240" height="170" rx="10" fill="#FFF" stroke="#5B8DEF" stroke-width="2"/>
+            <text x="180" y="195" text-anchor="middle" font-family="DM Serif Display" font-size="14" fill="#5B8DEF">GROUP A — applicants</text>
+            <!-- 4x6 dots = 24 people -->
+            <g fill="#5B8DEF">
+              <circle cx="85" cy="220" r="6"/><circle cx="105" cy="220" r="6"/><circle cx="125" cy="220" r="6"/><circle cx="145" cy="220" r="6"/><circle cx="165" cy="220" r="6"/><circle cx="185" cy="220" r="6"/><circle cx="205" cy="220" r="6"/><circle cx="225" cy="220" r="6"/><circle cx="245" cy="220" r="6"/><circle cx="265" cy="220" r="6"/>
+              <circle cx="85" cy="245" r="6"/><circle cx="105" cy="245" r="6"/><circle cx="125" cy="245" r="6"/><circle cx="145" cy="245" r="6"/><circle cx="165" cy="245" r="6"/><circle cx="185" cy="245" r="6"/><circle cx="205" cy="245" r="6"/><circle cx="225" cy="245" r="6"/><circle cx="245" cy="245" r="6"/><circle cx="265" cy="245" r="6"/>
+              <circle cx="85" cy="270" r="6"/><circle cx="105" cy="270" r="6"/><circle cx="125" cy="270" r="6"/><circle cx="145" cy="270" r="6"/><circle cx="165" cy="270" r="6"/><circle cx="185" cy="270" r="6"/><circle cx="205" cy="270" r="6"/><circle cx="225" cy="270" r="6"/><circle cx="245" cy="270" r="6"/><circle cx="265" cy="270" r="6"/>
+            </g>
+            <text x="180" y="310" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="700" font-size="11" fill="#2B2D42">Rule applied. ✓</text>
+            <text x="180" y="326" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="10" fill="#6B6D7B">Same code path, same threshold.</text>
+          </g>
+          <!-- Group B panel -->
+          <g class="slide-r">
+            <rect x="400" y="170" width="240" height="170" rx="10" fill="#FFF" stroke="#F5943E" stroke-width="2"/>
+            <text x="520" y="195" text-anchor="middle" font-family="DM Serif Display" font-size="14" fill="#F5943E">GROUP B — applicants</text>
+            <g fill="#F5943E">
+              <circle cx="425" cy="220" r="6"/><circle cx="445" cy="220" r="6"/><circle cx="465" cy="220" r="6"/><circle cx="485" cy="220" r="6"/><circle cx="505" cy="220" r="6"/><circle cx="525" cy="220" r="6"/><circle cx="545" cy="220" r="6"/><circle cx="565" cy="220" r="6"/><circle cx="585" cy="220" r="6"/><circle cx="605" cy="220" r="6"/>
+              <circle cx="425" cy="245" r="6"/><circle cx="445" cy="245" r="6"/><circle cx="465" cy="245" r="6"/><circle cx="485" cy="245" r="6"/><circle cx="505" cy="245" r="6"/><circle cx="525" cy="245" r="6"/><circle cx="545" cy="245" r="6"/><circle cx="565" cy="245" r="6"/><circle cx="585" cy="245" r="6"/><circle cx="605" cy="245" r="6"/>
+              <circle cx="425" cy="270" r="6"/><circle cx="445" cy="270" r="6"/><circle cx="465" cy="270" r="6"/><circle cx="485" cy="270" r="6"/><circle cx="505" cy="270" r="6"/><circle cx="525" cy="270" r="6"/><circle cx="545" cy="270" r="6"/><circle cx="565" cy="270" r="6"/><circle cx="585" cy="270" r="6"/><circle cx="605" cy="270" r="6"/>
+            </g>
+            <text x="520" y="310" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="700" font-size="11" fill="#2B2D42">Rule applied. ✓</text>
+            <text x="520" y="326" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="10" fill="#6B6D7B">Same code path, same threshold.</text>
+          </g>
+          <defs>
+            <marker id="a-grey" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 Z" fill="#9597A6"/></marker>
+          </defs>
+        </svg>
+      </div>
+
+      <!-- ── Scene 3: Outcomes diverge ── -->
+      <div class="scene" data-scene="3">
+        <svg viewBox="0 0 700 380" width="100%" height="100%">
+          <text class="anim-1" x="350" y="35" text-anchor="middle" font-family="DM Serif Display" font-size="19" fill="#2B2D42">But the <tspan fill="#E84A4A">outcomes diverge</tspan> — sharply</text>
+          <!-- Chart axes -->
+          <line class="anim-2" x1="140" y1="295" x2="600" y2="295" stroke="#2B2D42" stroke-width="2"/>
+          <line class="anim-2" x1="140" y1="80" x2="140" y2="295" stroke="#2B2D42" stroke-width="2"/>
+          <!-- Y-axis gridlines + labels -->
+          <g class="anim-2" font-family="Plus Jakarta Sans" font-size="9" fill="#9597A6">
+            <line x1="140" y1="252" x2="600" y2="252" stroke="#E5DDD4" stroke-dasharray="2 3"/>
+            <text x="130" y="256" text-anchor="end">25%</text>
+            <line x1="140" y1="209" x2="600" y2="209" stroke="#E5DDD4" stroke-dasharray="2 3"/>
+            <text x="130" y="213" text-anchor="end">50%</text>
+            <line x1="140" y1="166" x2="600" y2="166" stroke="#E5DDD4" stroke-dasharray="2 3"/>
+            <text x="130" y="170" text-anchor="end">75%</text>
+            <line x1="140" y1="123" x2="600" y2="123" stroke="#E5DDD4" stroke-dasharray="2 3"/>
+            <text x="130" y="127" text-anchor="end">100%</text>
+          </g>
+          <!-- Group A bar (65% → 183px tall, y=183 to y=295) -->
+          <g class="grow-1">
+            <rect x="225" y="183" width="100" height="112" rx="4" fill="#5B8DEF"/>
+            <text x="275" y="173" text-anchor="middle" font-family="DM Serif Display" font-size="18" fill="#2B2D42">65%</text>
+          </g>
+          <text x="275" y="315" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="700" font-size="12" fill="#5B8DEF">Group A</text>
+          <text x="275" y="330" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="10" fill="#6B6D7B">approval rate</text>
+          <!-- Group B bar (18% → 31px tall, y=264 to y=295) -->
+          <g class="grow-2">
+            <rect x="425" y="264" width="100" height="31" rx="4" fill="#E84A4A"/>
+            <text x="475" y="254" text-anchor="middle" font-family="DM Serif Display" font-size="18" fill="#E84A4A">18%</text>
+          </g>
+          <text x="475" y="315" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="700" font-size="12" fill="#E84A4A">Group B</text>
+          <text x="475" y="330" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="10" fill="#6B6D7B">approval rate</text>
+          <!-- 4/5ths rule line at 80% of 65% = 52% → y=205 -->
+          <line class="anim-5" x1="165" y1="205" x2="595" y2="205" stroke="#E84A4A" stroke-width="1.5" stroke-dasharray="6 4"/>
+          <rect class="anim-5" x="540" y="195" width="58" height="22" rx="4" fill="#E84A4A"/>
+          <text class="anim-5" x="569" y="210" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="700" font-size="9" fill="#FFF">4/5ths line</text>
+          <!-- Footnote -->
+          <text class="anim-6" x="350" y="357" text-anchor="middle" font-family="Plus Jakarta Sans" font-style="italic" font-size="11" fill="#6B6D7B">Group B passes at &lt; 28% of Group A's rate — well below the four-fifths benchmark.</text>
+        </svg>
+      </div>
+
+      <!-- ── Scene 4: Intent doesn't matter ── -->
+      <div class="scene" data-scene="4">
+        <svg viewBox="0 0 700 380" width="100%" height="100%">
+          <text class="anim-1" x="350" y="35" text-anchor="middle" font-family="DM Serif Display" font-size="19" fill="#2B2D42">Intent does <tspan fill="#E84A4A">not</tspan> save you</text>
+          <!-- Designer on left -->
+          <g class="slide-l">
+            <!-- Person -->
+            <circle cx="110" cy="155" r="22" fill="#E87A2E"/>
+            <rect x="88" y="177" width="44" height="50" rx="6" fill="#E87A2E"/>
+            <path d="M100 153 Q110 160 120 153" stroke="#FFF" stroke-width="2" fill="none" stroke-linecap="round"/>
+            <!-- Thought bubble -->
+            <ellipse cx="195" cy="115" rx="78" ry="38" fill="#FFF" stroke="#E5DDD4" stroke-width="1.5"/>
+            <circle cx="148" cy="148" r="6" fill="#FFF" stroke="#E5DDD4" stroke-width="1.5"/>
+            <circle cx="138" cy="158" r="3.5" fill="#FFF" stroke="#E5DDD4" stroke-width="1.5"/>
+            <text x="195" y="105" text-anchor="middle" font-family="Plus Jakarta Sans" font-style="italic" font-size="10" fill="#6B6D7B">"I just wanted to</text>
+            <text x="195" y="120" text-anchor="middle" font-family="Plus Jakarta Sans" font-style="italic" font-size="10" fill="#6B6D7B">predict default risk —</text>
+            <text x="195" y="135" text-anchor="middle" font-family="Plus Jakarta Sans" font-style="italic" font-size="10" fill="#6B6D7B">that's all."</text>
+            <text x="110" y="248" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="700" font-size="11" fill="#2B2D42">The designer</text>
+            <text x="110" y="262" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="10" fill="#6B6D7B">(reasonable intent)</text>
+          </g>
+          <!-- Scales of justice in middle -->
+          <g class="tip-it">
+            <!-- Stand -->
+            <line x1="300" y1="195" x2="300" y2="285" stroke="#2B2D42" stroke-width="4"/>
+            <rect x="280" y="285" width="40" height="8" rx="2" fill="#2B2D42"/>
+            <!-- Crossbar -->
+            <line x1="220" y1="195" x2="380" y2="195" stroke="#2B2D42" stroke-width="3"/>
+            <!-- Left pan (intent — light, raised) -->
+            <line x1="240" y1="195" x2="240" y2="215" stroke="#2B2D42" stroke-width="1.5"/>
+            <path d="M210 215 L270 215 L260 235 L220 235 Z" fill="#F9F5F0" stroke="#9597A6" stroke-width="1.5"/>
+            <text x="240" y="230" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="700" font-size="9" fill="#9597A6">INTENT</text>
+            <!-- Right pan (impact — heavy, low) -->
+            <line x1="360" y1="195" x2="360" y2="240" stroke="#2B2D42" stroke-width="1.5"/>
+            <path d="M325 240 L395 240 L385 268 L335 268 Z" fill="#E87A2E" stroke="#D06A20" stroke-width="1.5"/>
+            <text x="360" y="258" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="800" font-size="10" fill="#FFF">IMPACT</text>
+            <!-- Top knob -->
+            <circle cx="300" cy="190" r="6" fill="#2B2D42"/>
+          </g>
+          <!-- Right side: regulator framing text -->
+          <g class="slide-r">
+            <rect x="450" y="115" width="220" height="155" rx="10" fill="#2B2D42"/>
+            <text x="560" y="145" text-anchor="middle" font-family="DM Serif Display" font-size="14" fill="#F5943E">THE LEGAL FRAME</text>
+            <line x1="475" y1="158" x2="645" y2="158" stroke="#F5943E" stroke-width="1" opacity=".4"/>
+            <text x="560" y="183" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="11" fill="#FFF">Not asked:</text>
+            <text x="560" y="200" text-anchor="middle" font-family="Plus Jakarta Sans" font-style="italic" font-size="11" fill="#9597A6">"did you mean to discriminate?"</text>
+            <text x="560" y="227" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="11" fill="#FFF">Asked:</text>
+            <text x="560" y="244" text-anchor="middle" font-family="Plus Jakarta Sans" font-style="italic" font-weight="700" font-size="11" fill="#F5943E">"what did it actually do</text>
+            <text x="560" y="259" text-anchor="middle" font-family="Plus Jakarta Sans" font-style="italic" font-weight="700" font-size="11" fill="#F5943E">to people?"</text>
+          </g>
+          <text class="anim-6" x="350" y="350" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="700" font-size="12" fill="#2B2D42">Impact outweighs intent. Every time.</text>
+        </svg>
+      </div>
+
+      <!-- ── Scene 5: Where it shows up — three domains ── -->
+      <div class="scene" data-scene="5">
+        <svg viewBox="0 0 700 380" width="100%" height="100%">
+          <text class="anim-1" x="350" y="38" text-anchor="middle" font-family="DM Serif Display" font-size="19" fill="#2B2D42">Where disparate-impact challenges <tspan fill="#E87A2E">most often land</tspan></text>
+          <!-- Card 1: Hiring -->
+          <g class="anim-2">
+            <rect x="50" y="80" width="190" height="245" rx="12" fill="#FFF" stroke="#E87A2E" stroke-width="2"/>
+            <!-- Briefcase icon -->
+            <g transform="translate(145 130)">
+              <rect x="-32" y="-12" width="64" height="44" rx="5" fill="#E87A2E"/>
+              <rect x="-14" y="-22" width="28" height="14" rx="3" fill="none" stroke="#E87A2E" stroke-width="3"/>
+              <rect x="-32" y="4" width="64" height="3" fill="#D06A20"/>
+              <rect x="-4" y="2" width="8" height="7" rx="1" fill="#FFF"/>
+            </g>
+            <text x="145" y="195" text-anchor="middle" font-family="DM Serif Display" font-size="18" fill="#2B2D42">Hiring</text>
+            <line x1="80" y1="208" x2="210" y2="208" stroke="#E5DDD4" stroke-width="1"/>
+            <text x="145" y="233" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="600" font-size="11" fill="#6B6D7B">Resume screeners</text>
+            <text x="145" y="252" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="600" font-size="11" fill="#6B6D7B">Video-interview AI</text>
+            <text x="145" y="271" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="600" font-size="11" fill="#6B6D7B">Promotion models</text>
+            <text x="145" y="306" text-anchor="middle" font-family="Plus Jakarta Sans" font-style="italic" font-size="10" fill="#9597A6">EEOC, Title VII</text>
+          </g>
+          <!-- Card 2: Lending -->
+          <g class="anim-3">
+            <rect x="255" y="80" width="190" height="245" rx="12" fill="#FFF" stroke="#E87A2E" stroke-width="2"/>
+            <!-- Bank/coin icon -->
+            <g transform="translate(350 135)">
+              <circle r="32" fill="#E87A2E"/>
+              <text y="6" text-anchor="middle" font-family="DM Serif Display" font-size="32" fill="#FFF">$</text>
+              <circle r="32" fill="none" stroke="#D06A20" stroke-width="2.5"/>
+            </g>
+            <text x="350" y="195" text-anchor="middle" font-family="DM Serif Display" font-size="18" fill="#2B2D42">Lending</text>
+            <line x1="285" y1="208" x2="415" y2="208" stroke="#E5DDD4" stroke-width="1"/>
+            <text x="350" y="233" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="600" font-size="11" fill="#6B6D7B">Credit scoring</text>
+            <text x="350" y="252" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="600" font-size="11" fill="#6B6D7B">Loan approval</text>
+            <text x="350" y="271" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="600" font-size="11" fill="#6B6D7B">Interest-rate setting</text>
+            <text x="350" y="306" text-anchor="middle" font-family="Plus Jakarta Sans" font-style="italic" font-size="10" fill="#9597A6">CFPB, ECOA</text>
+          </g>
+          <!-- Card 3: Insurance -->
+          <g class="anim-4">
+            <rect x="460" y="80" width="190" height="245" rx="12" fill="#FFF" stroke="#E87A2E" stroke-width="2"/>
+            <!-- Shield/umbrella icon -->
+            <g transform="translate(555 135)">
+              <path d="M0 -35 L28 -23 L26 8 Q24 28 0 38 Q-24 28 -26 8 L-28 -23 Z" fill="#E87A2E"/>
+              <path d="M-12 0 L-3 9 L14 -10" stroke="#FFF" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+            </g>
+            <text x="555" y="195" text-anchor="middle" font-family="DM Serif Display" font-size="18" fill="#2B2D42">Insurance</text>
+            <line x1="490" y1="208" x2="620" y2="208" stroke="#E5DDD4" stroke-width="1"/>
+            <text x="555" y="233" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="600" font-size="11" fill="#6B6D7B">Premium pricing</text>
+            <text x="555" y="252" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="600" font-size="11" fill="#6B6D7B">Claims approval</text>
+            <text x="555" y="271" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="600" font-size="11" fill="#6B6D7B">Risk classification</text>
+            <text x="555" y="306" text-anchor="middle" font-family="Plus Jakarta Sans" font-style="italic" font-size="10" fill="#9597A6">State insurance regulators</text>
+          </g>
+          <text class="anim-5" x="350" y="355" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="11" fill="#6B6D7B">High-stakes, consequential decisions about people — the natural home of disparate-impact law.</text>
+        </svg>
+      </div>
+
+      <!-- ── Scene 6: The regulator's lens ── -->
+      <div class="scene" data-scene="6">
+        <svg viewBox="0 0 700 380" width="100%" height="100%">
+          <text class="anim-1" x="350" y="35" text-anchor="middle" font-family="DM Serif Display" font-size="19" fill="#2B2D42">The <tspan fill="#E87A2E">regulator's lens</tspan></text>
+          <!-- Regulator figure on left -->
+          <g class="slide-l">
+            <circle cx="100" cy="150" r="22" fill="#2B2D42"/>
+            <rect x="78" y="172" width="44" height="55" rx="6" fill="#2B2D42"/>
+            <path d="M90 148 Q100 154 110 148" stroke="#FFF" stroke-width="2" fill="none" stroke-linecap="round"/>
+            <!-- Tie -->
+            <path d="M100 178 L96 195 L100 215 L104 195 Z" fill="#E87A2E"/>
+            <text x="100" y="250" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="700" font-size="11" fill="#2B2D42">Regulator</text>
+          </g>
+          <!-- AI system box being examined -->
+          <g class="anim-2">
+            <rect x="280" y="115" width="160" height="130" rx="10" fill="#FFF" stroke="#E5DDD4" stroke-width="2"/>
+            <rect x="280" y="115" width="160" height="28" rx="10" fill="#2B2D42"/>
+            <rect x="280" y="135" width="160" height="8" fill="#2B2D42"/>
+            <text x="360" y="134" text-anchor="middle" font-family="DM Serif Display" font-size="12" fill="#F5943E">YOUR AI SYSTEM</text>
+            <!-- Stylised model rows -->
+            <rect x="295" y="160" width="130" height="10" rx="2" fill="#F9F5F0"/>
+            <rect x="295" y="160" width="80" height="10" rx="2" fill="#E87A2E" opacity=".6"/>
+            <rect x="295" y="178" width="130" height="10" rx="2" fill="#F9F5F0"/>
+            <rect x="295" y="178" width="55" height="10" rx="2" fill="#5B8DEF" opacity=".6"/>
+            <rect x="295" y="196" width="130" height="10" rx="2" fill="#F9F5F0"/>
+            <rect x="295" y="196" width="100" height="10" rx="2" fill="#4CAF50" opacity=".6"/>
+            <rect x="295" y="214" width="130" height="10" rx="2" fill="#F9F5F0"/>
+            <rect x="295" y="214" width="40" height="10" rx="2" fill="#F5C16C" opacity=".6"/>
+          </g>
+          <!-- Magnifying glass over the system -->
+          <g class="anim-4 glow-red" transform="translate(360 180)">
+            <circle r="58" fill="rgba(232,74,74,0.08)" stroke="#E84A4A" stroke-width="3"/>
+            <line x1="42" y1="42" x2="78" y2="78" stroke="#E84A4A" stroke-width="6" stroke-linecap="round"/>
+          </g>
+          <!-- Regulator's question speech bubble -->
+          <g class="anim-3">
+            <rect x="155" y="100" width="115" height="55" rx="8" fill="#FFF" stroke="#E5DDD4" stroke-width="1.5"/>
+            <path d="M150 130 L160 122 L160 138 Z" fill="#FFF" stroke="#E5DDD4" stroke-width="1.5"/>
+            <text x="212" y="120" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="700" font-size="10" fill="#2B2D42">"Show me your</text>
+            <text x="212" y="135" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="700" font-size="10" fill="#E87A2E">outcome statistics</text>
+            <text x="212" y="148" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="700" font-size="10" fill="#2B2D42">by protected group."</text>
+          </g>
+          <!-- Output report on the right -->
+          <g class="slide-r">
+            <rect x="475" y="115" width="170" height="130" rx="10" fill="#FFF" stroke="#E5DDD4" stroke-width="2"/>
+            <text x="560" y="138" text-anchor="middle" font-family="DM Serif Display" font-size="12" fill="#2B2D42">4/5ths TEST</text>
+            <line x1="495" y1="148" x2="625" y2="148" stroke="#E5DDD4"/>
+            <text x="495" y="170" font-family="Plus Jakarta Sans" font-size="10" fill="#6B6D7B">Group A pass:</text>
+            <text x="625" y="170" text-anchor="end" font-family="Plus Jakarta Sans" font-weight="700" font-size="10" fill="#2B2D42">65%</text>
+            <text x="495" y="188" font-family="Plus Jakarta Sans" font-size="10" fill="#6B6D7B">Group B pass:</text>
+            <text x="625" y="188" text-anchor="end" font-family="Plus Jakarta Sans" font-weight="700" font-size="10" fill="#2B2D42">18%</text>
+            <text x="495" y="206" font-family="Plus Jakarta Sans" font-size="10" fill="#6B6D7B">Ratio:</text>
+            <text x="625" y="206" text-anchor="end" font-family="Plus Jakarta Sans" font-weight="800" font-size="10" fill="#E84A4A">28%</text>
+            <line x1="495" y1="215" x2="625" y2="215" stroke="#E5DDD4"/>
+            <rect x="495" y="222" width="130" height="18" rx="4" fill="#E84A4A"/>
+            <text x="560" y="235" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="800" font-size="10" fill="#FFF">⚠ FAILS — below 80%</text>
+          </g>
+          <text class="anim-6" x="350" y="350" text-anchor="middle" font-family="Plus Jakarta Sans" font-weight="600" font-size="11" fill="#6B6D7B">Regulators look at <tspan font-weight="800" fill="#2B2D42">outcomes</tspan>, not architecture. Be ready for that conversation.</text>
+        </svg>
+      </div>
+
+    </div>
+
+    <div class="stage-caption" id="caption">
+      <div class="caption-title" id="capTitle">It starts with a rule that looks fair</div>
+      <div class="caption-text" id="capText">A rule, written in plain language, that mentions <strong>no protected group at all</strong>. It applies to everyone the same way. From the outside, nothing seems wrong — the rule looks perfectly neutral.</div>
+    </div>
+
+    <div class="stage-controls">
+      <button class="btn btn-ghost" id="prevBtn" disabled>← Previous</button>
+      <div class="step-counter">Scene <span id="counter">1</span> of 6</div>
+      <div style="display:flex;gap:.5rem">
+        <button class="btn btn-play" id="playBtn">▶ Auto-play</button>
+        <button class="btn btn-fill" id="nextBtn">Next →</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<div class="takeaway">
+  <div class="takeaway-card">
+    <div class="takeaway-label">Definition</div>
+    <h2>Disparate Impact</h2>
+    <p>A legal and regulatory concept used in many jurisdictions to identify when a system produces materially worse outcomes for a protected group, regardless of whether it was designed to. It is the framing a regulator will most likely use when challenging an AI deployment in hiring, lending, or insurance.</p>
+  </div>
+</div>
+
+<footer>&copy; 2026 MokshPath — Guided Path to True Learning</footer>
+
+<script>
+const scenes = [
+  {title:"It starts with a rule that looks fair", text:"A rule, written in plain language, that mentions <strong>no protected group at all</strong>. It applies to everyone the same way. From the outside, nothing seems wrong — the rule looks perfectly neutral."},
+  {title:"Apply the rule uniformly to everyone", text:"The same rule, the same logic, runs against every applicant — Group A, Group B, anyone. <em>Same input pipeline, same threshold, same code path.</em> Nothing in the system 'knows' which group anyone belongs to."},
+  {title:"But the outcomes diverge — sharply", text:"Group A passes at 65%. Group B passes at 18%. The classic legal benchmark — often called the <strong>four-fifths rule</strong> — says a protected group passing at less than 80% of the top group's rate is the threshold at which a regulator typically takes interest."},
+  {title:"Intent does not save you", text:"The designer may have had perfectly reasonable goals. The law (and regulators) don't ask <em>'did you mean to discriminate?'</em> — they ask <em>'what did the system actually do to people?'</em> Impact outweighs intent. Every time."},
+  {title:"Where these challenges most often land", text:"Three domains attract disparate-impact challenges most often: <strong>hiring</strong> (resume screeners, video-interview AI), <strong>lending</strong> (credit scoring, loan decisions), and <strong>insurance</strong> (premium pricing, claim approvals). High-stakes decisions about people."},
+  {title:"The regulator's lens", text:"A regulator doesn't need to read your code. They will pull your outcome statistics, run the four-fifths test, and ask you to justify any gap. This is the frame to expect a real challenge to come in under — be ready to show your outcome numbers, not your good intentions."}
+];
+
+let current = 0;
+let autoplay = null;
+const sceneEls = document.querySelectorAll('.scene');
+const dots = document.querySelectorAll('.progress-dot');
+const capTitle = document.getElementById('capTitle');
+const capText = document.getElementById('capText');
+const counter = document.getElementById('counter');
+const stepNum = document.getElementById('stepNum');
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+const playBtn = document.getElementById('playBtn');
+
+function goTo(idx){
+  current = Math.max(0, Math.min(scenes.length-1, idx));
+  sceneEls.forEach((el,i) => el.classList.toggle('active', i===current));
+  dots.forEach((d,i) => {
+    d.classList.remove('active','done');
+    if(i===current) d.classList.add('active');
+    else if(i<current) d.classList.add('done');
+  });
+  capTitle.textContent = scenes[current].title;
+  capText.innerHTML = scenes[current].text;
+  counter.textContent = current+1;
+  stepNum.textContent = current+1;
+  prevBtn.disabled = current===0;
+  nextBtn.disabled = current===scenes.length-1;
+  if(current===scenes.length-1 && autoplay){ stopAuto(); }
+}
+prevBtn.addEventListener('click', () => { stopAuto(); goTo(current-1); });
+nextBtn.addEventListener('click', () => { stopAuto(); goTo(current+1); });
+function startAuto(){ playBtn.textContent='⏸ Pause'; autoplay = setInterval(() => { if(current >= scenes.length-1){ stopAuto(); return; } goTo(current+1); }, 4500); }
+function stopAuto(){ if(autoplay){ clearInterval(autoplay); autoplay=null; playBtn.textContent='▶ Auto-play'; } }
+playBtn.addEventListener('click', () => { autoplay ? stopAuto() : startAuto(); });
+document.addEventListener('keydown', (e) => { if(e.key==='ArrowRight') nextBtn.click(); if(e.key==='ArrowLeft') prevBtn.click(); });
+</script>
+
+</body>
+</html>
