@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>When Keyword Search Runs Out of Road | MokshPath</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --orange:#E87A2E;--orange-dark:#D06A20;--orange-light:#F5943E;--orange-glow:rgba(232,122,46,0.12);
+  --navy:#2B2D42;--navy-dark:#1A1B2E;
+  --bg:#F3EDE7;--bg-card:#FFFFFF;--bg-light:#F9F5F0;
+  --text-primary:#2B2D42;--text-secondary:#6B6D7B;--text-muted:#9597A6;
+  --border:#E5DDD4;--green:#4CAF50;--green-light:#E8F5E9;--green-dark:#388E3C;
+  --red:#E53935;--red-light:#FFEBEE;
+  --blue:#4285F4;--blue-light:#E8F0FE;
+  --shadow-sm:0 2px 8px rgba(43,45,66,0.06);
+  --shadow-md:0 8px 24px rgba(43,45,66,0.08);
+  --shadow-lg:0 16px 48px rgba(43,45,66,0.12);
+  --radius:14px;--radius-sm:8px;
+}
+html{scroll-behavior:smooth}
+body{font-family:'Plus Jakarta Sans',sans-serif;background:var(--bg);color:var(--text-primary);overflow-x:hidden;-webkit-font-smoothing:antialiased;min-height:100vh}
+
+/* ─── HEADER ─── */
+.page-header{
+  position:relative;padding:1.4rem 2rem;
+  display:flex;align-items:center;justify-content:space-between;
+  max-width:1180px;margin:0 auto;
+}
+.brand{display:flex;align-items:center;gap:.7rem}
+.brand-mark{
+  width:38px;height:38px;border-radius:10px;
+  background:linear-gradient(135deg,var(--orange),var(--orange-light));
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 12px rgba(232,122,46,0.25);
+}
+.brand-mark svg{width:22px;height:22px;color:#fff}
+.brand-text{display:flex;flex-direction:column;line-height:1.1}
+.brand-name{font-family:'DM Serif Display',serif;font-size:1.3rem;color:var(--navy)}
+.brand-name em{font-style:normal;color:var(--orange)}
+.brand-tag{font-size:.62rem;color:var(--text-muted);font-weight:600;letter-spacing:.04em;text-transform:uppercase}
+.logo-corner{
+  width:78px;height:78px;
+  border-radius:14px;
+  background:rgba(255,255,255,0.6);
+  padding:6px;
+  box-shadow:var(--shadow-sm);
+  border:1px solid var(--border);
+}
+.logo-corner img{width:100%;height:100%;object-fit:contain}
+
+/* ─── LESSON CONTAINER ─── */
+.lesson-container{max-width:1080px;margin:0 auto;padding:.5rem 2rem 4rem}
+.lesson-hero{text-align:center;padding:1.5rem 0 2.5rem}
+.lesson-eyebrow{
+  display:inline-flex;align-items:center;gap:.5rem;
+  padding:.35rem 1rem;border-radius:50px;background:var(--orange-glow);
+  font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;
+  color:var(--orange);margin-bottom:1.1rem;
+}
+.lesson-eyebrow .dot{width:7px;height:7px;border-radius:50%;background:var(--orange);animation:pulse 2s infinite}
+.lesson-title{font-family:'DM Serif Display',serif;font-size:clamp(2rem,4.2vw,2.9rem);line-height:1.15;color:var(--navy);margin-bottom:1rem}
+.lesson-title em{font-style:normal;color:var(--orange)}
+.lesson-sub{font-size:1.02rem;color:var(--text-secondary);line-height:1.7;max-width:660px;margin:0 auto}
+
+/* ─── PLAYER ─── */
+.player{
+  background:var(--bg-card);border-radius:var(--radius);
+  box-shadow:var(--shadow-md);border:1px solid var(--border);
+  overflow:hidden;margin-top:1rem;
+}
+.player-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:1rem 1.5rem;border-bottom:1px solid var(--border);background:var(--bg-light);
+}
+.step-pills{display:flex;gap:.35rem}
+.step-pill{
+  width:34px;height:5px;border-radius:50px;background:var(--border);
+  transition:background .35s ease;position:relative;overflow:hidden;cursor:pointer;
+}
+.step-pill::after{
+  content:'';position:absolute;left:0;top:0;bottom:0;
+  background:var(--orange);width:0%;transition:width .1s linear;
+}
+.step-pill.active::after{width:var(--progress,0%)}
+.step-pill.completed{background:var(--orange)}
+.step-counter{font-size:.78rem;color:var(--text-muted);font-weight:600;font-variant-numeric:tabular-nums}
+.step-counter strong{color:var(--orange);font-weight:700}
+
+.stage{
+  position:relative;
+  background:linear-gradient(135deg,#FFFBF6 0%,#FAF4ED 100%);
+  min-height:520px;padding:2rem 2rem 2.5rem;overflow:hidden;
+}
+.scene{display:none;width:100%;animation:none}
+.scene.active{display:block;animation:sceneIn .55s ease both}
+@keyframes sceneIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+.scene-title{
+  text-align:center;font-family:'DM Serif Display',serif;
+  font-size:1.55rem;color:var(--navy);margin-bottom:.4rem;
+}
+.scene-cap{
+  text-align:center;font-size:.92rem;color:var(--text-secondary);
+  margin-bottom:1.5rem;max-width:600px;margin-left:auto;margin-right:auto;line-height:1.6;
+}
+.scene-stage{
+  position:relative;width:100%;max-width:760px;margin:0 auto;
+}
+
+/* ─── CONTROLS ─── */
+.player-controls{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:1rem 1.5rem;border-top:1px solid var(--border);background:var(--bg-light);
+}
+.ctrl-group{display:flex;align-items:center;gap:.5rem}
+.ctrl-btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:.35rem;
+  padding:.55rem 1.1rem;border-radius:8px;border:1.5px solid var(--border);
+  background:var(--bg-card);color:var(--text-primary);
+  font-family:inherit;font-size:.84rem;font-weight:600;cursor:pointer;
+  transition:all .2s;
+}
+.ctrl-btn:hover:not(:disabled){border-color:var(--orange);color:var(--orange);transform:translateY(-1px)}
+.ctrl-btn:disabled{opacity:.4;cursor:not-allowed}
+.ctrl-btn svg{width:14px;height:14px}
+.ctrl-btn.primary{background:var(--orange);color:#fff;border-color:var(--orange)}
+.ctrl-btn.primary:hover:not(:disabled){background:var(--orange-dark);border-color:var(--orange-dark);color:#fff;box-shadow:0 4px 14px rgba(232,122,46,0.3)}
+.ctrl-play{
+  width:42px;height:42px;border-radius:50%;border:none;
+  background:var(--orange);color:#fff;cursor:pointer;
+  display:inline-flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 14px rgba(232,122,46,0.3);transition:all .2s;
+}
+.ctrl-play:hover{transform:scale(1.06);background:var(--orange-dark)}
+.ctrl-play svg{width:16px;height:16px}
+.ctrl-label{font-size:.78rem;color:var(--text-muted);font-weight:600}
+
+/* ─── SCENE SHARED ─── */
+.search-box{
+  display:inline-flex;align-items:center;gap:.5rem;
+  padding:.7rem 1rem;border-radius:10px;background:#fff;
+  border:1.5px solid var(--border);box-shadow:var(--shadow-sm);
+  font-size:.9rem;color:var(--text-primary);min-width:260px;
+}
+.search-box svg{width:16px;height:16px;color:var(--text-muted);flex-shrink:0}
+.search-box .typed{font-family:'JetBrains Mono',monospace;font-size:.85rem;color:var(--navy);font-weight:500}
+.search-box .cursor{
+  display:inline-block;width:2px;height:14px;background:var(--orange);
+  margin-left:1px;animation:blink 1s infinite;vertical-align:middle;
+}
+@keyframes blink{0%,50%{opacity:1}51%,100%{opacity:0}}
+
+.doc-card{
+  background:#fff;border-radius:10px;border:1.5px solid var(--border);
+  padding:1.1rem 1.2rem;box-shadow:var(--shadow-sm);
+  font-size:.82rem;line-height:1.6;color:var(--text-secondary);
+  position:relative;
+}
+.doc-card::before{
+  content:'';position:absolute;top:0;left:0;width:4px;height:100%;
+  background:var(--orange);border-radius:10px 0 0 10px;
+}
+.doc-card .doc-label{
+  font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;
+  color:var(--text-muted);margin-bottom:.45rem;
+}
+.doc-card .doc-text{color:var(--text-primary)}
+.doc-card mark{
+  background:var(--orange-glow);color:var(--orange-dark);
+  padding:1px 5px;border-radius:4px;font-weight:600;
+}
+.doc-card .doc-match{
+  background:linear-gradient(90deg,rgba(76,175,80,0.18),rgba(76,175,80,0.08));
+  padding:1px 5px;border-radius:4px;color:var(--green-dark);font-weight:600;
+}
+
+.persona{
+  display:flex;align-items:center;gap:.6rem;
+  background:#fff;border-radius:50px;padding:.4rem .9rem .4rem .4rem;
+  box-shadow:var(--shadow-sm);border:1px solid var(--border);
+}
+.persona-icon{
+  width:34px;height:34px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.persona-icon svg{width:18px;height:18px;color:#fff}
+.persona-name{font-size:.78rem;font-weight:600;color:var(--navy)}
+
+.result-badge{
+  display:inline-flex;align-items:center;gap:.4rem;
+  padding:.45rem .9rem;border-radius:50px;
+  font-size:.78rem;font-weight:600;
+}
+.result-badge svg{width:14px;height:14px}
+.result-badge.fail{background:var(--red-light);color:var(--red)}
+.result-badge.success{background:var(--green-light);color:var(--green-dark)}
+
+/* Arrows */
+.arrow-flow{
+  display:flex;align-items:center;justify-content:center;gap:.4rem;
+  color:var(--text-muted);
+}
+.arrow-flow svg{width:18px;height:18px}
+
+/* ─── DEFINITIONS ─── */
+.defs-section{margin-top:3rem}
+.defs-heading{
+  font-family:'DM Serif Display',serif;font-size:1.45rem;color:var(--navy);
+  text-align:center;margin-bottom:.4rem;
+}
+.defs-sub{
+  text-align:center;font-size:.88rem;color:var(--text-muted);margin-bottom:2rem;
+}
+.def-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1.4rem}
+.def-card{
+  background:var(--bg-card);border-radius:var(--radius);padding:1.6rem;
+  border:1px solid var(--border);box-shadow:var(--shadow-sm);
+  position:relative;overflow:hidden;transition:all .3s;
+}
+.def-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-md);border-color:transparent}
+.def-card::before{
+  content:'';position:absolute;left:0;top:0;bottom:0;width:4px;
+  background:linear-gradient(180deg,var(--orange),var(--orange-light));
+}
+.def-card:nth-child(2)::before{background:linear-gradient(180deg,var(--green),#66BB6A)}
+.def-label{
+  font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;
+  color:var(--orange);margin-bottom:.5rem;display:flex;align-items:center;gap:.4rem;
+}
+.def-card:nth-child(2) .def-label{color:var(--green-dark)}
+.def-label .ico{
+  width:18px;height:18px;border-radius:50%;background:var(--orange-glow);
+  display:flex;align-items:center;justify-content:center;
+}
+.def-card:nth-child(2) .def-label .ico{background:rgba(76,175,80,.14)}
+.def-label .ico svg{width:10px;height:10px}
+.def-term{font-family:'DM Serif Display',serif;font-size:1.25rem;color:var(--navy);margin-bottom:.5rem}
+.def-body{font-size:.88rem;color:var(--text-secondary);line-height:1.65}
+.def-body strong{color:var(--navy);font-weight:600}
+
+/* Footer card */
+.takeaway{
+  margin-top:2.5rem;background:linear-gradient(135deg,var(--navy-dark),var(--navy));
+  border-radius:var(--radius);padding:2.2rem 2.5rem;position:relative;overflow:hidden;
+  color:#fff;
+}
+.takeaway::before{
+  content:'';position:absolute;top:-50px;right:-50px;width:180px;height:180px;
+  border-radius:50%;background:rgba(232,122,46,.12);
+}
+.takeaway::after{
+  content:'';position:absolute;bottom:-30px;left:-30px;width:120px;height:120px;
+  border-radius:50%;background:rgba(76,175,80,.08);
+}
+.takeaway-label{
+  font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;
+  color:var(--orange-light);margin-bottom:.6rem;position:relative;z-index:1;
+}
+.takeaway h3{
+  font-family:'DM Serif Display',serif;font-size:1.4rem;line-height:1.3;
+  margin-bottom:.6rem;position:relative;z-index:1;
+}
+.takeaway p{
+  color:rgba(255,255,255,.75);font-size:.92rem;line-height:1.65;
+  position:relative;z-index:1;max-width:640px;
+}
+
+/* ─── ANIMATIONS ─── */
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.9)}}
+@keyframes pop{0%{transform:scale(.5);opacity:0}60%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes slideRight{from{transform:translateX(-20px);opacity:0}to{transform:translateX(0);opacity:1}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+
+/* Active-scene-driven animations: applied via .scene.active .anim-X */
+.scene .anim-fadein{opacity:0}
+.scene.active .anim-fadein{animation:fadeIn .55s ease forwards}
+.scene .anim-pop{opacity:0;transform:scale(.5)}
+.scene.active .anim-pop{animation:pop .5s cubic-bezier(.34,1.56,.64,1) forwards}
+.scene .anim-slide{opacity:0;transform:translateX(-20px)}
+.scene.active .anim-slide{animation:slideRight .55s ease forwards}
+
+/* Delays */
+.d-0{animation-delay:.05s!important}
+.d-1{animation-delay:.4s!important}
+.d-2{animation-delay:.9s!important}
+.d-3{animation-delay:1.5s!important}
+.d-4{animation-delay:2.2s!important}
+.d-5{animation-delay:3s!important}
+.d-6{animation-delay:3.8s!important}
+.d-7{animation-delay:4.6s!important}
+
+/* SVG specific dashed line animation */
+@keyframes drawLine{from{stroke-dashoffset:300}to{stroke-dashoffset:0}}
+@keyframes orbitDot{0%{transform:translate(0,0)}50%{transform:translate(0,-4px)}100%{transform:translate(0,0)}}
+@keyframes shimmerColor{0%,100%{filter:hue-rotate(0)}50%{filter:hue-rotate(20deg)}}
+
+/* ─── RESPONSIVE ─── */
+@media(max-width:780px){
+  .page-header{padding:1rem 1.2rem}
+  .logo-corner{width:60px;height:60px}
+  .brand-name{font-size:1.1rem}
+  .brand-tag{font-size:.55rem}
+  .lesson-container{padding:.5rem 1rem 3rem}
+  .stage{min-height:560px;padding:1.2rem .8rem 1.8rem}
+  .scene-title{font-size:1.25rem}
+  .scene-cap{font-size:.85rem}
+  .def-grid{grid-template-columns:1fr}
+  .takeaway{padding:1.8rem 1.5rem}
+  .player-header{padding:.8rem 1rem;flex-wrap:wrap;gap:.6rem}
+  .player-controls{padding:.8rem 1rem;flex-wrap:wrap;gap:.6rem;justify-content:center}
+  .step-pill{width:24px}
+  .search-box{min-width:200px;font-size:.8rem}
+  .doc-card{font-size:.78rem}
+  .scene1-grid, .scene6-grid{grid-template-columns:1fr!important;gap:1rem!important}
+  .scene2-row{flex-direction:column!important;gap:.8rem!important}
+}
+</style>
+</head>
+<body>
+
+<!-- ─── HEADER ─── -->
+<header class="page-header">
+  <div class="brand">
+    <div class="brand-mark">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="7"/>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+    </div>
+    <div class="brand-text">
+      <span class="brand-name">Moksh<em>Path</em></span>
+      <span class="brand-tag">AI-Native Summer Series</span>
+    </div>
+  </div>
+  <div class="logo-corner" aria-hidden="true">
+    <img src="hero.svg" alt="MokshPath logo">
+  </div>
+</header>
+
+<!-- ─── MAIN LESSON ─── -->
+<main class="lesson-container">
+
+  <section class="lesson-hero">
+    <div class="lesson-eyebrow"><span class="dot"></span> Lesson 01 · Semantic Search</div>
+    <h1 class="lesson-title">When keyword search<br><em>runs out of road</em></h1>
+    <p class="lesson-sub">For most of computing history, finding information in a document meant matching the words you typed against the words on the page. That worked for an internet of articles. It works terribly for the documents professionals actually deal with. Press play below — we'll show you why, step by step.</p>
+  </section>
+
+  <!-- ─── ANIMATED STORY PLAYER ─── -->
+  <div class="player" id="player">
+    <div class="player-header">
+      <div class="step-pills" id="stepPills"></div>
+      <div class="step-counter">Step <strong id="stepNum">1</strong> of 6</div>
+    </div>
+
+    <div class="stage" id="stage">
+
+      <!-- ─── SCENE 1: How keyword search works ─── -->
+      <div class="scene active" data-scene="0">
+        <h2 class="scene-title">The way search has always worked</h2>
+        <p class="scene-cap">You type a word. The computer looks for the <strong>same word</strong> in the document. If it matches, you get a result. Simple.</p>
+        <div class="scene-stage">
+          <div class="scene1-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:2rem;align-items:center;margin-top:1rem">
+            <div style="text-align:center">
+              <div class="anim-pop d-0" style="display:inline-block">
+                <div style="font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:.5rem">You type</div>
+                <div class="search-box">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                  <span class="typed">cancel subscription</span><span class="cursor"></span>
+                </div>
+              </div>
+              <div class="anim-fadein d-2" style="margin-top:1.5rem;font-size:2rem;color:var(--orange)">→</div>
+            </div>
+            <div class="anim-fadein d-3">
+              <div style="font-size:.7rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);margin-bottom:.5rem;text-align:center">Document</div>
+              <div class="doc-card">
+                <div class="doc-label">Help Center · Article</div>
+                <div class="doc-text">To <span class="anim-fadein d-4" style="display:inline"><mark>cancel</mark></span> your <span class="anim-fadein d-4" style="display:inline"><mark>subscription</mark></span>, click "My Account" in the top-right corner and select "Manage plan".</div>
+              </div>
+              <div class="anim-pop d-5" style="margin-top:1rem;display:flex;justify-content:center">
+                <div class="result-badge success">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  Match found — keyword search wins
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="anim-fadein d-6" style="margin-top:1.5rem;text-align:center;font-size:.85rem;color:var(--text-muted);font-style:italic">
+            ✓ This works when your words happen to match the document's words.
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── SCENE 2: When the lawyer's query fails ─── -->
+      <div class="scene" data-scene="1">
+        <h2 class="scene-title">But documents don't always speak your language</h2>
+        <p class="scene-cap">A lawyer needs to know how a contract can end. They type the term they were taught in law school. The contract — written by another lawyer — uses a different one.</p>
+        <div class="scene-stage">
+          <div style="display:flex;align-items:center;justify-content:flex-start;gap:.8rem;margin-bottom:1rem" class="anim-slide d-0">
+            <div class="persona">
+              <div class="persona-icon" style="background:var(--blue)">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+              </div>
+              <span class="persona-name">Lawyer</span>
+            </div>
+            <div class="search-box anim-pop d-1">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <span class="typed">termination clause</span><span class="cursor"></span>
+            </div>
+          </div>
+
+          <div class="scene2-row anim-fadein d-2" style="display:flex;align-items:stretch;gap:1.2rem;margin-top:1.2rem">
+            <div style="flex:1">
+              <div class="doc-card">
+                <div class="doc-label">Service Agreement · Section 14</div>
+                <div class="doc-text">Either party may exercise the <span class="anim-fadein d-3" style="display:inline;background:rgba(229,57,53,.15);padding:1px 5px;border-radius:4px;color:var(--red);font-weight:600">right to dissolve</span> this agreement upon thirty (30) days written notice, provided that all outstanding obligations have been satisfied.</div>
+              </div>
+            </div>
+          </div>
+
+          <div style="margin-top:1.5rem;display:flex;justify-content:center;gap:1rem;flex-wrap:wrap" class="anim-fadein d-4">
+            <div class="result-badge fail">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              No keyword match
+            </div>
+            <div class="result-badge" style="background:var(--bg-light);color:var(--text-secondary);border:1px solid var(--border)">
+              The two phrases <em>mean</em> the same thing — but they share <strong style="color:var(--red);margin:0 .2em">zero words</strong>
+            </div>
+          </div>
+          <div class="anim-fadein d-5" style="margin-top:1.2rem;text-align:center;font-size:.85rem;color:var(--text-muted);font-style:italic">
+            ✗ Keyword search punishes you for not memorising the document's vocabulary.
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── SCENE 3: The clinician's query fails too ─── -->
+      <div class="scene" data-scene="2">
+        <h2 class="scene-title">It happens in medicine too</h2>
+        <p class="scene-cap">A doctor describes a symptom the way a patient said it. The clinical guideline uses the Greek-derived medical term. Same condition — and again, zero shared letters.</p>
+        <div class="scene-stage">
+          <div style="display:flex;align-items:center;gap:.8rem;margin-bottom:1rem" class="anim-slide d-0">
+            <div class="persona">
+              <div class="persona-icon" style="background:var(--green)">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 8h-2v3h-3v2h3v3h2v-3h3v-2h-3zM4 8c0-2.21 1.79-4 4-4s4 1.79 4 4-1.79 4-4 4-4-1.79-4-4zm4 6c-2.67 0-8 1.34-8 4v2h12v-2c0-2.66-3.33-4-4-4z"/></svg>
+              </div>
+              <span class="persona-name">Clinician</span>
+            </div>
+            <div class="search-box anim-pop d-1">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <span class="typed">shortness of breath</span><span class="cursor"></span>
+            </div>
+          </div>
+
+          <div class="anim-fadein d-2" style="margin-top:1.2rem">
+            <div class="doc-card">
+              <div class="doc-label">Clinical Guideline · Cardiac Symptoms · Page 23</div>
+              <div class="doc-text">Patients presenting with <span class="anim-fadein d-3" style="display:inline;background:rgba(229,57,53,.15);padding:1px 5px;border-radius:4px;color:var(--red);font-weight:600">dyspnoea</span>, particularly when accompanied by reduced exercise tolerance, should be evaluated for underlying cardiopulmonary pathology…</div>
+            </div>
+          </div>
+
+          <div class="anim-fadein d-4" style="margin-top:1.4rem;display:grid;grid-template-columns:1fr auto 1fr;gap:1rem;align-items:center;max-width:520px;margin-left:auto;margin-right:auto">
+            <div style="text-align:center;padding:.6rem .8rem;background:#fff;border-radius:10px;border:1.5px solid var(--border);font-family:'JetBrains Mono',monospace;font-size:.78rem;color:var(--navy);font-weight:600">"shortness of breath"</div>
+            <div style="display:flex;flex-direction:column;align-items:center;color:var(--text-muted);font-size:.7rem;font-weight:600">
+              <div style="width:30px;height:1.5px;background:var(--text-muted)"></div>
+              <div style="margin-top:.2rem">same meaning</div>
+              <div style="margin-top:.2rem">no shared words</div>
+            </div>
+            <div style="text-align:center;padding:.6rem .8rem;background:#fff;border-radius:10px;border:1.5px solid var(--border);font-family:'JetBrains Mono',monospace;font-size:.78rem;color:var(--navy);font-weight:600">"dyspnoea"</div>
+          </div>
+
+          <div class="anim-fadein d-5" style="margin-top:1.4rem;text-align:center;font-size:.85rem;color:var(--text-muted);font-style:italic">
+            Two professionals. Two failed searches. <strong style="color:var(--navy)">One missing idea: search by meaning.</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── SCENE 4: The idea of "meaning as a position" ─── -->
+      <div class="scene" data-scene="3">
+        <h2 class="scene-title">The new idea: turn meaning into a position</h2>
+        <p class="scene-cap">What if every phrase got placed on a giant map of meaning — close to phrases that mean similar things, far from phrases that mean different ones? Watch what happens to our four phrases.</p>
+        <div class="scene-stage" style="position:relative">
+          <svg viewBox="0 0 720 380" style="width:100%;max-width:700px;display:block;margin:0 auto" xmlns="http://www.w3.org/2000/svg">
+            <!-- Grid background -->
+            <defs>
+              <pattern id="grid4" width="40" height="40" patternUnits="userSpaceOnUse">
+                <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(43,45,66,0.06)" stroke-width="1"/>
+              </pattern>
+              <radialGradient id="mapGlow" cx="50%" cy="50%" r="60%">
+                <stop offset="0%" stop-color="rgba(232,122,46,0.06)"/>
+                <stop offset="100%" stop-color="rgba(232,122,46,0)"/>
+              </radialGradient>
+            </defs>
+            <rect width="720" height="380" fill="url(#mapGlow)"/>
+            <rect width="720" height="380" fill="url(#grid4)"/>
+
+            <!-- Axes labels -->
+            <text x="360" y="20" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="11" font-weight="700" fill="#9597A6" letter-spacing="1.5">MAP OF MEANING</text>
+
+            <!-- Phrase 1: termination clause -->
+            <g class="anim-pop d-1">
+              <circle cx="220" cy="170" r="32" fill="rgba(232,122,46,0.15)" stroke="#E87A2E" stroke-width="2"/>
+              <circle cx="220" cy="170" r="6" fill="#E87A2E"/>
+              <rect x="100" y="195" width="240" height="32" rx="6" fill="#fff" stroke="#E5DDD4" stroke-width="1.5"/>
+              <text x="220" y="216" text-anchor="middle" font-family="JetBrains Mono" font-size="13" font-weight="600" fill="#2B2D42">"termination clause"</text>
+            </g>
+
+            <!-- Phrase 2: right to dissolve -->
+            <g class="anim-pop d-2">
+              <circle cx="280" cy="200" r="32" fill="rgba(76,175,80,0.15)" stroke="#4CAF50" stroke-width="2"/>
+              <circle cx="280" cy="200" r="6" fill="#4CAF50"/>
+              <rect x="180" y="240" width="220" height="32" rx="6" fill="#fff" stroke="#E5DDD4" stroke-width="1.5"/>
+              <text x="290" y="261" text-anchor="middle" font-family="JetBrains Mono" font-size="13" font-weight="600" fill="#2B2D42">"right to dissolve"</text>
+            </g>
+
+            <!-- Phrase 3: shortness of breath -->
+            <g class="anim-pop d-3">
+              <circle cx="540" cy="120" r="32" fill="rgba(66,133,244,0.15)" stroke="#4285F4" stroke-width="2"/>
+              <circle cx="540" cy="120" r="6" fill="#4285F4"/>
+              <rect x="420" y="65" width="240" height="32" rx="6" fill="#fff" stroke="#E5DDD4" stroke-width="1.5"/>
+              <text x="540" y="86" text-anchor="middle" font-family="JetBrains Mono" font-size="13" font-weight="600" fill="#2B2D42">"shortness of breath"</text>
+            </g>
+
+            <!-- Phrase 4: dyspnoea -->
+            <g class="anim-pop d-4">
+              <circle cx="590" cy="155" r="32" fill="rgba(66,133,244,0.15)" stroke="#4285F4" stroke-width="2"/>
+              <circle cx="590" cy="155" r="6" fill="#4285F4"/>
+              <rect x="510" y="180" width="160" height="32" rx="6" fill="#fff" stroke="#E5DDD4" stroke-width="1.5"/>
+              <text x="590" y="201" text-anchor="middle" font-family="JetBrains Mono" font-size="13" font-weight="600" fill="#2B2D42">"dyspnoea"</text>
+            </g>
+
+            <!-- Connection lines -->
+            <line x1="220" y1="170" x2="280" y2="200" stroke="#E87A2E" stroke-width="2" stroke-dasharray="4 4" opacity="0" class="anim-fadein d-5"/>
+            <line x1="540" y1="120" x2="590" y2="155" stroke="#4285F4" stroke-width="2" stroke-dasharray="4 4" opacity="0" class="anim-fadein d-5"/>
+
+            <!-- Cluster labels -->
+            <g class="anim-fadein d-6">
+              <text x="250" y="115" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="11" font-weight="700" fill="#E87A2E" letter-spacing="1">LEGAL ENDING</text>
+              <text x="560" y="55" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="11" font-weight="700" fill="#4285F4" letter-spacing="1">BREATHING TROUBLE</text>
+            </g>
+
+            <!-- An unrelated phrase far away -->
+            <g class="anim-pop d-6">
+              <circle cx="100" cy="320" r="22" fill="rgba(149,151,166,0.15)" stroke="#9597A6" stroke-width="2"/>
+              <circle cx="100" cy="320" r="5" fill="#9597A6"/>
+              <text x="100" y="355" text-anchor="middle" font-family="JetBrains Mono" font-size="11" font-weight="600" fill="#9597A6">"pizza recipe"</text>
+            </g>
+          </svg>
+
+          <div class="anim-fadein d-7" style="margin-top:1rem;text-align:center;font-size:.88rem;color:var(--text-secondary);max-width:580px;margin-left:auto;margin-right:auto;line-height:1.6">
+            Phrases that <strong style="color:var(--navy)">mean similar things</strong> end up close together. Phrases about pizza are nowhere near phrases about contracts. <strong style="color:var(--orange)">Position = meaning.</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── SCENE 5: How a search now works ─── -->
+      <div class="scene" data-scene="4">
+        <h2 class="scene-title">A search becomes "find the nearest neighbour"</h2>
+        <p class="scene-cap">Your query gets a position on the map too. The system finds whatever sits closest — no matter what words it actually uses. Watch the lawyer's query travel.</p>
+        <div class="scene-stage">
+          <svg viewBox="0 0 720 360" style="width:100%;max-width:700px;display:block;margin:0 auto" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <pattern id="grid5" width="40" height="40" patternUnits="userSpaceOnUse">
+                <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(43,45,66,0.06)" stroke-width="1"/>
+              </pattern>
+              <radialGradient id="mapGlow5" cx="50%" cy="50%" r="60%">
+                <stop offset="0%" stop-color="rgba(232,122,46,0.08)"/>
+                <stop offset="100%" stop-color="rgba(232,122,46,0)"/>
+              </radialGradient>
+            </defs>
+            <rect width="720" height="360" fill="url(#mapGlow5)"/>
+            <rect width="720" height="360" fill="url(#grid5)"/>
+
+            <!-- Starting query (lawyer types) -->
+            <g class="anim-pop d-0">
+              <rect x="20" y="160" width="170" height="50" rx="10" fill="#fff" stroke="#E87A2E" stroke-width="2"/>
+              <text x="105" y="183" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="10" font-weight="700" fill="#9597A6" letter-spacing="1">YOU TYPE</text>
+              <text x="105" y="200" text-anchor="middle" font-family="JetBrains Mono" font-size="12" font-weight="600" fill="#2B2D42">termination clause</text>
+            </g>
+
+            <!-- Arrow: text → position -->
+            <g class="anim-fadein d-1">
+              <line x1="195" y1="185" x2="245" y2="185" stroke="#E87A2E" stroke-width="2.5" stroke-dasharray="5 4"/>
+              <polygon points="245,180 252,185 245,190" fill="#E87A2E"/>
+              <text x="220" y="170" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="9" font-weight="600" fill="#E87A2E" letter-spacing=".5">embed</text>
+            </g>
+
+            <!-- Query dot lands on map -->
+            <g class="anim-pop d-2">
+              <circle cx="320" cy="185" r="30" fill="rgba(232,122,46,0.12)" stroke="#E87A2E" stroke-width="2" stroke-dasharray="4 3"/>
+              <circle cx="320" cy="185" r="8" fill="#E87A2E"/>
+            </g>
+
+            <!-- Existing dots on the map -->
+            <g class="anim-fadein d-0">
+              <!-- Right to dissolve (close to query) -->
+              <circle cx="380" cy="200" r="7" fill="#4CAF50"/>
+              <rect x="320" y="225" width="160" height="26" rx="6" fill="#fff" stroke="#E5DDD4" stroke-width="1.2"/>
+              <text x="400" y="242" text-anchor="middle" font-family="JetBrains Mono" font-size="11" font-weight="600" fill="#2B2D42">"right to dissolve"</text>
+
+              <!-- Other dots -->
+              <circle cx="540" cy="100" r="6" fill="#4285F4"/>
+              <text x="540" y="86" text-anchor="middle" font-family="JetBrains Mono" font-size="10" font-weight="500" fill="#9597A6">"dyspnoea"</text>
+
+              <circle cx="610" cy="280" r="6" fill="#9597A6"/>
+              <text x="610" y="305" text-anchor="middle" font-family="JetBrains Mono" font-size="10" font-weight="500" fill="#9597A6">"pizza recipe"</text>
+
+              <circle cx="200" cy="80" r="6" fill="#9597A6"/>
+              <text x="200" y="66" text-anchor="middle" font-family="JetBrains Mono" font-size="10" font-weight="500" fill="#9597A6">"weather forecast"</text>
+            </g>
+
+            <!-- Search radius from query -->
+            <circle cx="320" cy="185" r="80" fill="none" stroke="#E87A2E" stroke-width="1.5" stroke-dasharray="3 4" opacity="0" class="anim-fadein d-3"/>
+
+            <!-- Connection line query → nearest -->
+            <line x1="320" y1="185" x2="380" y2="200" stroke="#4CAF50" stroke-width="3" opacity="0" class="anim-fadein d-4"/>
+
+            <!-- Result badge -->
+            <g class="anim-pop d-5">
+              <rect x="475" y="155" width="220" height="50" rx="10" fill="#4CAF50"/>
+              <text x="585" y="178" text-anchor="middle" font-family="Plus Jakarta Sans" font-size="10" font-weight="700" fill="rgba(255,255,255,0.85)" letter-spacing="1">NEAREST MATCH FOUND</text>
+              <text x="585" y="195" text-anchor="middle" font-family="JetBrains Mono" font-size="12" font-weight="700" fill="#fff">"right to dissolve"</text>
+            </g>
+          </svg>
+
+          <div class="anim-fadein d-6" style="margin-top:1rem;display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem;max-width:640px;margin-left:auto;margin-right:auto">
+            <div style="background:#fff;border-radius:10px;padding:.7rem .9rem;border:1px solid var(--border);text-align:center">
+              <div style="font-size:1.4rem;color:var(--orange);font-family:'DM Serif Display',serif">1</div>
+              <div style="font-size:.72rem;color:var(--text-secondary);margin-top:.1rem">Query → position</div>
+            </div>
+            <div style="background:#fff;border-radius:10px;padding:.7rem .9rem;border:1px solid var(--border);text-align:center">
+              <div style="font-size:1.4rem;color:var(--orange);font-family:'DM Serif Display',serif">2</div>
+              <div style="font-size:.72rem;color:var(--text-secondary);margin-top:.1rem">Search nearby dots</div>
+            </div>
+            <div style="background:#fff;border-radius:10px;padding:.7rem .9rem;border:1px solid var(--border);text-align:center">
+              <div style="font-size:1.4rem;color:var(--green);font-family:'DM Serif Display',serif">3</div>
+              <div style="font-size:.72rem;color:var(--text-secondary);margin-top:.1rem">Return the closest</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── SCENE 6: Both searches now succeed ─── -->
+      <div class="scene" data-scene="5">
+        <h2 class="scene-title">Both professionals find what they need</h2>
+        <p class="scene-cap">Same queries as before. Same documents as before. Different machinery underneath — and now both searches succeed. This is semantic search.</p>
+        <div class="scene-stage">
+          <div class="scene6-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:1.2rem">
+
+            <!-- Lawyer success -->
+            <div class="anim-fadein d-0" style="background:#fff;border-radius:12px;padding:1.2rem;border:1px solid var(--border);box-shadow:var(--shadow-sm)">
+              <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.8rem">
+                <div class="persona-icon" style="background:var(--blue);width:30px;height:30px">
+                  <svg viewBox="0 0 24 24" fill="currentColor" style="width:15px;height:15px"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+                </div>
+                <div style="font-size:.82rem;font-weight:600;color:var(--navy)">Lawyer</div>
+              </div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:.78rem;color:var(--navy);background:var(--bg-light);padding:.5rem .7rem;border-radius:6px;margin-bottom:.7rem">"termination clause"</div>
+              <div style="font-size:.78rem;color:var(--text-secondary);line-height:1.55;margin-bottom:.8rem">Either party may exercise the <span class="doc-match">right to dissolve</span> this agreement upon thirty days written notice…</div>
+              <div class="result-badge success" style="font-size:.72rem">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                Found by meaning
+              </div>
+            </div>
+
+            <!-- Clinician success -->
+            <div class="anim-fadein d-2" style="background:#fff;border-radius:12px;padding:1.2rem;border:1px solid var(--border);box-shadow:var(--shadow-sm)">
+              <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.8rem">
+                <div class="persona-icon" style="background:var(--green);width:30px;height:30px">
+                  <svg viewBox="0 0 24 24" fill="currentColor" style="width:15px;height:15px"><path d="M19 8h-2v3h-3v2h3v3h2v-3h3v-2h-3zM4 8c0-2.21 1.79-4 4-4s4 1.79 4 4-1.79 4-4 4-4-1.79-4-4zm4 6c-2.67 0-8 1.34-8 4v2h12v-2c0-2.66-3.33-4-4-4z"/></svg>
+                </div>
+                <div style="font-size:.82rem;font-weight:600;color:var(--navy)">Clinician</div>
+              </div>
+              <div style="font-family:'JetBrains Mono',monospace;font-size:.78rem;color:var(--navy);background:var(--bg-light);padding:.5rem .7rem;border-radius:6px;margin-bottom:.7rem">"shortness of breath"</div>
+              <div style="font-size:.78rem;color:var(--text-secondary);line-height:1.55;margin-bottom:.8rem">Patients presenting with <span class="doc-match">dyspnoea</span>, particularly with reduced exercise tolerance, should be evaluated…</div>
+              <div class="result-badge success" style="font-size:.72rem">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                Found by meaning
+              </div>
+            </div>
+
+          </div>
+
+          <div class="anim-pop d-4" style="margin-top:1.5rem;background:linear-gradient(135deg,#FFF6EE,#FFF1E0);border:1.5px solid var(--orange-glow);border-radius:12px;padding:1.2rem 1.5rem;display:flex;gap:1rem;align-items:flex-start">
+            <div style="flex-shrink:0;width:38px;height:38px;border-radius:50%;background:var(--orange);display:flex;align-items:center;justify-content:center">
+              <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+            </div>
+            <div>
+              <div style="font-family:'DM Serif Display',serif;font-size:1.15rem;color:var(--navy);margin-bottom:.3rem">And the best part?</div>
+              <div style="font-size:.88rem;color:var(--text-secondary);line-height:1.6">In 2026, you don't need to understand the math to use this. A non-technical professional can build a working semantic-search assistant on their own documents in <strong style="color:var(--orange)">twenty minutes</strong>, using NotebookLM, a Claude Project, or Microsoft Copilot on a SharePoint folder. <strong style="color:var(--navy)">That's exactly what you'll do this week.</strong></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ─── PLAYER CONTROLS ─── -->
+    <div class="player-controls">
+      <div class="ctrl-group">
+        <button class="ctrl-btn" id="prevBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+          Previous
+        </button>
+      </div>
+      <div class="ctrl-group">
+        <button class="ctrl-play" id="playBtn" title="Play/Pause">
+          <svg id="playIcon" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+          <svg id="pauseIcon" viewBox="0 0 24 24" fill="currentColor" style="display:none"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+        </button>
+        <span class="ctrl-label" id="playLabel">Playing</span>
+        <button class="ctrl-btn" id="replayBtn" title="Replay this scene">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+        </button>
+      </div>
+      <div class="ctrl-group">
+        <button class="ctrl-btn primary" id="nextBtn">
+          Next
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── DEFINITIONS ─── -->
+  <section class="defs-section">
+    <h2 class="defs-heading">Two ideas worth remembering</h2>
+    <p class="defs-sub">You won't need the math. You will benefit from the property.</p>
+    <div class="def-grid">
+      <div class="def-card">
+        <div class="def-label">
+          <span class="ico">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+          </span>
+          Definition
+        </div>
+        <div class="def-term">Embedding</div>
+        <p class="def-body">A way for an AI system to <strong>represent the meaning</strong> of a piece of text as a list of numbers. Pieces of text with similar meanings get similar lists; pieces with different meanings get different lists. You will never need to see the numbers themselves. You will benefit from the property: <strong>search by meaning, not by spelling.</strong></p>
+      </div>
+      <div class="def-card">
+        <div class="def-label">
+          <span class="ico">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          </span>
+          Definition
+        </div>
+        <div class="def-term">Semantic Search</div>
+        <p class="def-body">A search method that returns documents based on <strong>what they mean</strong>, not on which words they contain. The query <em>"how do I cancel my subscription"</em> returns the policy section titled <em>"Termination of services"</em> — because they mean the same thing.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── TAKEAWAY ─── -->
+  <div class="takeaway">
+    <div class="takeaway-label">This week, hands on</div>
+    <h3>You'll build a working semantic-search assistant on real contracts.</h3>
+    <p>No code. No math. Twenty minutes with a tool you already have access to — NotebookLM, a Claude Project, or Microsoft Copilot grounded on a SharePoint folder. The phrases the documents use won't matter anymore. The meaning will.</p>
+  </div>
+
+</main>
+
+<script>
+const TOTAL_SCENES = 6;
+const SCENE_DURATIONS = [7000, 7500, 7500, 8500, 8500, 9000]; // milliseconds per scene
+let currentScene = 0;
+let isPlaying = true;
+let progressTimer = null;
+let advanceTimer = null;
+let progressValue = 0;
+
+const pillsContainer = document.getElementById('stepPills');
+const stepNum = document.getElementById('stepNum');
+const playBtn = document.getElementById('playBtn');
+const playIcon = document.getElementById('playIcon');
+const pauseIcon = document.getElementById('pauseIcon');
+const playLabel = document.getElementById('playLabel');
+const prevBtn = document.getElementById('prevBtn');
+const nextBtn = document.getElementById('nextBtn');
+const replayBtn = document.getElementById('replayBtn');
+const scenes = document.querySelectorAll('.scene');
+
+// Build the step pills
+for (let i = 0; i < TOTAL_SCENES; i++) {
+  const pill = document.createElement('div');
+  pill.className = 'step-pill';
+  if (i === 0) pill.classList.add('active');
+  pill.dataset.idx = i;
+  pill.addEventListener('click', () => goToScene(i));
+  pillsContainer.appendChild(pill);
+}
+
+function updatePills() {
+  document.querySelectorAll('.step-pill').forEach((p, i) => {
+    p.classList.remove('active', 'completed');
+    if (i < currentScene) p.classList.add('completed');
+    if (i === currentScene) p.classList.add('active');
+    p.style.setProperty('--progress', i === currentScene ? `${progressValue}%` : (i < currentScene ? '100%' : '0%'));
+  });
+  stepNum.textContent = currentScene + 1;
+  prevBtn.disabled = (currentScene === 0);
+  nextBtn.disabled = (currentScene === TOTAL_SCENES - 1) && !isPlaying;
+  // Update next button label on last scene
+  if (currentScene === TOTAL_SCENES - 1) {
+    nextBtn.innerHTML = `Finish <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>`;
+  } else {
+    nextBtn.innerHTML = `Next <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>`;
+  }
+}
+
+function showScene(idx) {
+  scenes.forEach((s, i) => {
+    s.classList.toggle('active', i === idx);
+  });
+  // Force a reflow so CSS animations restart cleanly
+  void scenes[idx].offsetWidth;
+}
+
+function clearTimers() {
+  if (progressTimer) { clearInterval(progressTimer); progressTimer = null; }
+  if (advanceTimer) { clearTimeout(advanceTimer); advanceTimer = null; }
+}
+
+function startProgress() {
+  clearTimers();
+  progressValue = 0;
+  updatePills();
+  if (!isPlaying) return;
+  const duration = SCENE_DURATIONS[currentScene];
+  const tick = 50;
+  progressTimer = setInterval(() => {
+    progressValue += (tick / duration) * 100;
+    if (progressValue >= 100) progressValue = 100;
+    updatePills();
+  }, tick);
+  advanceTimer = setTimeout(() => {
+    if (currentScene < TOTAL_SCENES - 1) {
+      currentScene++;
+      showScene(currentScene);
+      startProgress();
+    } else {
+      // Reached the end – stop playing
+      isPlaying = false;
+      progressValue = 100;
+      updatePills();
+      clearTimers();
+      setPlayUI();
+    }
+  }, duration);
+}
+
+function setPlayUI() {
+  if (isPlaying) {
+    playIcon.style.display = 'none';
+    pauseIcon.style.display = 'block';
+    playLabel.textContent = 'Playing';
+  } else {
+    playIcon.style.display = 'block';
+    pauseIcon.style.display = 'none';
+    playLabel.textContent = 'Paused';
+  }
+}
+
+function goToScene(idx) {
+  if (idx < 0 || idx >= TOTAL_SCENES) return;
+  currentScene = idx;
+  showScene(currentScene);
+  startProgress();
+}
+
+playBtn.addEventListener('click', () => {
+  isPlaying = !isPlaying;
+  setPlayUI();
+  if (isPlaying) {
+    // If we're at the end, restart from beginning
+    if (currentScene === TOTAL_SCENES - 1 && progressValue >= 100) {
+      currentScene = 0;
+      showScene(0);
+    }
+    startProgress();
+  } else {
+    clearTimers();
+  }
+});
+
+prevBtn.addEventListener('click', () => {
+  if (currentScene > 0) {
+    currentScene--;
+    showScene(currentScene);
+    startProgress();
+  }
+});
+
+nextBtn.addEventListener('click', () => {
+  if (currentScene < TOTAL_SCENES - 1) {
+    currentScene++;
+    showScene(currentScene);
+    startProgress();
+  } else {
+    // Smooth scroll to definitions
+    document.querySelector('.defs-section').scrollIntoView({behavior:'smooth', block:'start'});
+  }
+});
+
+replayBtn.addEventListener('click', () => {
+  showScene(currentScene);
+  if (!isPlaying) {
+    isPlaying = true;
+    setPlayUI();
+  }
+  startProgress();
+});
+
+// Kick off
+setPlayUI();
+startProgress();
+</script>
+
+</body>
+</html>
